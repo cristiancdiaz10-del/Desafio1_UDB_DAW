@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="Plataforma para la Evaluación y Selección de Aspirantes">
+	<meta name="author" content="Equipo A">
+	<title>ProTalento (AIDEL)</title>
+
+	<!-- Hoja de estilos -->
+	<link rel="stylesheet" type="text/css" href="css/estilo.css">
+
+	<!-- Ícono de la app -->
+	<link rel="icon" href="recursos/logo_AIDEL.jpeg">
+</head>
+<body>
+	<form action="procesar_registro.php" method="POST">
+		<h1>Registro de Aspirantes</h1>
+		<label for="nombre">Nombre:</label>
+		<input type="text" id="nombre" name="nombre" required>
+
+		<label for="apellido">Apellido:</label>
+		<input type="text" id="apellido" name="apellido" required>
+
+		<label for="email">Correo Electrónico:</label>
+		<input type="email" id="email" name="email" required>
+
+		<label for="telefono">Teléfono:</label>
+		<input type="tel" id="telefono" name="telefono">
+
+		<label for="cv">Currículum Vitae (PDF):</label>
+		<input type="file" id="cv" name="cv" accept=".pdf">
+
+		<button type="submit">Registrar</button>
+	<footer>
+	<p>&copy; 2026 ProTalento Agencia Internacional de Desarrollo Local. Todos los derechos reservados.</p>
+</footer>
+</body>
+</html>
