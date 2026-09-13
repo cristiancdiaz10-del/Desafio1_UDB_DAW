@@ -20,37 +20,55 @@
 	<link rel="icon" href="recursos/logo_AIDEL.jpeg">
 </head>
 <body>
-	<div class="container_index">
-	<!-- encabezado -->
-		<div class="contenido_index">
-			<a href="index.html">
-				<img src="recursos/logo_AIDEL.jpeg" alt="Logo AIDEL" class="logo">
-			</a>
-			<h1>ProTalento</h1>
-			<p>¡Bienvenido/a a la plataforma para la evaluación y selección de aspirantes a formación técnica de la Agencia Internacional de Desarrollo Local (AIDEL)!</p>
-	<!--formularios de login-->
-			<form>
-    			<p><label for="correo">Correo electrónico</label>
-    			<input type="email" id="correo" name="correo"></p>
-
-    			<p><label for="password">Contraseña</label>
-    			<input type="password" id="password" name="password"></p>
-
-    			<p><button type="submit">Iniciar sesión</button></p>
-
-			</form>
-			<br><br><br><br><br>
-	<!--pie de página-->
-			<footer class="footer">
-				<p>&copy; 2026 ProTalento Agencia Internacional de Desarrollo Local. Todos los derechos reservados.</p>
-			</footer>
-		</div>
-		<!--lateral derecho-->
-			<div class="lateral_index">
+	<main>
+		<div class="container_login">
+			<!-- encabezado -->
+			<div class="contenido_login">
+				<section class="p-5 mb-4 bg-light rounded-3 shadow-sm border">
+					<div class="container-fluid py-3">
+						<a href="index.html">
+							<img src="recursos/logo_AIDEL.png" alt="Logo AIDEL" class="logo">
+						</a>
+        				<h1 class="display-5 fw-bold text-primary">Bienvenido a ProTalento</h1>
+        				<p class="col-md-10 mx-auto fs-5 text-muted">
+          					La plataforma oficial para la evaluación y selección de aspirantes a formación técnica de la Agencia Internacional de Desarrollo Local
+						</p>
+					</div>
+			<!--formulario de login-->
+				<form>
+					<div class="mb-3">
+						<label for="email" class="form-label">Correo electrónico</label>
+						<input type="email" class="form-control" id="email" placeholder="tu@email.com" required>
+					</div>
+					<div class="mb-3">
+						<label for="password" class="form-label">Contraseña</label>
+						<input type="password" class="form-control" id="password" placeholder="Contraseña" required>
+					</div>
+					<br>
+					<button type="submit" class="sesion">Iniciar sesión</button>
+				</form>
+				</section>
+			</div>
+				<!--lateral derecho-->
+			<div class="lateral_login">
 				<p><b>"Formando al talento digital del mañana en El Salvador"</b></p>
 				<p>Proyecto de Formación Técnica | AIDEL El Salvador</p>
-				<img src="recursos/joven_inicio.png" alt="Imagen de joven" class="imagen_inicio">
+					<img src="recursos/joven_inicio.png" alt="Imagen de joven" class="imagen_login">
 			</div>
-	</div>
+		</div>
+		<!--pie de página-->
+		<footer class="bg-dark text-white py-4 mt-auto">
+    		<div class="container text-center">
+      			<p class="mb-1">&copy; 2026 ProTalento Agencia Internacional de Desarrollo Local. Todos los derechos reservados.</p>
+  		</footer>
+	</main>
+
+	<!-- LIBRERÍAS DE JAVASCRIPT -->
+  <!-- 1. Bootstrap 5 JS Bundle-->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+  
+  <!-- 2. Scripts de Lógica del Negocio Separados -->
+  <script src="js/auth.js"></script>
+  <script src="js/main.js"></script>
 </body>
 </html>

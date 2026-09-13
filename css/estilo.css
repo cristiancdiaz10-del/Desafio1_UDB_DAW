@@ -6,29 +6,130 @@
 .contenido_index{
 	flex: 1;
 	text-align: center;
-	padding: 20px;
+	margin: auto;
+	padding: 10px;
 }
 
 .logo{
-	height: 200px;
+	max-height:300px;
 	width: auto;
 }
 
 .imagen_inicio{
-	width: 500px;
-	height: 600px;
+	width: auto;
+	height: auto;
 }
 
 .estado{
-	background-color: #f96815
+	background-color: #f96815 !important;
+	color: white !important; 
+	border-radius: 4px;
+	cursor: pointer;
+	border: none;
 }
 
 .lateral_index{
 	background-color: #82c8e5;
 	text-align: center;
 	padding: 10px;
+	margin: 15px;
 }
 
-.footer{
+/*login.html*/
+
+.container_login{
+	display: flex;
+}
+
+.contenido_login{
+	flex: 1;
 	text-align: center;
+	padding: 10px;
+	margin: auto;
+}
+
+.logo{
+	height: 300px;
+	width: auto;
+}
+
+.imagen_login{
+	width: auto;
+	height: auto;
+}
+
+.lateral_login{
+	background-color: #82c8e5;
+	text-align: center;
+	padding: 10px;
+	margin: 10px;
+}
+
+.sesion{
+	background-color: #f96815 !important;
+	color: white !important; 
+	border-radius: 4px;
+	cursor: pointer;
+	border: none;
+}
+
+/*registro_aspirante.html*/
+
+.container_registro{
+	display: flex;
+}
+
+.contenido_registro{
+	flex: 1;
+	text-align: center;
+	margin: auto;
+	padding: 10px;
+}
+
+.encabezado_registro{
+	display: flex;
+	align-items: center;
+}
+
+.parrafos_registro{
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.parrafos_registro p {
+	margin: 0 !important;
+	line-height: 1.0 !important;
+}
+
+.formulario-registro{
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 15px 20px;
+}
+
+.logo_registro{
+	max-height:200px;
+	width: auto;
+	text-align: left !important; 
+}
+
+.imagen_registro{
+	width: auto;
+	height: auto;
+}
+
+.estado{
+	background-color: #f96815 !important;
+	color: white !important; 
+	border-radius: 4px;
+	cursor: pointer;
+	border: none;
+}
+
+.lateral_registro{
+	background-color: #82c8e5;
+	text-align: center;
+	padding: 10px;
+	margin: 15px;
 }
