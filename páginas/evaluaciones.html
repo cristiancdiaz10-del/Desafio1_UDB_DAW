@@ -1,17 +1,197 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ProTalento | Evaluaciones</title>
-  <link rel="stylesheet" href="../css/evaluaciones.css">
-</head>
-<body>
-  <main>
-    <h1>Gestión de evaluaciones y resultados</h1>
-    <p>Desde esta sección se programarán evaluaciones, se asignarán aspirantes y se registrarán resultados.</p>
-  </main>
 
-  <script src="../js/evaluaciones.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Evaluaciones - ProTalento</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <!-- CSS propio -->
+    <link rel="stylesheet" href="../css/evaluaciones.css">
+</head>
+
+<body>
+
+    <div class="container mt-4">
+
+        <h1 class="text-center mb-4">
+            Gestión de Evaluaciones y Resultados
+        </h1>
+
+        <p class="text-center">
+            Programación, asignación y registro de evaluaciones de aspirantes.
+        </p>
+
+
+        <!-- FORMULARIO DE EVALUACIÓN -->
+
+        <div class="card mt-4">
+
+            <div class="card-header">
+                Registrar evaluación
+            </div>
+
+            <div class="card-body">
+
+                <form id="formEvaluacion">
+
+                    <!-- Aspirante -->
+
+                    <div class="mb-3">
+
+                        <label for="aspirante" class="form-label">
+                            Aspirante
+                        </label>
+
+                        <select id="aspirante"
+                                class="form-select"
+                                required>
+
+                            <option value="">
+                                Seleccione un aspirante
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- Tipo de evaluación -->
+
+                    <div class="mb-3">
+
+                        <label for="tipoEvaluacion" class="form-label">
+                            Tipo de evaluación
+                        </label>
+
+                        <select id="tipoEvaluacion"
+                                class="form-select"
+                                required>
+
+                            <option value="">
+                                Seleccione una evaluación
+                            </option>
+
+                            <option value="Entrevista virtual">
+                                Entrevista virtual
+                            </option>
+
+                            <option value="Prueba psicométrica">
+                                Prueba psicométrica
+                            </option>
+
+                            <option value="Prueba técnica">
+                                Prueba técnica
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- Fecha -->
+
+                    <div class="mb-3">
+
+                        <label for="fechaEvaluacion" class="form-label">
+                            Fecha de evaluación
+                        </label>
+
+                        <input type="date"
+                               id="fechaEvaluacion"
+                               class="form-control"
+                               required>
+
+                    </div>
+
+
+                    <!-- Puntuación -->
+
+                    <div class="mb-3">
+
+                        <label for="puntuacion" class="form-label">
+                            Puntuación
+                        </label>
+
+                        <input type="number"
+                               id="puntuacion"
+                               class="form-control"
+                               min="0"
+                               max="100"
+                               placeholder="Ingrese una puntuación de 0 a 100"
+                               required>
+
+                    </div>
+
+
+                    <!-- Botón -->
+
+                    <button type="submit"
+                            class="btn btn-primary">
+
+                        Guardar evaluación
+
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+
+        <!-- TABLA DE RESULTADOS -->
+
+        <div class="card mt-5">
+
+            <div class="card-header">
+                Resultados registrados
+            </div>
+
+            <div class="card-body">
+
+                <div class="table-responsive">
+
+                    <table class="table table-bordered table-striped">
+
+                        <thead>
+
+                            <tr>
+                                <th>Aspirante</th>
+                                <th>Evaluación</th>
+                                <th>Fecha</th>
+                                <th>Puntuación</th>
+                                <th>Estado</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="tablaResultados">
+
+                            <!-- JavaScript colocará aquí los resultados -->
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- JavaScript propio -->
+
+    <script src="../js/evaluaciones.js"></script>
+
 </body>
+
 </html>
