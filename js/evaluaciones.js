@@ -1,31 +1,44 @@
 // Módulo de Evaluaciones y Resultados - ProTalento
 
-// Obtener los aspirantes almacenados en localStorage
-var aspirantes = JSON.parse(localStorage.getItem("aspirantes")) || [];
+// Seleccionar los grupos de estrellas
+var gruposEstrellas = document.querySelectorAll(".estrellas");
 
-// Obtener el elemento select del formulario
-var selectAspirante = document.getElementById("aspirante");
+// Recorrer cada grupo de estrellas
+for (var i = 0; i < gruposEstrellas.length; i++) {
 
-// Función para cargar los aspirantes en el select
-function cargarAspirantes() {
+    var estrellas = gruposEstrellas[i].querySelectorAll(".estrella");
 
-    // Limpiar las opciones existentes
-    selectAspirante.innerHTML =
-        '<option value="">Seleccione un aspirante</option>';
+    // Recorrer las cinco estrellas de cada criterio
+    for (var j = 0; j < estrellas.length; j++) {
 
-    // Recorrer el arreglo de aspirantes
-    for (var i = 0; i < aspirantes.length; i++) {
+        estrellas[j].addEventListener("click", function () {
 
-        var opcion = document.createElement("option");
+            // Obtener el valor de la estrella seleccionada
+            var valor = parseInt(this.getAttribute("data-valor"));
 
-        opcion.value = i;
+            // Obtener el grupo al que pertenece la estrella
+            var grupo = this.parentElement;
 
-        opcion.textContent =
-            aspirantes[i].nombre;
+            // Obtener el criterio que se está evaluando
+            var criterio = grupo.getAttribute("data-criterio");
 
-        selectAspirante.appendChild(opcion);
+            var estrellasGrupo = grupo.querySelectorAll(".estrella");
+
+            // Pintar las estrellas seleccionadas
+            for (var k = 0; k < estrellasGrupo.length; k++) {
+
+                if (k < valor) {
+                    estrellasGrupo[k].classList.add("seleccionada");
+                } else {
+                    estrellasGrupo[k].classList.remove("seleccionada");
+                }
+            }
+
+            // Guardar el valor seleccionado
+            document.getElementById(criterio).value = valor;
+
+        });
+
     }
-}
 
-// Ejecutar la función al cargar la página
-cargarAspirantes();
+}
