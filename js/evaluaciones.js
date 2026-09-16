@@ -37,8 +37,23 @@ for (var i = 0; i < gruposEstrellas.length; i++) {
             // Guardar el valor seleccionado
             document.getElementById(criterio).value = valor;
 
+            // Calcular el promedio
+            calcularPromedio();
+
         });
 
     }
 
+}
+// Función para calcular la puntuación promedio
+function calcularPromedio() {
+
+    var habilidades = parseInt(document.getElementById("habilidades").value);
+    var calidadVideo = parseInt(document.getElementById("calidadVideo").value);
+    var perfilAcademico = parseInt(document.getElementById("perfilAcademico").value);
+
+    var promedio = (habilidades + calidadVideo + perfilAcademico) / 3;
+
+    document.getElementById("promedioEvaluacion").textContent =
+        promedio.toFixed(2) + " / 5";
 }
