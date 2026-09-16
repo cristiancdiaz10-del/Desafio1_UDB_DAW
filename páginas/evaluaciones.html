@@ -189,60 +189,57 @@
                     <!-- CRITERIOS -->
                     <div class="criterios-evaluacion">
 
-                        <div class="criterio">
-                            <label for="habilidades">
-                                Habilidades técnicas y de expresión:
-                            </label>
+    <div class="criterio">
+        <label for="habilidades">
+            Habilidades técnicas y de expresión:
+        </label>
 
-                            <select id="habilidades"
-                                    class="form-select puntuacion"
-                                    required>
-                                <option value="">Seleccione</option>
-                                <option value="1">★</option>
-                                <option value="2">★★</option>
-                                <option value="3">★★★</option>
-                                <option value="4">★★★★</option>
-                                <option value="5">★★★★★</option>
-                            </select>
-                        </div>
+        <div class="estrellas" data-criterio="habilidades">
+            <span class="estrella" data-valor="1">★</span>
+            <span class="estrella" data-valor="2">★</span>
+            <span class="estrella" data-valor="3">★</span>
+            <span class="estrella" data-valor="4">★</span>
+            <span class="estrella" data-valor="5">★</span>
+        </div>
 
-
-                        <div class="criterio">
-                            <label for="calidadVideo">
-                                Calidad del vídeo:
-                            </label>
-
-                            <select id="calidadVideo"
-                                    class="form-select puntuacion"
-                                    required>
-                                <option value="">Seleccione</option>
-                                <option value="1">★</option>
-                                <option value="2">★★</option>
-                                <option value="3">★★★</option>
-                                <option value="4">★★★★</option>
-                                <option value="5">★★★★★</option>
-                            </select>
-                        </div>
+        <input type="hidden" id="habilidades" value="0">
+    </div>
 
 
-                        <div class="criterio">
-                            <label for="perfilAcademico">
-                                Perfil académico y laboral:
-                            </label>
+    <div class="criterio">
+        <label for="calidadVideo">
+            Calidad del vídeo:
+        </label>
 
-                            <select id="perfilAcademico"
-                                    class="form-select puntuacion"
-                                    required>
-                                <option value="">Seleccione</option>
-                                <option value="1">★</option>
-                                <option value="2">★★</option>
-                                <option value="3">★★★</option>
-                                <option value="4">★★★★</option>
-                                <option value="5">★★★★★</option>
-                            </select>
-                        </div>
+        <div class="estrellas" data-criterio="calidadVideo">
+            <span class="estrella" data-valor="1">★</span>
+            <span class="estrella" data-valor="2">★</span>
+            <span class="estrella" data-valor="3">★</span>
+            <span class="estrella" data-valor="4">★</span>
+            <span class="estrella" data-valor="5">★</span>
+        </div>
 
-                    </div>
+        <input type="hidden" id="calidadVideo" value="0">
+    </div>
+
+
+    <div class="criterio">
+        <label for="perfilAcademico">
+            Perfil académico y laboral:
+        </label>
+
+        <div class="estrellas" data-criterio="perfilAcademico">
+            <span class="estrella" data-valor="1">★</span>
+            <span class="estrella" data-valor="2">★</span>
+            <span class="estrella" data-valor="3">★</span>
+            <span class="estrella" data-valor="4">★</span>
+            <span class="estrella" data-valor="5">★</span>
+        </div>
+
+        <input type="hidden" id="perfilAcademico" value="0">
+    </div>
+
+</div>
 
 
                     <!-- OBSERVACIONES -->
