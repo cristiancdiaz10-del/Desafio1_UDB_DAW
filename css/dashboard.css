@@ -1,0 +1,244 @@
+ /* ESTILOS DEL DASHBOARD - PROTALENTO */
+
+/* Fondo general de la página */
+
+body {
+    background-color: #ffffff;
+    color: #111111;
+}
+
+
+/* BARRA DE NAVEGACION */
+
+.navbar {
+    background-color: #d9d9d9 !important;
+    min-height: 72px;
+    padding: 10px 28px;
+    border-bottom: 1px solid #c4c4c4;
+}
+
+
+/* Nombre del sistema */
+
+.navbar-brand {
+    color: #111111 !important;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-right: 25px;
+}
+
+
+/* Contenedor de las opciones */
+
+.navbar-nav {
+    gap: 5px;
+}
+
+
+/* Opciones */
+
+.navbar .nav-link {
+    color: #111111 !important;
+    font-size: 0.95rem;
+    font-weight: 500;
+
+    padding: 10px 15px !important;
+
+    border-radius: 12px;
+
+    transition: all 0.2s ease;
+}
+
+
+/* Iconos */
+
+.navbar .nav-link .bi {
+    margin-right: 7px;
+    font-size: 0.95rem;
+}
+
+
+/* Opción activa */
+
+.navbar .nav-link.active {
+    background-color: #e7f2ff;
+    color: #0d5cab !important;
+    font-weight: 700;
+}
+
+
+/* Cuando pasamos el mouse */
+
+.navbar .nav-link:hover {
+    background-color: #c5d9ee;
+    color: #0d5cab !important;
+}
+
+
+/* Usuario */
+
+.navbar .text-white {
+    color: #111111 !important;
+    font-weight: 500;
+}
+
+
+/* Icono del usuario */
+
+.navbar .text-white .bi {
+    color: #0d5cab;
+    font-size: 1.35rem;
+}
+
+
+/* Botón de menú en celulares */
+
+.navbar-toggler {
+    border: 1px solid #0d5cab;
+}
+
+
+.navbar-toggler:focus {
+    box-shadow: 0 0 0 0.15rem rgba(13, 92, 171, 0.2);
+}
+
+
+.navbar-toggler-icon {
+    filter: brightness(0);
+}
+
+
+/* TITULO DE DASHBOARD */
+
+main h1 {
+    font-weight: 700;
+    color: #111111;
+    margin-top:  10px; 
+    margin-bottom: 25px;
+}
+
+
+/* TARJETAS DE INDICADORES */
+
+.card {
+    background-color: #e7f2ff;
+    border: 1px solid #9bbfe8;
+    border-radius: 18px;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+
+/* Encabezados de las secciones */
+
+.card-header {
+    background-color: transparent !important;
+    border-bottom: 1px solid #9bbfe8;
+    font-weight: 700;
+}
+
+
+/* Títulos pequeños de las tarjetas */
+
+.card h6 {
+    color: #111111;
+}
+
+
+/* Números de los indicadores */
+
+.card h2 {
+    color: #111111;
+    font-weight: 700;
+}
+
+
+/* ICONOS INDICADORES 
+
+.card-body > .d-flex .bi {
+    color: #0d5cab;
+}
+*/    
+
+
+/* BARRAS DE PROGRESO */
+
+.progress {
+    height: 20px;
+    border-radius: 10px;
+    background-color: #ffffff;
+    border: 1px solid #9bbfe8;
+}
+
+
+.progress-bar {
+    background-color: #0d5cab;
+    border-radius: 10px;
+}
+
+
+/* ACTIVIDAD RECIENTE 
+
+.card p {
+    color: #555555;
+}
+
+
+/* Iconos de actividad */
+
+.card-body .bi-person-plus,
+.card-body .bi-clipboard-check,
+.card-body .bi-person-check {
+    color: #0d5cab;
+}
+
+
+/* LINEAS Y SEPARADORES */
+
+.border-top {
+    border-color: #9bbfe8 !important;
+}
+
+
+/* RESPONSIVE */
+
+@media (max-width: 768px) {
+
+    .navbar {
+        padding: 10px 15px;
+    }
+
+    main {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+}
+
+/* COLORES DE LOS INDICACORES */
+
+/* Total de aspirantes - Azul */
+
+.indicador-total .bi {
+    color: #0d5cab;
+}
+
+
+/* Evaluados - Verde */
+
+.indicador-evaluados .bi {
+    color: #2fa85a;
+}
+
+
+/* Pendientes - Naranja */
+
+.indicador-pendientes .bi {
+    color: #f28c28;
+}
+
+
+/* Seleccionados - Dorado */
+
+.indicador-seleccionados .bi {
+    color: #e0ad28;
+}
