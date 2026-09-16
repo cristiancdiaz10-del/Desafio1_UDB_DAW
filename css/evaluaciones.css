@@ -181,10 +181,23 @@ body {
     margin-bottom: 12px;
 }
 
-.puntuacion {
-    font-size: 20px;
+/* Estrellas de evaluación */
+
+.estrellas {
+    display: flex;
+    gap: 5px;
+    justify-content: flex-end;
+}
+
+.estrella {
+    font-size: 34px;
+    color: #cccccc;
+    cursor: pointer;
+    user-select: none;
+}
+
+.estrella.seleccionada {
     color: #ffb52e;
-    font-weight: bold;
 }
 
 
