@@ -1,5 +1,7 @@
 //REGISTRO DE ASPIRANTES
+
 //Departamentos, municipios y distritos
+
 const URL_API = "https://juanmedina100.github.io/departamentos-distritos-municipios-el-salvador/departamentos-distritos-municipios-sv.json";
 
 const selectDepto = document.getElementById("departamento");
@@ -9,6 +11,7 @@ const selectDist = document.getElementById("distrito");
 let datosElSalvador = [];
 
 // Consumo de la API
+
 fetch(URL_API)
     .then(res => {
         if (!res.ok) {
@@ -28,6 +31,7 @@ fetch(URL_API)
     });
 
 // Cargar departamentos
+
 function cargarDepartamentos() {
     selectDepto.innerHTML =
         '<option value="">Selecciona tu departamento</option>';
@@ -39,7 +43,9 @@ function cargarDepartamentos() {
             `<option value="${nombreDepto}">${nombreDepto}</option>`;
     });
 }
+
 // Departamento - Municipios
+
 selectDepto.addEventListener("change", () => {
 
     const deptoEncontrado = datosElSalvador.find(
@@ -70,6 +76,7 @@ selectDepto.addEventListener("change", () => {
 });
 
 // Municipio - Distritos
+
 selectMuni.addEventListener("change", () => {
 
     const deptoEncontrado = datosElSalvador.find(
@@ -100,6 +107,7 @@ selectMuni.addEventListener("change", () => {
 });
 
 //Mayor y menor de edad
+
 const inputFecha = document.getElementById("nacimiento");
 const inputDui = document.getElementById("DUI");
 const inputNit = document.getElementById("NIT");
@@ -135,11 +143,87 @@ inputFecha.addEventListener("change", () => {
 });
 
 //Consentimiento informado
-const checkConsent = document.getElementById("checkConsentimiento");
-const btnAceptarModal = document.getElementById("btnAceptarModal");
 
-// Al hacer clic en "He leído y Acepto" dentro del modal
-btnAceptarModal.addEventListener("click", () => {
-  checkConsent.disabled = false;
-  checkConsent.checked = true;
+const modal = document.getElementById("modalConsentimiento");
+const abrir = document.getElementById("abrirConsentimiento");
+const cerrar = document.getElementById("cerrarConsentimiento");
+
+abrir.addEventListener("click", function(evento) {
+    evento.preventDefault();
+    modal.style.display = "flex";
 });
+
+cerrar.addEventListener("click", function() {
+    modal.style.display = "none";
+});
+
+//Guardado de registros
+
+const formulario = document.getElementById("formRegistro");
+
+if(formulario){
+formulario.addEventListener("submit", function(evento) {
+
+    evento.preventDefault();
+
+    const cursoTecnico = document.getElementById("curso").value;
+    const nombreCompleto = document.getElementById("nombre").value;
+    const sexo = document.getElementById("sexo").value;
+    const fechaNacimiento = document.getElementById("nacimiento").value;
+    const departamento = document.getElementById("departamento").value;
+    const municipio = document.getElementById("municipio").value;
+    const distrito = document.getElementById("distrito").value;
+    const DUI = document.getElementById("DUI").value;
+    const NIT = document.getElementById("NIT").value;
+    const discapacidad = document.getElementById("discapacidad").value;
+    const nivelEducativo = document.getElementById("nivel-educativo").value;
+    const situacionActual = document.getElementById("situacion-actual").value;
+    const internet = document.getElementById("internet").value;
+    const computadora = document.getElementById("computadora").value;
+    const dominioComputadora = document.getElementById("dominio-computadora").value;
+    const vinculacionLaboral = document.getElementById("vinculacion").value;
+    const medioPreferido = document.getElementById("medio-contacto").value;
+    const telefono1 = document.getElementById("telefono").value;
+    const telefono2 = document.getElementById("telefono2").value;
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("contrasena").value;
+    const consentimientoInformado = document.getElementById("aceptarConsentimiento").checked;
+
+    const usuario = {
+        cursoFormacion: cursoTecnico,
+        nombreCompleto: nombreCompleto,
+        sexo: sexo,
+        fechaNacimiento: fechaNacimiento,
+        departamento: departamento,
+        municipio: municipio,
+        distrito: distrito,
+        numeroDUI: DUI,
+        numeroNIT: NIT,
+        condicionDiscapacidad: discapacidad,
+        nivelEducativo: nivelEducativo,
+        situacionActual: situacionActual,
+        internetEstable: internet,
+        poseeComputadora: computadora,
+        dominioComputadora: dominioComputadora,
+        vinculacionLaboral: vinculacionLaboral,
+        medioPreferido: medioPreferido,
+        numeroTelefono: telefono1,
+        numeroTelefono2: telefono2,
+        email: email,
+        password: password,
+        consentimientoInformado: consentimientoInformado,
+
+        rol: "usuario"
+    };
+
+    let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+
+    usuarios.push(usuario);
+
+    localStorage.setItem("usuarios", JSON.stringify(usuarios));
+
+    alert("¡Registro exitoso!");
+
+    window.location.href = "login.html";
+});
+}
