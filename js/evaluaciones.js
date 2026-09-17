@@ -57,3 +57,33 @@ function calcularPromedio() {
     document.getElementById("promedioEvaluacion").textContent =
         promedio.toFixed(2) + " / 5";
 }
+// Función para registrar la decisión de la evaluación
+function registrarDecision(estado) {
+
+    var habilidades = parseInt(document.getElementById("habilidades").value);
+    var calidadVideo = parseInt(document.getElementById("calidadVideo").value);
+    var perfilAcademico = parseInt(document.getElementById("perfilAcademico").value);
+
+    // Validar que todos los criterios tengan puntuación
+    if (habilidades === 0 || calidadVideo === 0 || perfilAcademico === 0) {
+        alert("Debe evaluar todos los criterios antes de registrar una decisión.");
+        return;
+    }
+
+    // Mostrar el estado seleccionado
+    document.getElementById("estadoCandidato").textContent = estado;
+}
+// Botón Rechazar
+document.getElementById("btnRechazar").addEventListener("click", function () {
+    registrarDecision("Rechazado");
+});
+
+// Botón Requiere ajustes
+document.getElementById("btnAjustes").addEventListener("click", function () {
+    registrarDecision("Requiere ajustes");
+});
+
+// Botón Aprobar
+document.getElementById("btnAprobar").addEventListener("click", function () {
+    registrarDecision("Aprobado");
+});
