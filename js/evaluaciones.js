@@ -1,5 +1,26 @@
 // Módulo de Evaluaciones y Resultados - ProTalento
 
+// Cargar aspirantes registrados
+
+var seleccionarAspirante = document.getElementById("seleccionarAspirante");
+
+var usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+
+var aspirantes = usuarios.filter(function(usuario) {
+    return usuario.rol === "usuario";
+});
+
+// Agregar los aspirantes al selector
+for (var i = 0; i < aspirantes.length; i++) {
+
+    var opcion = document.createElement("option");
+
+    opcion.value = aspirantes[i].email;
+    opcion.textContent = aspirantes[i].nombreCompleto;
+
+    seleccionarAspirante.appendChild(opcion);
+}
+
 // Seleccionar los grupos de estrellas
 var gruposEstrellas = document.querySelectorAll(".estrellas");
 
