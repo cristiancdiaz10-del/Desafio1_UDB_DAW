@@ -79,11 +79,20 @@ function calcularPromedio() {
         promedio.toFixed(2) + " / 5";
 }
 // Función para registrar la decisión de la evaluación
+// Función para registrar la decisión de la evaluación
 function registrarDecision(estado) {
 
     var habilidades = parseInt(document.getElementById("habilidades").value);
     var calidadVideo = parseInt(document.getElementById("calidadVideo").value);
     var perfilAcademico = parseInt(document.getElementById("perfilAcademico").value);
+
+    var emailAspirante = seleccionarAspirante.value;
+
+    // Validar que se haya seleccionado un aspirante
+    if (emailAspirante === "") {
+        alert("Debe seleccionar un aspirante.");
+        return;
+    }
 
     // Validar que todos los criterios tengan puntuación
     if (habilidades === 0 || calidadVideo === 0 || perfilAcademico === 0) {
@@ -91,8 +100,38 @@ function registrarDecision(estado) {
         return;
     }
 
+    var promedio = (habilidades + calidadVideo + perfilAcademico) / 3;
+
+    var observaciones = document.getElementById("comentarios").value;
+
+    // Crear el registro de evaluación
+    var evaluacion = {
+        aspiranteEmail: emailAspirante,
+        habilidades: habilidades,
+        calidadVideo: calidadVideo,
+        perfilAcademico: perfilAcademico,
+        promedio: parseFloat(promedio.toFixed(2)),
+        observaciones: observaciones,
+        estado: estado
+    };
+
+    // Obtener evaluaciones existentes
+    var evaluaciones =
+        JSON.parse(localStorage.getItem("evaluaciones")) || [];
+
+    // Guardar la nueva evaluación
+    evaluaciones.push(evaluacion);
+
+    localStorage.setItem(
+        "evaluaciones",
+        JSON.stringify(evaluaciones)
+    );
+
     // Mostrar el estado seleccionado
     document.getElementById("estadoCandidato").textContent = estado;
+
+    alert("Evaluación registrada correctamente.");
+}
 }
 // Botón Rechazar
 document.getElementById("btnRechazar").addEventListener("click", function () {
