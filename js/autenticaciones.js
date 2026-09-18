@@ -1,100 +1,84 @@
 //Modulo de autenticacion
 
+//Creación de usuarios iniciales
 function crearUsuariosIniciales() {
-
     let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
 
-    // Verifica si ya existe un administrador
-    const existeAdministrador = usuarios.some(function(usuario) {
-        return usuario.rol === "administrador";
-    });
-
-    // Verifica si ya existe un superadministrador
-    const existeSuperadministrador = usuarios.some(function(usuario) {
-        return usuario.rol === "superadministrador";
-    });
-
-    // Crea administrador si no existe
-    if (!existeAdministrador) {
-
-        usuarios.push({
-            nombreCompleto: "Administrador",
-            email: "admin@ejemplo.com",
-            password: "admin123",
-            rol: "administrador"
-        });
+    if (usuarios.length === 0) {
+        usuarios = [
+            { nombreCompleto: "Aspirante Prueba", email: "user@ejemplo.com", password: "123", rol: "usuario" },
+            { nombreCompleto: "Administrador", email: "admin@ejemplo.com", password: "123", rol: "administrador" },
+            { nombreCompleto: "SuperAdmin", email: "super@ejemplo.com", password: "123", rol: "superadministrador" }
+        ];
+        localStorage.setItem("usuarios", JSON.stringify(usuarios));
     }
-
-    // Crea superadministrador si no existe
-    if (!existeSuperadministrador) {
-
-        usuarios.push({
-            nombreCompleto: "Superadministrador",
-            email: "superadmin@ejemplo.com",
-            password: "super123",
-            rol: "superadministrador"
-        });
-    }
-
-    localStorage.setItem("usuarios", JSON.stringify(usuarios));
 }
-
 crearUsuariosIniciales();
 
-//login
+//Validación de registro
+const formRegistro = document.getElementById("formRegistro");
+if (formRegistro) {
+    formRegistro.addEventListener("submit", function(e) {
+        e.preventDefault();
 
-const formularioLogin = document.getElementById("formLogin");
+        const emailVal = document.getElementById("email").value.trim().toLowerCase();
+        const passVal = document.getElementById("contrasena") ? document.getElementById("contrasena").value.trim() : document.getElementById("password").value.trim();
+        const nombreVal = document.getElementById("nombre") ? document.getElementById("nombre").value.trim() : "Nuevo Usuario";
 
-if (formularioLogin) {
+        let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
 
-    formularioLogin.addEventListener("submit", function(evento) {
-
-        evento.preventDefault();
-
-        const email = document.getElementById("email").value;
-        const password = document.getElementById("password").value;
-
-        const usuarios = JSON.parse(
-            localStorage.getItem("usuarios")
-        ) || [];
-
-        const usuarioEncontrado = usuarios.find(function(usuario) {
-
-            return usuario.email === email &&
-                   usuario.password === password;
-
-        });
-
-        if (!usuarioEncontrado) {
-
-            alert("Correo o contraseña incorrectos.");
+        // Validar si el correo ya existe
+        if (usuarios.some(u => u.email.toLowerCase() === emailVal)) {
+            alert("Este correo ya está registrado.");
             return;
-
         }
 
-        const sesion = {
-            email: usuarioEncontrado.email,
-            rol: usuarioEncontrado.rol
+        // Crear objeto uniforme
+        const nuevoUsuario = {
+            nombreCompleto: nombreVal,
+            email: emailVal,
+            password: passVal,
+            rol: "usuario"
         };
 
-        localStorage.setItem(
-            "sesion",
-            JSON.stringify(sesion)
-        );
+        usuarios.push(nuevoUsuario);
+        localStorage.setItem("usuarios", JSON.stringify(usuarios));
 
-        if (usuarioEncontrado.rol === "usuario") {
+        alert("¡Registro exitoso! Redirigiendo al login...");
+        window.location.href = "login.html";
+    });
+}
 
-            window.location.href = "portal-aspirante.html";
+//Validación de login
+const formLogin = document.getElementById("formLogin");
+if (formLogin) {
+    formLogin.addEventListener("submit", function(e) {
+        e.preventDefault();
 
-        } else if (usuarioEncontrado.rol === "administrador") {
+        const emailInput = document.getElementById("email").value.trim().toLowerCase();
+        const passInput = document.getElementById("contrasena") ? document.getElementById("contrasena").value.trim() : document.getElementById("password").value.trim();
 
-            window.location.href = "administrador.html";
+        const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
 
-        } else if (usuarioEncontrado.rol === "superadministrador") {
+        // Buscar coincidencia exacta
+        const usuarioValido = usuarios.find(u => u.email.toLowerCase() === emailInput && u.password === passInput);
 
-            window.location.href = "superadministrador.html";
+        if (!usuarioValido) {
+            alert("Correo o contraseña incorrectos.");
+            return;
         }
 
-    });
+        // Guardar sesión y redirigir
+        localStorage.setItem("sesion", JSON.stringify({
+            nombre: usuarioValido.nombreCompleto,
+            email: usuarioValido.email,
+            rol: usuarioValido.rol
+        }));
 
+        if (usuarioValido.rol === "usuario") {
+            window.location.href = "portal-aspirante.html";
+        } else {
+            window.location.href = "dashboard.html";
+        }
+    });
 }

@@ -163,66 +163,53 @@ const formulario = document.getElementById("formRegistro");
 
 if(formulario){
 formulario.addEventListener("submit", function(evento) {
-
     evento.preventDefault();
 
-    const cursoTecnico = document.getElementById("curso").value;
-    const nombreCompleto = document.getElementById("nombre").value;
-    const sexo = document.getElementById("sexo").value;
-    const fechaNacimiento = document.getElementById("nacimiento").value;
-    const departamento = document.getElementById("departamento").value;
-    const municipio = document.getElementById("municipio").value;
-    const distrito = document.getElementById("distrito").value;
-    const DUI = document.getElementById("DUI").value;
-    const NIT = document.getElementById("NIT").value;
-    const discapacidad = document.getElementById("discapacidad").value;
-    const nivelEducativo = document.getElementById("nivel-educativo").value;
-    const situacionActual = document.getElementById("situacion-actual").value;
-    const internet = document.getElementById("internet").value;
-    const computadora = document.getElementById("computadora").value;
-    const dominioComputadora = document.getElementById("dominio-computadora").value;
-    const vinculacionLaboral = document.getElementById("vinculacion").value;
-    const medioPreferido = document.getElementById("medio-contacto").value;
-    const telefono1 = document.getElementById("telefono").value;
-    const telefono2 = document.getElementById("telefono2").value;
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("contrasena").value;
-    const consentimientoInformado = document.getElementById("aceptarConsentimiento").checked;
+    const email = document.getElementById("email").value.trim();
 
-    const usuario = {
-        cursoFormacion: cursoTecnico,
-        nombreCompleto: nombreCompleto,
-        sexo: sexo,
-        fechaNacimiento: fechaNacimiento,
-        departamento: departamento,
-        municipio: municipio,
-        distrito: distrito,
-        numeroDUI: DUI,
-        numeroNIT: NIT,
-        condicionDiscapacidad: discapacidad,
-        nivelEducativo: nivelEducativo,
-        situacionActual: situacionActual,
-        internetEstable: internet,
-        poseeComputadora: computadora,
-        dominioComputadora: dominioComputadora,
-        vinculacionLaboral: vinculacionLaboral,
-        medioPreferido: medioPreferido,
-        numeroTelefono: telefono1,
-        numeroTelefono2: telefono2,
-        email: email,
-        password: password,
-        consentimientoInformado: consentimientoInformado,
-
-        rol: "usuario"
-    };
-
+    // Obtener lista actual de usuarios en localStorage
     let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
 
-    usuarios.push(usuario);
+    //Validar si el correo ya existe
+    const correoExiste = usuarios.some(u => u.email.toLowerCase() === email.toLowerCase());
+        if (correoExiste) {
+            alert("Este correo electrónico ya se encuentra registrado. Por favor, inicia sesión o usa otro correo.");
+            return;
+        }
+    
+    const usuario = {
+    cursoTecnico: document.getElementById("curso") ? document.getElementById("curso").value: "",
+    nombreCompleto: document.getElementById("nombre") ? document.getElementById("nombre").value: "",
+    sexo: document.getElementById("sexo") ? document.getElementById("sexo").value: "",
+    fechaNacimiento: document.getElementById("nacimiento") ? document.getElementById("nacimiento").value: "",
+    departamento: document.getElementById("departamento") ? document.getElementById("departamento").value: "",
+    municipio: document.getElementById("municipio") ? document.getElementById("municipio").value: "",
+    distrito: document.getElementById("distrito") ? document.getElementById("distrito").value: "",
+    DUI: document.getElementById("DUI") ? document.getElementById("DUI").value: "",
+    NIT: document.getElementById("NIT") ? document.getElementById("NIT").value: "",
+    discapacidad: document.getElementById("discapacidad") ? document.getElementById("discapacidad").value: "",
+    nivelEducativo: document.getElementById("nivel-educativo") ? document.getElementById("nivel-educativo").value: "",
+    situacionActual: document.getElementById("situacion-actual") ? document.getElementById("situacion-actual").value: "",
+    internet: document.getElementById("internet") ? document.getElementById("internet").value: "",
+    computadora: document.getElementById("computadora") ? document.getElementById("computadora").value: "",
+    dominioComputadora: document.getElementById("dominio-computadora") ? document.getElementById("dominio-computadora").value: "",
+    vinculacionLaboral: document.getElementById("vinculacion") ? document.getElementById("vinculacion").value:"",
+    medioPreferido: document.getElementById("medio-contacto") ? document.getElementById("medio-contacto").value: "",
+    telefono1: document.getElementById("telefono") ? document.getElementById("telefono").value: "",
+    telefono2: document.getElementById("telefono2") ? document.getElementById("telefono2").value: "",
+    email: email,
+    password: document.getElementById("password").value,
+    consentimientoInformado: document.getElementById("aceptarConsentimiento").checked,
 
+        rol: "usuario",
+        estadoProceso: "Pendiente",
+        fechaRegistro: new Date().toLocaleDateString()
+    };
+
+    usuarios.push(usuario);
     localStorage.setItem("usuarios", JSON.stringify(usuarios));
 
-    alert("¡Registro exitoso!");
+    alert("¡Registro exitoso! Ya puedes iniciar sesión con tus credenciales");
 
     window.location.href = "login.html";
 });
