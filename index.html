@@ -1,27 +1,72 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
 	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="description" content="Plataforma para la Evaluación y Selección de Aspirantes">
 	<meta name="author" content="Equipo A">
 	<title>ProTalento (AIDEL)</title>
+
+	<!-- Framework Bootstrap -->
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+
+	<!-- Iconos de Bootstrap -->
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
 	<!-- Hoja de estilos -->
 	<link rel="stylesheet" type="text/css" href="css/estilo.css">
 
 	<!-- Ícono de la app -->
-	<link rel="icon" href="">
+	<link rel="icon" href="recursos/logo_AIDEL.jpeg">
 </head>
+
 <body>
+	<main>
+		<div class="container_index">
+			<!-- encabezado -->
+			<div class="contenido_index">
+				<section class="p-5 mb-4 bg-light rounded-3 shadow-sm border">
+					<div class="container-fluid py-3">
+						<a href="index.html">
+							<img src="recursos/logo_AIDEL.png" alt="Logo AIDEL" class="logo">
+						</a>
+						<h1 class="display-5 fw-bold text-primary">Bienvenido a ProTalento</h1>
+						<p class="col-md-10 mx-auto fs-5 text-muted">
+							La plataforma oficial para la evaluación y selección de aspirantes a formación técnica de la
+							Agencia Internacional de Desarrollo Local
+						</p>
+					</div>
+					<!--botones-->
+					<p><button class="btn btn-primary" onclick="window.location.href='registro_aspirantes.html'">Soy
+							aspirante a curso ténico</button></p>
+					<p><button class="btn btn-primary" onclick="window.location.href='login.html'">Acceso a personal
+							evaluador</button></p>
+					<br <p><button class="estado" onclick="window.location.href='login.html'">¿Ya estás registrado?
+						Consultar mi estado.</button></p>
+				</section>
+			</div>
+			<!--lateral derecho-->
+			<div class="lateral_index">
+				<p><b>"Formando al talento digital del mañana en El Salvador"</b></p>
+				<p>Proyecto de Formación Técnica | AIDEL El Salvador</p>
+				<img src="recursos/joven_inicio.png" alt="Imagen de joven" class="imagen_inicio">
+			</div>
+		</div>
+		<!--pie de página-->
+		<footer class="bg-dark text-white py-4 mt-auto">
+			<div class="container text-center">
+				<p class="mb-1">&copy; 2026 ProTalento Agencia Internacional de Desarrollo Local. Todos los derechos
+					reservados.</p>
+		</footer>
+	</main>
 
-	<!-- Contenedor principal de React-->
-	<div id="root"></div>
+	<!-- LIBRERÍAS DE JAVASCRIPT -->
+	<!-- 1. Bootstrap 5 JS Bundle-->
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 
-	<!-- Archivo JavaScript principal -->
-	<script src="js/main.js"></script>
-
-	<h1>Bienvenido al Sistema Integral de Gestión de Aspirantes (SIGA)</h1>
-
+	<!-- 2. Scripts de Lógica del Negocio Separados -->
+	<script src="js/validaciones.js"></script>
 </body>
+
 </html>
