@@ -4,50 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ProTalento - Portal del Aspirante</title>
-    <!-- Bootstrap 5 CSS CDN -->
+    <!-- Framework Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        .bg-custom-card {
-            background-color: #e0f2fe;
-        }
-        .btn-orange {
-            background-color: #ff6600;
-            color: #ffffff;
-            font-weight: bold;
-        }
-        .btn-orange:hover {
-            background-color: #e65c00;
-            color: #ffffff;
-        }
-        .step-badge {
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            font-weight: bold;
-            font-size: 0.85rem;
-        }
-    </style>
+    <!-- Iconos de Bootstrap -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Hoja de estilos unificada -->
+    <link rel="stylesheet" type="text/css" href="css/estilo.css">
+    <!-- Ícono de la app -->
+    <link rel="icon" href="recursos/logo_AIDEL.jpeg">
 </head>
 <body class="bg-light min-vh-100 d-flex flex-column">
 
     <!-- NAVBAR / ENCABEZADO -->
     <header class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm px-4 py-3">
         <div class="container-fluid">
-            <div class="d-flex items-center gap-2">
-                <div class="bg-primary text-white font-weight-bold rounded-2 px-2 py-1 fs-5">
-                    A
+            <div class="d-flex align-items-center gap-2">
+                <div>
+                    <img src="recursos/logo_AIDEL.png" alt="logo-portalAspirante" class="logo_portalAspirante">
                 </div>
                 <span class="fs-4 fw-bold text-dark mb-0">ProTalento</span>
             </div>
 
             <!-- Usuario autenticado + Botón Salir -->
-            <div class="d-flex items-center gap-3">
+            <div class="d-flex align-items-center gap-3">
                 <span id="lbl-usuario" class="fw-semibold text-secondary small">Bienvenido, Cargando...</span>
-                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
-                    👤
+                <div class="topbar-user">
+                    <span id="lbl-admin-topbar"></span>
+                    <i class="bi bi-person-circle"></i>
                 </div>
                 <button onclick="cerrarSesion()" class="btn btn-outline-danger btn-sm font-weight-bold">
                     Salir
@@ -66,7 +49,7 @@
             </p>
         </div>
 
-        <!-- LÍNEA DE TIEMPO / BARRA DE PROGRESO (BOOTSTRAP) -->
+        <!-- LÍNEA DE TIEMPO / BARRA DE PROGRESO -->
         <div class="mb-5 overflow-auto pb-3">
             <div class="d-flex justify-content-between align-items-center position-relative min-w-750px px-3">
                 
@@ -112,10 +95,10 @@
             </div>
         </div>
 
-        <!-- Alerta dinámico -->
+        <!-- Alerta dinámica -->
         <div id="alerta-portal" class="alert alert-success d-none text-center rounded-3 mb-4"></div>
 
-        <!-- CARDS DE CARGA (BOOTSTRAP GRID) -->
+        <!-- CARDS DE CARGA -->
         <div class="row g-4">
             
             <!-- CARD 1: Adjuntar CV (PDF) -->
@@ -133,7 +116,7 @@
                             <p class="fw-bold text-dark small mb-0">Arrastra tu archivo aquí o explora</p>
                             <p class="text-muted text-xs mb-3">Formato: .pdf & Tamaño máx.: 5 MB</p>
                             
-                            <label class="btn btn-orange btn-sm px-4 rounded-3 shadow-sm cursor-pointer">
+                            <label class="btn btn-naranja btn-sm px-4 rounded-3 shadow-sm cursor-pointer">
                                 Buscar Archivo
                                 <input type="file" accept=".pdf" class="d-none" onchange="alert('Archivo PDF seleccionado correctamente.')">
                             </label>
@@ -170,7 +153,7 @@
                             <p class="fw-bold text-dark small mb-0">Arrastra tu archivo de vídeo aquí o explora</p>
                             <p class="text-muted text-xs mb-3">Formatos: .mp4, .mov & Tamaño máx.: 50 MB</p>
                             
-                            <label class="btn btn-orange btn-sm px-4 rounded-3 shadow-sm cursor-pointer">
+                            <label class="btn btn-naranja btn-sm px-4 rounded-3 shadow-sm cursor-pointer">
                                 Buscar Vídeo
                                 <input type="file" accept="video/*" class="d-none" onchange="alert('Archivo de vídeo seleccionado correctamente.')">
                             </label>
@@ -196,16 +179,9 @@
 
     </main>
 
-
+    <!-- LIBRERÍAS Y SCRIPTS DE JAVASCRIPT -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Scripts del proyecto (Unidad 2 - DAW) -->
-    <script src="js/db.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/aspirantes.js"></script>
-</body>
-</html>
-
-<script src="js/auth.js"></script>
-    <script src="js/aspirantes.js"></script>
+    <script src="js/autenticaciones.js"></script>
+    <script src="js/portal-aspirante.js"></script>
 </body>
 </html>

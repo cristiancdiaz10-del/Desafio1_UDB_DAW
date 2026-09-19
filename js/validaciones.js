@@ -1,7 +1,6 @@
-//REGISTRO DE ASPIRANTES
+// REGISTRO DE ASPIRANTES
 
-//Departamentos, municipios y distritos
-
+// 1. Cargar API de Departamentos, Municipios y Distritos
 const URL_API = "https://juanmedina100.github.io/departamentos-distritos-municipios-el-salvador/departamentos-distritos-municipios-sv.json";
 
 const selectDepto = document.getElementById("departamento");
@@ -10,207 +9,193 @@ const selectDist = document.getElementById("distrito");
 
 let datosElSalvador = [];
 
-// Consumo de la API
-
-fetch(URL_API)
-    .then(res => {
-        if (!res.ok) {
-            throw new Error("Error en la respuesta");
-        }
-        return res.json();
-    })
-    .then(data => {
-        datosElSalvador = data.departamentos;
-
-        cargarDepartamentos();
-    })
-    .catch(err => {
-        console.error("Error al cargar datos:", err);
-        selectDepto.innerHTML =
-            '<option value="">Error al cargar los departamentos</option>';
-    });
-
-// Cargar departamentos
+if (selectDepto) {
+    fetch(URL_API)
+        .then(res => {
+            if (!res.ok) throw new Error("Error en la respuesta");
+            return res.json();
+        })
+        .then(data => {
+            datosElSalvador = data.departamentos;
+            cargarDepartamentos();
+        })
+        .catch(err => {
+            console.error("Error al cargar datos:", err);
+            if (selectDepto) selectDepto.innerHTML = '<option value="">Error al cargar los departamentos</option>';
+        });
+}
 
 function cargarDepartamentos() {
-    selectDepto.innerHTML =
-        '<option value="">Selecciona tu departamento</option>';
-
+    selectDepto.innerHTML = '<option value="">Selecciona tu departamento</option>';
     datosElSalvador.forEach(departamento => {
-        const nombreDepto = departamento.nombre;
-
-        selectDepto.innerHTML +=
-            `<option value="${nombreDepto}">${nombreDepto}</option>`;
+        selectDepto.innerHTML += `<option value="${departamento.nombre}">${departamento.nombre}</option>`;
     });
 }
 
-// Departamento - Municipios
+if (selectDepto) {
+    selectDepto.addEventListener("change", () => {
+        const deptoEncontrado = datosElSalvador.find(d => d.nombre === selectDepto.value);
 
-selectDepto.addEventListener("change", () => {
+        selectMuni.innerHTML = '<option value="">Selecciona tu municipio</option>';
+        selectDist.innerHTML = '<option value="">Selecciona tu distrito</option>';
+        selectMuni.disabled = true;
+        selectDist.disabled = true;
 
-    const deptoEncontrado = datosElSalvador.find(
-        departamento => departamento.nombre === selectDepto.value
-    );
+        if (deptoEncontrado) {
+            selectMuni.disabled = false;
+            deptoEncontrado.municipios.forEach(municipio => {
+                selectMuni.innerHTML += `<option value="${municipio.nombre}">${municipio.nombre}</option>`;
+            });
+        }
+    });
+}
 
-    selectMuni.innerHTML =
-        '<option value="">Selecciona tu municipio</option>';
+if (selectMuni) {
+    selectMuni.addEventListener("change", () => {
+        const deptoEncontrado = datosElSalvador.find(d => d.nombre === selectDepto.value);
+        const muniEncontrado = deptoEncontrado ? deptoEncontrado.municipios.find(m => m.nombre === selectMuni.value) : null;
 
-    selectDist.innerHTML =
-        '<option value="">Selecciona tu distrito</option>';
+        selectDist.innerHTML = '<option value="">Selecciona tu distrito</option>';
+        selectDist.disabled = true;
 
-    selectMuni.disabled = true;
-    selectDist.disabled = true;
+        if (muniEncontrado) {
+            selectDist.disabled = false;
+            muniEncontrado.distritos.forEach(distrito => {
+                selectDist.innerHTML += `<option value="${distrito.nombre}">${distrito.nombre}</option>`;
+            });
+        }
+    });
+}
 
-    if (deptoEncontrado) {
-
-        selectMuni.disabled = false;
-
-        deptoEncontrado.municipios.forEach(municipio => {
-
-            selectMuni.innerHTML +=
-                `<option value="${municipio.nombre}">
-                    ${municipio.nombre}
-                </option>`;
-        });
-    }
-});
-
-// Municipio - Distritos
-
-selectMuni.addEventListener("change", () => {
-
-    const deptoEncontrado = datosElSalvador.find(
-        departamento => departamento.nombre === selectDepto.value
-    );
-
-    const muniEncontrado = deptoEncontrado.municipios.find(
-        municipio => municipio.nombre === selectMuni.value
-    );
-
-    selectDist.innerHTML =
-        '<option value="">Selecciona tu distrito</option>';
-
-    selectDist.disabled = true;
-
-    if (muniEncontrado) {
-
-        selectDist.disabled = false;
-
-        muniEncontrado.distritos.forEach(distrito => {
-
-            selectDist.innerHTML +=
-                `<option value="${distrito.nombre}">
-                    ${distrito.nombre}
-                </option>`;
-        });
-    }
-});
-
-//Mayor y menor de edad
-
+// 2. Validación Mayor / Menor de edad para mostrar DUI o NIT
 const inputFecha = document.getElementById("nacimiento");
 const inputDui = document.getElementById("DUI");
 const inputNit = document.getElementById("NIT");
-
 const grupoDui = document.getElementById("NDUI");
 const grupoNit = document.getElementById("NNIT");
 
-inputFecha.addEventListener("change", () => {
-  const fechaNac = new Date(inputFecha.value);
-  if (isNaN(fechaNac.getTime())) return;
+if (inputFecha) {
+    inputFecha.addEventListener("change", () => {
+        const fechaNac = new Date(inputFecha.value);
+        if (isNaN(fechaNac.getTime())) return;
 
-  // Calcular edad
-  const hoy = new Date();
-  let edad = hoy.getFullYear() - fechaNac.getFullYear();
-  const mes = hoy.getMonth() - fechaNac.getMonth();
-  if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
-    edad--;
-  }
+        const hoy = new Date();
+        let edad = hoy.getFullYear() - fechaNac.getFullYear();
+        const mes = hoy.getMonth() - fechaNac.getMonth();
+        if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
+            edad--;
+        }
 
-  if (edad >= 18) {
-    // Si es Mayor de edad: DUI es obligatorio, NIT es opcional/oculto
-    inputDui.required = true;
-    inputNit.required = false;
+        if (edad >= 18) {
+            inputDui.required = true;
+            inputNit.required = false;
+            grupoDui.classList.remove("d-none");
+            grupoNit.classList.add("d-none");
+        } else {
+            inputDui.required = false;
+            inputNit.required = true;
+            grupoDui.classList.add("d-none");
+            grupoNit.classList.remove("d-none");
+        }
+    });
+}
 
-    grupoDui.classList.remove("d-none"); // Muestra DUI
-  } else {
-    // Si es Menor de edad: NIT es obligatorio, DUI es opcional/oculto
-    inputDui.required = false;
-    inputNit.required = true;
-
-    grupoNit.classList.remove("d-none"); // Muestra NIT
-  }
-});
-
-//Consentimiento informado
-
+// 3. Modal de Consentimiento Informado
 const modal = document.getElementById("modalConsentimiento");
 const abrir = document.getElementById("abrirConsentimiento");
 const cerrar = document.getElementById("cerrarConsentimiento");
 
-abrir.addEventListener("click", function(evento) {
-    evento.preventDefault();
-    modal.style.display = "flex";
-});
+if (abrir && modal) {
+    abrir.addEventListener("click", function(evento) {
+        evento.preventDefault();
+        modal.style.display = "flex";
+    });
+}
 
-cerrar.addEventListener("click", function() {
-    modal.style.display = "none";
-});
+if (cerrar && modal) {
+    cerrar.addEventListener("click", function() {
+        modal.style.display = "none";
+    });
+}
 
-//Guardado de registros
+// 4. Guardado de registros de Aspirantes
 
-const formulario = document.getElementById("formRegistro");
+document.addEventListener("DOMContentLoaded", function () {
 
-if(formulario){
-formulario.addEventListener("submit", function(evento) {
-    evento.preventDefault();
+    const formRegistro = document.getElementById("formRegistro");
 
-    const email = document.getElementById("email").value.trim();
+    formRegistro.addEventListener("submit", function (event) {
+        event.preventDefault();
 
-    // Obtener lista actual de usuarios en localStorage
-    let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+        const cursoFormacion = document.getElementById("curso").value;
+        const nombreCompleto = document.getElementById("nombre").value.trim();
+        const sexo = document.getElementById("sexo").value;
+        const fechaNacimiento = document.getElementById("nacimiento").value;
+        const departamento = document.getElementById("departamento").value;
+        const municipio = document.getElementById("municipio").value;
+        const distrito = document.getElementById("distrito").value;
+        const DUI = document.getElementById("DUI").value.trim;
+        const NIT = document.getElementById("NIT").value.trim;
+        const discapacidad = document.getElementById("discapacidad").value;
+        const nivelEducativo = document.getElementById("nivel-educativo").value;
+        const situacionActual = document.getElementById("situacion-actual").value;
+        const internet = document.getElementById("internet").value;
+        const computadora = document.getElementById("computadora").value;
+        const dominioComputadora = document.getElementById("dominio-computadora").value;
+        const vinculacionLaboral = document.getElementById("vinculacion").value;
+        const medioPreferido = document.getElementById("medio-contacto").value;
+        const telefono1 = document.getElementById("telefono").value.trim;
+        const telefono2 = document.getElementById("telefono2").value.trim;
+        const email = document.getElementById("email").value.trim;
+        const password = document.getElementById("password").value;
+        const consentimientoInformado = document.getElementById("aceptarConsentimiento").checked;
 
-    //Validar si el correo ya existe
-    const correoExiste = usuarios.some(u => u.email.toLowerCase() === email.toLowerCase());
+        // Obtener usuarios registrados
+        let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+
+        // Verificar si el correo ya existe
+        const correoExiste = usuarios.some(function (usuario) {
+            return usuario.correo === correo;
+        });
+
         if (correoExiste) {
-            alert("Este correo electrónico ya se encuentra registrado. Por favor, inicia sesión o usa otro correo.");
+            alert("Este correo ya está registrado.");
             return;
         }
-    
-    const usuario = {
-    cursoTecnico: document.getElementById("curso") ? document.getElementById("curso").value: "",
-    nombreCompleto: document.getElementById("nombre") ? document.getElementById("nombre").value: "",
-    sexo: document.getElementById("sexo") ? document.getElementById("sexo").value: "",
-    fechaNacimiento: document.getElementById("nacimiento") ? document.getElementById("nacimiento").value: "",
-    departamento: document.getElementById("departamento") ? document.getElementById("departamento").value: "",
-    municipio: document.getElementById("municipio") ? document.getElementById("municipio").value: "",
-    distrito: document.getElementById("distrito") ? document.getElementById("distrito").value: "",
-    DUI: document.getElementById("DUI") ? document.getElementById("DUI").value: "",
-    NIT: document.getElementById("NIT") ? document.getElementById("NIT").value: "",
-    discapacidad: document.getElementById("discapacidad") ? document.getElementById("discapacidad").value: "",
-    nivelEducativo: document.getElementById("nivel-educativo") ? document.getElementById("nivel-educativo").value: "",
-    situacionActual: document.getElementById("situacion-actual") ? document.getElementById("situacion-actual").value: "",
-    internet: document.getElementById("internet") ? document.getElementById("internet").value: "",
-    computadora: document.getElementById("computadora") ? document.getElementById("computadora").value: "",
-    dominioComputadora: document.getElementById("dominio-computadora") ? document.getElementById("dominio-computadora").value: "",
-    vinculacionLaboral: document.getElementById("vinculacion") ? document.getElementById("vinculacion").value:"",
-    medioPreferido: document.getElementById("medio-contacto") ? document.getElementById("medio-contacto").value: "",
-    telefono1: document.getElementById("telefono") ? document.getElementById("telefono").value: "",
-    telefono2: document.getElementById("telefono2") ? document.getElementById("telefono2").value: "",
-    email: email,
-    password: document.getElementById("password").value,
-    consentimientoInformado: document.getElementById("aceptarConsentimiento").checked,
 
-        rol: "usuario",
-        estadoProceso: "Pendiente",
-        fechaRegistro: new Date().toLocaleDateString()
-    };
+        const nuevoUsuario = {
+        curso: cursoFormacion,
+        nombreCompleto: nombreCompleto,
+        sexo: sexo,
+        fechaNacimiento: fechaNacimiento,
+        departamento: departamento,
+        municipio: municipio,
+        distrito: distrito,
+        DUI: DUI,
+        NIT: NIT,
+        discapacidad: discapacidad,
+        nivelEducativo: nivelEducativo,
+        situacionActual: situacionActual,
+        internet: internet,
+        computadora: computadora,
+        dominioComputadora: dominioComputadora,
+        vinculacionLaboral: vinculacionLaboral,
+        medioPreferido: medioPreferido,
+        telefono1: telefono1,
+        telefono2: telefono2,
+        email: email,
+        password: password,
+        consentimientoInformado: consentimientoInformado,
+        rol: "usuario"
+        };
 
-    usuarios.push(usuario);
-    localStorage.setItem("usuarios", JSON.stringify(usuarios));
+        usuarios.push(nuevoUsuario);
 
-    alert("¡Registro exitoso! Ya puedes iniciar sesión con tus credenciales");
+        localStorage.setItem("usuarios", JSON.stringify(usuarios));
 
-    window.location.href = "login.html";
+        alert("Usuario registrado correctamente.");
+
+        window.location.href = "login.html";
+    });
+
 });
-}

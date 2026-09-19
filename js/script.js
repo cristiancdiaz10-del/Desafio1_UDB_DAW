@@ -1,98 +1,58 @@
-// ==========================================
-// 1. LÓGICA DE GESTIÓN DE CONVOCATORIAS
-// ==========================================
+// js/script.js - Gestión de Convocatorias y Cursos (CRUD)
+
+// 1. ESTADO INICIAL
 let convocatorias = JSON.parse(localStorage.getItem('convocatorias')) || [
-    {
-        id: 1,
-        curso: "Análisis de datos con herramientas de IA",
-        fechaInicio: "2026-10-01",
-        fechaCierre: "2026-10-25",
-        plazas: 30,
-        estado: "Activa"
-    },
-    {
-        id: 2,
-        curso: "Lenguajes de programación: JavaScript y C#",
-        fechaInicio: "2026-11-05",
-        fechaCierre: "2026-11-30",
-        plazas: 25,
-        estado: "Próximamente"
-    }
+    { id: 1, curso: "Análisis de datos con herramientas de IA", fechaInicio: "2026-10-01", fechaCierre: "2026-10-25", plazas: 30, estado: "Activa" },
+    { id: 2, curso: "Lenguajes de programación: JavaScript y C#", fechaInicio: "2026-11-05", fechaCierre: "2026-11-30", plazas: 25, estado: "Próximamente" }
 ];
 
-const formConvocatoria = document.getElementById('formConvocatoria');
-const tablaConvocatorias = document.getElementById('tablaConvocatorias');
-const modalTituloConvocatoria = document.getElementById('modalTituloConvocatoria');
-const convocatoriaIdInput = document.getElementById('convocatoriaId');
-const cursoSelect = document.getElementById('cursoSelect');
-const fechaInicioInput = document.getElementById('fechaInicio');
-const fechaCierreInput = document.getElementById('fechaCierre');
-const numPlazasInput = document.getElementById('numPlazas');
-const estadoSelect = document.getElementById('estadoSelect');
-
-let modalConvocatoriaElement = document.getElementById('modalConvocatoria');
-let modalConvocatoriaBootstrap = null;
-
-// ==========================================
-// 2. LÓGICA DE GESTIÓN DE CURSOS
-// ==========================================
 let cursos = JSON.parse(localStorage.getItem('cursos')) || [
-    {
-        id: 1,
-        nombre: "Análisis de datos con herramientas de IA",
-        descripcion: "Capacitación avanzada en modelos predictivos y análisis estadístico enfocado en toma de decisiones."
-    },
-    {
-        id: 2,
-        nombre: "Lenguajes de programación: JavaScript y C#",
-        descripcion: "Fundamentos de lógica, desarrollo frontend interactivo y backend robusto orientado a objetos."
-    }
+    { id: 1, nombre: "Análisis de datos con herramientas de IA", descripcion: "Capacitación avanzada en modelos predictivos y análisis estadístico enfocado en toma de decisiones." },
+    { id: 2, nombre: "Lenguajes de programación: JavaScript y C#", descripcion: "Fundamentos de lógica, desarrollo frontend interactivo y backend robusto orientado a objetos." }
 ];
 
-const formCurso = document.getElementById('formCurso');
-const contenedorCursos = document.getElementById('contenedorCursos');
-const modalCursoTitulo = document.getElementById('modalCursoTitulo');
-const cursoIdInput = document.getElementById('cursoId');
-const nombreCursoInput = document.getElementById('nombreCurso');
-const descCursoInput = document.getElementById('descCurso');
+// Instancias de Modales Bootstrap
+let modalConvocatoriaBS = null;
+let modalCursoBS = null;
 
-let modalCursoElement = document.getElementById('modalCurso');
-let modalCursoBootstrap = null;
-
-// ==========================================
-// INICIALIZACIÓN GLOBAL AL CARGAR LA PÁGINA
-// ==========================================
+// 2. INICIALIZACIÓN
 document.addEventListener('DOMContentLoaded', () => {
-    // Inicializar modales de Bootstrap
-    if (modalConvocatoriaElement) {
-        modalConvocatoriaBootstrap = new bootstrap.Modal(modalConvocatoriaElement);
-    }
-    if (modalCursoElement) {
-        modalCursoBootstrap = new bootstrap.Modal(modalCursoElement);
+    // Proteger vista para evaluadores/admins si existe la función
+    if (typeof protegerVista === 'function') {
+        protegerVista(['administrador', 'superadministrador']);
     }
 
-    // Renderizar ambas secciones
+    // Inicializar instancias de los modales de Bootstrap
+    const elemModalConv = document.getElementById('modalConvocatoria');
+    if (elemModalConv) {
+        modalConvocatoriaBS = new bootstrap.Modal(elemModalConv, { backdrop: 'static' });
+    }
+
+    const elemModalCurso = document.getElementById('modalCurso');
+    if (elemModalCurso) {
+        modalCursoBS = new bootstrap.Modal(elemModalCurso, { backdrop: 'static' });
+    }
+
+    // Escuchar eventos de guardado (Submit de formularios)
+    configurarFormularios();
+
+    // Renderizar vistas
     renderizarTablaConvocatorias();
     renderizarCursos();
 });
 
-// ------------------------------------------
-// FUNCIONES DE CONVOCATORIAS
-// ------------------------------------------
+// 3. LÓGICA DE CONVOCATORIAS
 function renderizarTablaConvocatorias() {
-    if (!tablaConvocatorias) return;
-    tablaConvocatorias.innerHTML = '';
+    const tabla = document.getElementById('tablaConvocatorias');
+    if (!tabla) return;
+    tabla.innerHTML = '';
 
     if (convocatorias.length === 0) {
-        tablaConvocatorias.innerHTML = `
-            <tr>
-                <td colspan="5" class="text-center text-muted py-4">No hay convocatorias registradas</td>
-            </tr>
-        `;
+        tabla.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No hay convocatorias registradas</td></tr>`;
         return;
     }
 
-    convocatorias.forEach((conv) => {
+    convocatorias.forEach(conv => {
         let badgeClass = 'badge-activa';
         if (conv.estado === 'Cerrada') badgeClass = 'badge-cerrada';
         if (conv.estado === 'Próximamente') badgeClass = 'badge-proximamente';
@@ -104,90 +64,58 @@ function renderizarTablaConvocatorias() {
             <td>${conv.plazas} plazas</td>
             <td><span class="${badgeClass}">${conv.estado}</span></td>
             <td>
-                <button class="btn btn-sm btn-outline-primary me-1" onclick="prepararEdicionConvocatoria(${conv.id})" title="Editar">
-                    <i class="bi bi-pencil-square"></i>
-                </button>
-                <button class="btn btn-sm btn-outline-danger" onclick="eliminarConvocatoria(${conv.id})" title="Eliminar">
-                    <i class="bi bi-trash"></i>
-                </button>
+                <button class="btn btn-sm btn-outline-primary me-1" onclick="prepararEdicionConvocatoria(${conv.id})"><i class="bi bi-pencil-square"></i></button>
+                <button class="btn btn-sm btn-outline-danger" onclick="eliminarConvocatoria(${conv.id})"><i class="bi bi-trash"></i></button>
             </td>
         `;
-        tablaConvocatorias.appendChild(tr);
+        tabla.appendChild(tr);
     });
 }
 
 function prepararCreacionConvocatoria() {
-    if (formConvocatoria) formConvocatoria.reset();
-    if (convocatoriaIdInput) convocatoriaIdInput.value = '';
-    if (modalTituloConvocatoria) modalTituloConvocatoria.textContent = 'Nueva Convocatoria';
+    const form = document.getElementById('formConvocatoria');
+    if (form) form.reset();
+    document.getElementById('convocatoriaId').value = '';
+    document.getElementById('modalTituloConvocatoria').textContent = 'Nueva Convocatoria';
+    
+    if (modalConvocatoriaBS) modalConvocatoriaBS.show();
 }
 
 function prepararEdicionConvocatoria(id) {
     const conv = convocatorias.find(c => c.id === id);
     if (!conv) return;
 
-    convocatoriaIdInput.value = conv.id;
-    cursoSelect.value = conv.curso;
-    fechaInicioInput.value = conv.fechaInicio;
-    fechaCierreInput.value = conv.fechaCierre;
-    numPlazasInput.value = conv.plazas;
-    estadoSelect.value = conv.estado;
+    document.getElementById('convocatoriaId').value = conv.id;
+    document.getElementById('cursoSelect').value = conv.curso;
+    document.getElementById('fechaInicio').value = conv.fechaInicio;
+    document.getElementById('fechaCierre').value = conv.fechaCierre;
+    document.getElementById('numPlazas').value = conv.plazas;
+    document.getElementById('estadoSelect').value = conv.estado;
 
-    if (modalTituloConvocatoria) modalTituloConvocatoria.textContent = 'Editar Convocatoria';
-    if (modalConvocatoriaBootstrap) modalConvocatoriaBootstrap.show();
-}
-
-if (formConvocatoria) {
-    formConvocatoria.addEventListener('submit', (e) => {
-        e.preventDefault();
-
-        const id = convocatoriaIdInput.value;
-        const nuevaData = {
-            id: id ? parseInt(id) : Date.now(),
-            curso: cursoSelect.value,
-            fechaInicio: fechaInicioInput.value,
-            fechaCierre: fechaCierreInput.value,
-            plazas: parseInt(numPlazasInput.value),
-            estado: estadoSelect.value
-        };
-
-        if (id) {
-            convocatorias = convocatorias.map(c => c.id === parseInt(id) ? nuevaData : c);
-        } else {
-            convocatorias.push(nuevaData);
-        }
-
-        localStorage.setItem('convocatorias', JSON.stringify(convocatorias));
-        renderizarTablaConvocatorias();
-        if (modalConvocatoriaBootstrap) modalConvocatoriaBootstrap.hide();
-    });
+    document.getElementById('modalTituloConvocatoria').textContent = 'Editar Convocatoria';
+    if (modalConvocatoriaBS) modalConvocatoriaBS.show();
 }
 
 function eliminarConvocatoria(id) {
-    if (confirm('¿Estás segura de que deseas eliminar esta convocatoria?')) {
+    if (confirm('¿Deseas eliminar esta convocatoria?')) {
         convocatorias = convocatorias.filter(c => c.id !== id);
         localStorage.setItem('convocatorias', JSON.stringify(convocatorias));
         renderizarTablaConvocatorias();
     }
 }
 
-// ------------------------------------------
-// FUNCIONES DE CURSOS
-// ------------------------------------------
+// 4. LÓGICA DE CURSOS
 function renderizarCursos() {
-    if (!contenedorCursos) return;
-    contenedorCursos.innerHTML = '';
+    const contenedor = document.getElementById('contenedorCursos');
+    if (!contenedor) return;
+    contenedor.innerHTML = '';
 
     if (cursos.length === 0) {
-        contenedorCursos.innerHTML = `
-            <div class="col-12 text-center text-muted py-3">
-                <p>No hay cursos registrados en el sistema.</p>
-            </div>
-        `;
+        contenedor.innerHTML = `<div class="col-12 text-center text-muted py-3"><p>No hay cursos registrados en el sistema.</p></div>`;
         return;
     }
 
-    cursos.forEach((curso) => {
+    cursos.forEach(curso => {
         const col = document.createElement('div');
         col.className = 'col-md-4 col-sm-6';
         col.innerHTML = `
@@ -197,64 +125,92 @@ function renderizarCursos() {
                     <p class="card-text mb-3">${curso.descripcion}</p>
                 </div>
                 <div class="d-flex justify-content-end gap-2 pt-2 border-top">
-                    <button class="btn btn-sm btn-outline-primary" onclick="prepararEdicionCurso(${curso.id})" title="Editar curso">
-                        <i class="bi bi-pencil-square"></i> Editar
-                    </button>
-                    <button class="btn btn-sm btn-outline-danger" onclick="eliminarCurso(${curso.id})" title="Eliminar curso">
-                        <i class="bi bi-trash"></i> Eliminar
-                    </button>
+                    <button class="btn btn-sm btn-outline-primary" onclick="prepararEdicionCurso(${curso.id})"><i class="bi bi-pencil-square"></i> Editar</button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="eliminarCurso(${curso.id})"><i class="bi bi-trash"></i> Eliminar</button>
                 </div>
             </div>
         `;
-        contenedorCursos.appendChild(col);
+        contenedor.appendChild(col);
     });
 }
 
 function prepararCreacionCurso() {
-    if (formCurso) formCurso.reset();
-    if (cursoIdInput) cursoIdInput.value = '';
-    if (modalCursoTitulo) modalCursoTitulo.textContent = 'Nuevo Curso';
+    const form = document.getElementById('formCurso');
+    if (form) form.reset();
+    document.getElementById('cursoId').value = '';
+    document.getElementById('modalCursoTitulo').textContent = 'Nuevo Curso';
+
+    if (modalCursoBS) modalCursoBS.show();
 }
 
 function prepararEdicionCurso(id) {
     const curso = cursos.find(c => c.id === id);
     if (!curso) return;
 
-    cursoIdInput.value = curso.id;
-    nombreCursoInput.value = curso.nombre;
-    descCursoInput.value = curso.descripcion;
+    document.getElementById('cursoId').value = curso.id;
+    document.getElementById('nombreCurso').value = curso.nombre;
+    document.getElementById('descCurso').value = curso.descripcion;
 
-    if (modalCursoTitulo) modalCursoTitulo.textContent = 'Editar Curso';
-    if (modalCursoBootstrap) modalCursoBootstrap.show();
-}
-
-if (formCurso) {
-    formCurso.addEventListener('submit', (e) => {
-        e.preventDefault();
-
-        const id = cursoIdInput.value;
-        const nuevoCursoData = {
-            id: id ? parseInt(id) : Date.now(),
-            nombre: nombreCursoInput.value,
-            descripcion: descCursoInput.value
-        };
-
-        if (id) {
-            cursos = cursos.map(c => c.id === parseInt(id) ? nuevoCursoData : c);
-        } else {
-            cursos.push(nuevoCursoData);
-        }
-
-        localStorage.setItem('cursos', JSON.stringify(cursos));
-        renderizarCursos();
-        if (modalCursoBootstrap) modalCursoBootstrap.hide();
-    });
+    document.getElementById('modalCursoTitulo').textContent = 'Editar Curso';
+    if (modalCursoBS) modalCursoBS.show();
 }
 
 function eliminarCurso(id) {
-    if (confirm('¿Estás segura de que deseas eliminar este curso del sistema?')) {
+    if (confirm('¿Deseas eliminar este curso?')) {
         cursos = cursos.filter(c => c.id !== id);
         localStorage.setItem('cursos', JSON.stringify(cursos));
         renderizarCursos();
+    }
+}
+
+// 5. SUBMIT DE FORMULARIOS
+function configurarFormularios() {
+    const formConv = document.getElementById('formConvocatoria');
+    if (formConv) {
+        formConv.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = document.getElementById('convocatoriaId').value;
+            const nuevaData = {
+                id: id ? parseInt(id) : Date.now(),
+                curso: document.getElementById('cursoSelect').value,
+                fechaInicio: document.getElementById('fechaInicio').value,
+                fechaCierre: document.getElementById('fechaCierre').value,
+                plazas: parseInt(document.getElementById('numPlazas').value),
+                estado: document.getElementById('estadoSelect').value
+            };
+
+            if (id) {
+                convocatorias = convocatorias.map(c => c.id === parseInt(id) ? nuevaData : c);
+            } else {
+                convocatorias.push(nuevaData);
+            }
+
+            localStorage.setItem('convocatorias', JSON.stringify(convocatorias));
+            renderizarTablaConvocatorias();
+            if (modalConvocatoriaBS) modalConvocatoriaBS.hide();
+        });
+    }
+
+    const formCur = document.getElementById('formCurso');
+    if (formCur) {
+        formCur.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = document.getElementById('cursoId').value;
+            const nuevoCurso = {
+                id: id ? parseInt(id) : Date.now(),
+                nombre: document.getElementById('nombreCurso').value,
+                descripcion: document.getElementById('descCurso').value
+            };
+
+            if (id) {
+                cursos = cursos.map(c => c.id === parseInt(id) ? nuevoCurso : c);
+            } else {
+                cursos.push(nuevoCurso);
+            }
+
+            localStorage.setItem('cursos', JSON.stringify(cursos));
+            renderizarCursos();
+            if (modalCursoBS) modalCursoBS.hide();
+        });
     }
 }

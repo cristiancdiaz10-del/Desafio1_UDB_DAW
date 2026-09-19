@@ -3,48 +3,41 @@
 
 <head>
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <meta name="description"
-        content="Portal del evaluador - ProTalento AIDEL">
-
+    <meta name="description" content="Portal del evaluador - ProTalento AIDEL">
     <title>Portal del evaluador - ProTalento</title>
 
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Framework Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 
-    <!-- CSS del Dashboard -->
-    <link rel="stylesheet" type="text/css" href="css/dashboard.css">
+    <!-- Iconos de Bootstrap -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- Hoja de estilos unificada -->
+    <link rel="stylesheet" type="text/css" href="css/estilo.css">
+    
+    <!-- Ícono de la app -->
+    <link rel="icon" href="recursos/logo_AIDEL.jpeg">
 </head>
 
 <body>
 
-    <!--CONTENEDOR PRINCIPAL DEL PORTAL-->
-
+    <!-- CONTENEDOR PRINCIPAL DEL PORTAL -->
     <div class="portal">
 
-
-        <!--MENU LATERAL-->
-
+        <!-- MENÚ LATERAL -->
         <aside class="sidebar">
 
             <!-- LOGO -->
-            <div class="sidebar-logo">
-                <strong>AIDEL</strong>
+            <div>
+                <img src="recursos/logo_AIDEL.png" alt="logo dashboard" class="logo_convocatorias">
             </div>
-
 
             <!-- USUARIO -->
             <div class="sidebar-user">
-
                 <i class="bi bi-person-circle"></i>
-
-                <span>Juan Perez</span>
-
+                <span id="lbl-admin-sidebar">Juan Pérez</span>
             </div>
-
 
             <!-- FAVORITOS -->
             <div class="sidebar-title">
@@ -52,23 +45,19 @@
             </div>
 
             <ul class="sidebar-menu">
-
                 <li>
                     <a href="dashboard.html" class="active">
                         <i class="bi bi-house"></i>
                         Inicio
                     </a>
                 </li>
-
                 <li>
                     <a href="#">
                         <i class="bi bi-people"></i>
                         Aspirantes
                     </a>
                 </li>
-
             </ul>
-
 
             <!-- DASHBOARDS -->
             <div class="sidebar-title">
@@ -76,20 +65,16 @@
             </div>
 
             <ul class="sidebar-menu">
-
                 <li>
                     <a href="dashboard.html" class="active">
                         <i class="bi bi-pie-chart-fill"></i>
                         Métricas y reportes
                     </a>
                 </li>
-
             </ul>
-
 
             <!-- MÓDULOS -->
             <ul class="sidebar-menu">
-
                 <li>
                     <a href="#">
                         <i class="bi bi-folder"></i>
@@ -97,499 +82,133 @@
                         <i class="bi bi-chevron-right ms-auto"></i>
                     </a>
                 </li>
-
                 <li>
-                    <a href="#">
+                    <a href="convocatorias.html">
                         <i class="bi bi-folder"></i>
-                        Convocatorias
+                        Convocatorias y Cursos
                         <i class="bi bi-chevron-right ms-auto"></i>
                     </a>
                 </li>
-
-                <li>
-                    <a href="#">
-                        <i class="bi bi-folder"></i>
-                        Cursos
-                        <i class="bi bi-chevron-right ms-auto"></i>
-                    </a>
-                </li>
-
             </ul>
 
         </aside>
 
-
-        <!-- CONTENIDO PRINCIPAL -->
-
+        <!-- CONTENEDOR PRINCIPAL -->
         <div class="main-content">
 
-
-            
-         <!-- BARRAS SUPERIORES -->
-
+            <!-- BARRA SUPERIOR -->
             <header class="topbar">
-
                 <h1 class="topbar-title">
                     Portal del evaluador
                 </h1>
 
-
+                <div class="topbar-user d-flex align-items-center gap-3 ms-auto">
                 <!-- BUSCADOR -->
                 <div class="search-box">
-
                     <i class="bi bi-search"></i>
-
-                    <input
-                        type="text"
-                        placeholder="Buscar aspirante"
-                    >
-
+                    <input type="text" id="inputBuscarAspirante" placeholder="Buscar aspirante">
                 </div>
-
 
                 <!-- USUARIO -->
-                <div class="topbar-user">
-
-                    <span>Juan Perez</span>
-
+                    <span id="lbl-admin-topbar">Juan Pérez</span>
                     <i class="bi bi-person-circle"></i>
-
+                    <button onclick="cerrarSesion()" class="btn btn-outline-danger btn-sm font-weight-bold">
+                        Salir
+                    </button>
                 </div>
-
             </header>
 
-
-
-            
-        <!-- DASHBOARD -->
-
+            <!-- DASHBOARD -->
             <main class="dashboard-container">
-
 
                 <h2 class="dashboard-title">
                     Métricas (KPIs)
                 </h2>
 
-
-                
                 <!-- TARJETAS KPI -->
                 <section class="kpi-grid">
 
-
                     <!-- TOTAL POSTULADOS -->
                     <article class="kpi-card">
-
-                        <h3>
-                            Total Postulados
-                        </h3>
-
-                        <p class="kpi-number">
-                            100
-                        </p>
-
+                        <h3>Total Postulados</h3>
+                        <p class="kpi-number" id="kpi-total">0</p>
                     </article>
-
 
                     <!-- EN REVISIÓN -->
                     <article class="kpi-card">
-
-                        <h3>
-                            En Revisión
-                        </h3>
-
-                        <p class="kpi-number">
-                            52
-                        </p>
-
+                        <h3>En Revisión</h3>
+                        <p class="kpi-number" id="kpi-revision">0</p>
                     </article>
-
 
                     <!-- ENTREVISTADOS -->
                     <article class="kpi-card">
-
-                        <h3>
-                            Entrevistados
-                        </h3>
-
-                        <p class="kpi-number">
-                            22
-                        </p>
-
+                        <h3>Entrevistados</h3>
+                        <p class="kpi-number" id="kpi-entrevistados">0</p>
                     </article>
-
 
                     <!-- SELECCIONADOS -->
                     <article class="kpi-card">
-
-                        <h3>
-                            Seleccionados
-                        </h3>
-
-                        <p class="kpi-number">
-                            15
-                        </p>
-
+                        <h3>Seleccionados</h3>
+                        <p class="kpi-number" id="kpi-seleccionados">0</p>
                     </article>
-
 
                     <!-- RECHAZADOS -->
                     <article class="kpi-card">
-
-                        <h3>
-                            Rechazados
-                        </h3>
-
-                        <p class="kpi-number">
-                            11
-                        </p>
-
+                        <h3>Rechazados</h3>
+                        <p class="kpi-number" id="kpi-rechazados">0</p>
                     </article>
 
                 </section>
 
-
-
-                
-                 <!-- GRAFICAS -->
-
+                <!-- GRÁFICAS -->
                 <section class="charts-grid">
-
 
                     <!-- GRÁFICA DE FLUJO -->
                     <article class="chart-card">
-
-                        <h3>
-                            Flujo de solicitudes
-                        </h3>
-
+                        <h3>Flujo de solicitudes</h3>
                         <div class="chart-container">
-
-                            <!--
-                                Aquí posteriormente irá
-                                nuestro gráfico de Chart.js
-                            -->
-
                             <canvas id="flujoSolicitudes"></canvas>
-
                         </div>
-
                     </article>
-
-
 
                     <!-- GRÁFICA DE ESTADOS -->
                     <article class="chart-card">
-
-                        <h3>
-                            Estados
-                        </h3>
-
+                        <h3>Estados</h3>
                         <div class="chart-container">
-
-                            <!--
-                                gráfico de Chart.js
-                            -->
-
                             <canvas id="estadosAspirantes"></canvas>
-
                         </div>
-
                     </article>
 
                 </section>
 
-
-
-              
-                   <!-- SOLICITUDES-->
-
+                <!-- SOLICITUDES -->
                 <section class="requests-card">
-
 
                     <!-- CABECERA -->
                     <div class="requests-header">
-
-                        <h3>
-                            Solicitudes
-                        </h3>
-
-                        <button
-                            class="options-button"
-                            type="button"
-                            aria-label="Más opciones">
-
+                        <h3>Solicitudes</h3>
+                        <button class="options-button" type="button" aria-label="Más opciones">
                             <i class="bi bi-three-dots"></i>
-
                         </button>
-
                     </div>
-
-
 
                     <!-- TABLA -->
                     <table class="requests-table">
-
                         <thead>
-
                             <tr>
-
-                                <th>
-                                    Nombre
-                                </th>
-
-                                <th>
-                                    Curso
-                                </th>
-
-                                <th>
-                                    Estado
-                                </th>
-
-                                <th>
-                                    Documentos
-                                </th>
-
-                                <th>
-                                    Acciones
-                                </th>
-
+                                <th>Nombre</th>
+                                <th>Curso</th>
+                                <th>Estado</th>
+                                <th>Documentos</th>
+                                <th>Acciones</th>
                             </tr>
-
                         </thead>
-
-
-                        <tbody>
-
-
-                            <!-- ASPIRANTE 1 -->
-                            <tr>
-
-                                <td>
-                                    Cristian Alexander Campos
-                                </td>
-
-                                <td>
-                                    Informática
-                                </td>
-
-                                <td>
-
-                                    <span class="status status-postulado">
-                                        Postulado
-                                    </span>
-
-                                </td>
-
-                                <td>
-
-                                    <a href="#" class="table-link">
-                                        Ver CV
-                                    </a>
-
-                                    |
-
-                                    <a href="#" class="table-link">
-                                        Ver Video
-                                    </a>
-
-                                </td>
-
-                                <td>
-
-                                    <button class="btn-evaluar">
-                                        Evaluar
-                                    </button>
-
-                                </td>
-
-                            </tr>
-
-
-
-                            <!-- ASPIRANTE 2 -->
-                            <tr>
-
-                                <td>
-                                    Laura Carolina Rivera
-                                </td>
-
-                                <td>
-                                    Desarrollo Web
-                                </td>
-
-                                <td>
-
-                                    <span class="status status-revision">
-                                        En revisión
-                                    </span>
-
-                                </td>
-
-                                <td>
-
-                                    <a href="#" class="table-link">
-                                        Ver CV
-                                    </a>
-
-                                    |
-
-                                    <a href="#" class="table-link">
-                                        Ver Video
-                                    </a>
-
-                                </td>
-
-                                <td>
-
-                                    <button class="btn-evaluar">
-                                        Evaluar
-                                    </button>
-
-                                </td>
-
-                            </tr>
-
-
-
-                            <!-- ASPIRANTE 3 -->
-                            <tr>
-
-                                <td>
-                                    Jorge Juan Perez
-                                </td>
-
-                                <td>
-                                    Ciberseguridad
-                                </td>
-
-                                <td>
-
-                                    <span class="status status-entrevistado">
-                                        Entrevistado
-                                    </span>
-
-                                </td>
-
-                                <td>
-
-                                    <a href="#" class="table-link">
-                                        Ver CV
-                                    </a>
-
-                                    |
-
-                                    <a href="#" class="table-link">
-                                        Ver Video
-                                    </a>
-
-                                </td>
-
-                                <td>
-
-                                    <a href="#" class="table-link">
-                                        Ver detalle
-                                    </a>
-
-                                </td>
-
-                            </tr>
-
-
-
-                            <!-- ASPIRANTE 4 -->
-                            <tr>
-
-                                <td>
-                                    Carlos David Mendoza
-                                </td>
-
-                                <td>
-                                    Redes Cisco
-                                </td>
-
-                                <td>
-
-                                    <span class="status status-aprobado">
-                                        Aprobado
-                                    </span>
-
-                                </td>
-
-                                <td>
-
-                                    <a href="#" class="table-link">
-                                        Ver CV
-                                    </a>
-
-                                    |
-
-                                    <a href="#" class="table-link">
-                                        Ver Video
-                                    </a>
-
-                                </td>
-
-                                <td>
-
-                                    <a href="#" class="table-link">
-                                        Ver detalle
-                                    </a>
-
-                                </td>
-
-                            </tr>
-
-
-
-                            <!-- ASPIRANTE 5 -->
-                            <tr>
-
-                                <td>
-                                    Alan Josue Madrona
-                                </td>
-
-                                <td>
-                                    Excel
-                                </td>
-
-                                <td>
-
-                                    <span class="status status-rechazado">
-                                        Rechazado
-                                    </span>
-
-                                </td>
-
-                                <td>
-
-                                    <a href="#" class="table-link">
-                                        Ver CV
-                                    </a>
-
-                                    |
-
-                                    <a href="#" class="table-link">
-                                        Ver Video
-                                    </a>
-
-                                </td>
-
-                                <td>
-
-                                    <a href="#" class="table-link">
-                                        Ver detalle
-                                    </a>
-
-                                </td>
-
-                            </tr>
-
+                        <tbody id="tablaSolicitudesBody">
+                            <!-- Filas dinámicas cargadas desde el JS -->
                         </tbody>
-
                     </table>
 
                 </section>
-
 
             </main>
 
@@ -597,10 +216,9 @@
 
     </div>
 
-
-    
-        <!-- CHART.35 (LIBRERIA) -->
+    <!-- LIBRERÍAS Y SCRIPTS DE JAVASCRIPT -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/autenticaciones.js"></script>
     <script src="js/dashboard.js"></script>
 
 </body>
