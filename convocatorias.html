@@ -100,16 +100,19 @@
                     Portal del Evaluador
                 </h1>
 
+                <div class="topbar-user d-flex align-items-center gap-3 ms-auto">
                 <!-- BUSCADOR -->
                 <div class="search-box">
                     <i class="bi bi-search"></i>
-                    <input type="text" placeholder="Buscar registro...">
+                    <input type="text" id="inputBuscarAspirante" placeholder="Buscar aspirante">
                 </div>
 
                 <!-- USUARIO -->
-                <div class="topbar-user">
-                    <span>Juan Pérez</span>
+                    <span id="lbl-admin-topbar">Juan Pérez</span>
                     <i class="bi bi-person-circle"></i>
+                    <button onclick="cerrarSesion()" class="btn btn-outline-danger btn-sm font-weight-bold">
+                        Salir
+                    </button>
                 </div>
             </header>
 
@@ -254,7 +257,8 @@
    <!-- LIBRERÍAS DE JAVASCRIPT -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <!-- Script unificado -->
-    <script src="js/script.js"></script>
+    <script src="js/scriptConvocatorias.js"></script>
+    <script src="js/autenticaciones.js"></script>
 </body>
 
 </html>

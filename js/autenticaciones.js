@@ -41,3 +41,12 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 });
+
+// Función global para cerrar sesión y redirigir
+function cerrarSesion() {
+    // 1. Eliminar los datos de la sesión activa
+    localStorage.removeItem('sesion');
+    
+    // 2. Redirigir al usuario al login
+    window.location.href = 'login.html';
+}
