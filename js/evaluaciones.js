@@ -227,13 +227,23 @@ function registrarDecision(estado) {
     var evaluaciones =
         JSON.parse(localStorage.getItem("evaluaciones")) || [];
 
-    // Guardar la nueva evaluación
-    evaluaciones.push(evaluacion);
+    // Buscar si el aspirante ya tiene una evaluación
+var indiceEvaluacion = evaluaciones.findIndex(function(evaluacionGuardada) {
+    return evaluacionGuardada.aspiranteEmail === emailAspirante;
+});
 
-    localStorage.setItem(
-        "evaluaciones",
-        JSON.stringify(evaluaciones)
-    );
+// Actualizar la evaluación existente o registrar una nueva
+if (indiceEvaluacion !== -1) {
+    evaluaciones[indiceEvaluacion] = evaluacion;
+} else {
+    evaluaciones.push(evaluacion);
+}
+
+// Guardar las evaluaciones
+localStorage.setItem(
+    "evaluaciones",
+    JSON.stringify(evaluaciones)
+);
 
     // Mostrar el estado seleccionado
     document.getElementById("estadoCandidato").textContent = estado;
@@ -255,5 +265,3 @@ document.getElementById("btnAjustes").addEventListener("click", function () {
 document.getElementById("btnAprobar").addEventListener("click", function () {
     registrarDecision("Aprobado");
 });
-
-
