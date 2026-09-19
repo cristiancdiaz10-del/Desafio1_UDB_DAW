@@ -55,7 +55,29 @@ seleccionarAspirante.addEventListener("change", function () {
         aspiranteSeleccionado.distrito;
 
     document.getElementById("edadCandidato").textContent =
-        calcularEdad(aspiranteSeleccionado.fechaNacimiento);
+    calcularEdad(aspiranteSeleccionado.fechaNacimiento);
+
+
+// Buscar si el aspirante ya tiene una evaluación registrada
+var evaluaciones =
+    JSON.parse(localStorage.getItem("evaluaciones")) || [];
+
+var evaluacionGuardada = evaluaciones.find(function(evaluacion) {
+    return evaluacion.aspiranteEmail === emailSeleccionado;
+});
+
+if (evaluacionGuardada) {
+
+    document.getElementById("estadoCandidato").textContent =
+        evaluacionGuardada.estado;
+
+    document.getElementById("promedioEvaluacion").textContent =
+        evaluacionGuardada.promedio.toFixed(2) + " / 5";
+
+    document.getElementById("comentarios").value =
+        evaluacionGuardada.observaciones;
+}
+
 });
 
 
