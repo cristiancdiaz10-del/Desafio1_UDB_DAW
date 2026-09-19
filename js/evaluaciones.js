@@ -26,6 +26,7 @@ seleccionarAspirante.addEventListener("change", function () {
 
     var emailSeleccionado = seleccionarAspirante.value;
 
+    // Buscar el aspirante seleccionado
     var aspiranteSeleccionado = aspirantes.find(function(aspirante) {
         return aspirante.email === emailSeleccionado;
     });
@@ -34,6 +35,7 @@ seleccionarAspirante.addEventListener("change", function () {
         return;
     }
 
+    // Mostrar datos del aspirante
     document.getElementById("nombreCandidato").textContent =
         aspiranteSeleccionado.nombreCompleto;
 
@@ -54,58 +56,77 @@ seleccionarAspirante.addEventListener("change", function () {
         aspiranteSeleccionado.municipio + ", " +
         aspiranteSeleccionado.distrito;
 
-document.getElementById("edadCandidato").textContent =
-    calcularEdad(aspiranteSeleccionado.fechaNacimiento);
+    document.getElementById("edadCandidato").textContent =
+        calcularEdad(aspiranteSeleccionado.fechaNacimiento);
 
 
-// Buscar si el aspirante ya tiene una evaluación registrada
-var evaluaciones =
-    JSON.parse(localStorage.getItem("evaluaciones")) || [];
+    // Buscar si el aspirante ya tiene una evaluación registrada
+    var evaluaciones =
+        JSON.parse(localStorage.getItem("evaluaciones")) || [];
 
-var evaluacionGuardada = evaluaciones.find(function(evaluacion) {
-    return evaluacion.aspiranteEmail === emailSeleccionado;
-});
+    var evaluacionGuardada = evaluaciones.find(function(evaluacion) {
+        return evaluacion.aspiranteEmail === emailSeleccionado;
+    });
 
-if (evaluacionGuardada) {
+    if (evaluacionGuardada) {
 
-    document.getElementById("estadoCandidato").textContent =
-        evaluacionGuardada.estado;
+        document.getElementById("estadoCandidato").textContent =
+            evaluacionGuardada.estado;
 
-    document.getElementById("promedioEvaluacion").textContent =
-        evaluacionGuardada.promedio.toFixed(2) + " / 5";
+        document.getElementById("promedioEvaluacion").textContent =
+            evaluacionGuardada.promedio.toFixed(2) + " / 5";
 
-    document.getElementById("comentarios").value =
-        evaluacionGuardada.observaciones;
+        document.getElementById("comentarios").value =
+            evaluacionGuardada.observaciones;
 
-            // Recuperar las puntuaciones guardadas
-    document.getElementById("habilidades").value =
-        evaluacionGuardada.habilidades;
+        // Recuperar las puntuaciones guardadas
+        document.getElementById("habilidades").value =
+            evaluacionGuardada.habilidades;
 
-    document.getElementById("calidadVideo").value =
-        evaluacionGuardada.calidadVideo;
+        document.getElementById("calidadVideo").value =
+            evaluacionGuardada.calidadVideo;
 
-    document.getElementById("perfilAcademico").value =
-        evaluacionGuardada.perfilAcademico;
+        document.getElementById("perfilAcademico").value =
+            evaluacionGuardada.perfilAcademico;
 
-    // Mostrar visualmente las estrellas guardadas
-    var grupos = document.querySelectorAll(".estrellas");
+        // Mostrar visualmente las estrellas guardadas
+        var grupos = document.querySelectorAll(".estrellas");
 
-    for (var i = 0; i < grupos.length; i++) {
+        for (var i = 0; i < grupos.length; i++) {
 
-        var criterio = grupos[i].getAttribute("data-criterio");
-        var valorGuardado = evaluacionGuardada[criterio];
-        var estrellas = grupos[i].querySelectorAll(".estrella");
+            var criterio = grupos[i].getAttribute("data-criterio");
+            var valorGuardado = evaluacionGuardada[criterio];
+            var estrellas = grupos[i].querySelectorAll(".estrella");
 
-        for (var j = 0; j < estrellas.length; j++) {
+            for (var j = 0; j < estrellas.length; j++) {
 
-            if (j < valorGuardado) {
-                estrellas[j].classList.add("seleccionada");
-            } else {
-                estrellas[j].classList.remove("seleccionada");
+                if (j < valorGuardado) {
+                    estrellas[j].classList.add("seleccionada");
+                } else {
+                    estrellas[j].classList.remove("seleccionada");
+                }
             }
         }
     }
-}
+
+
+    // Buscar si el aspirante tiene una evaluación programada
+    var programaciones =
+        JSON.parse(localStorage.getItem("programacionesEvaluacion")) || [];
+
+    var programacionGuardada = programaciones.find(function(programacion) {
+        return programacion.aspiranteEmail === emailSeleccionado;
+    });
+
+    if (programacionGuardada) {
+
+        document.getElementById("fechaEvaluacion").value =
+            programacionGuardada.fechaEvaluacion;
+
+    } else {
+
+        document.getElementById("fechaEvaluacion").value = "";
+    }
 
 });
 
@@ -264,4 +285,52 @@ document.getElementById("btnAjustes").addEventListener("click", function () {
 // Botón Aprobar
 document.getElementById("btnAprobar").addEventListener("click", function () {
     registrarDecision("Aprobado");
+});
+
+// Programar evaluación para un aspirante
+document.getElementById("btnProgramar").addEventListener("click", function () {
+
+    var emailAspirante = seleccionarAspirante.value;
+    var fechaEvaluacion = document.getElementById("fechaEvaluacion").value;
+
+    // Validar que se haya seleccionado un aspirante
+    if (emailAspirante === "") {
+        alert("Debe seleccionar un aspirante.");
+        return;
+    }
+
+    // Validar que se haya seleccionado una fecha
+    if (fechaEvaluacion === "") {
+        alert("Debe seleccionar una fecha para la evaluación.");
+        return;
+    }
+
+    // Obtener las programaciones existentes
+    var programaciones =
+        JSON.parse(localStorage.getItem("programacionesEvaluacion")) || [];
+
+    // Buscar si el aspirante ya tiene una evaluación programada
+    var indiceProgramacion = programaciones.findIndex(function(programacion) {
+        return programacion.aspiranteEmail === emailAspirante;
+    });
+
+    var programacion = {
+        aspiranteEmail: emailAspirante,
+        fechaEvaluacion: fechaEvaluacion
+    };
+
+    // Actualizar o registrar la programación
+    if (indiceProgramacion !== -1) {
+        programaciones[indiceProgramacion] = programacion;
+    } else {
+        programaciones.push(programacion);
+    }
+
+    // Guardar en localStorage
+    localStorage.setItem(
+        "programacionesEvaluacion",
+        JSON.stringify(programaciones)
+    );
+
+    alert("Evaluación programada correctamente.");
 });
