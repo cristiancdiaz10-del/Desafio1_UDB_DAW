@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Gestión de Convocatorias y Cursos - ProTalento AIDEL">
+    <title>Portal del Evaluador - Convocatorias y Cursos</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- CSS del Dashboard y estilos específicos -->
+    <link rel="stylesheet" type="text/css" href="css/dashboard.css">
+    <link rel="stylesheet" type="text/css" href="css/estilo-convocatorias.css">
+</head>
+
+<body>
+
+    <!-- CONTENEDOR PRINCIPAL DEL PORTAL -->
+    <div class="portal">
+
+        <!-- MENÚ LATERAL -->
+        <aside class="sidebar">
+
+            <!-- LOGO -->
+            <div class="sidebar-logo">
+                <strong>AIDEL</strong>
+            </div>
+
+            <!-- USUARIO -->
+            <div class="sidebar-user">
+                <i class="bi bi-person-circle"></i>
+                <span>Juan Pérez</span>
+            </div>
+
+            <!-- FAVORITOS -->
+            <div class="sidebar-title">
+                Favoritos
+            </div>
+
+            <ul class="sidebar-menu">
+                <li>
+                    <a href="dashboard.html">
+                        <i class="bi bi-house"></i>
+                        Inicio
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="bi bi-people"></i>
+                        Aspirantes
+                    </a>
+                </li>
+            </ul>
+
+            <!-- DASHBOARDS -->
+            <div class="sidebar-title">
+                Dashboards
+            </div>
+
+            <ul class="sidebar-menu">
+                <li>
+                    <a href="dashboard.html">
+                        <i class="bi bi-pie-chart-fill"></i>
+                        Métricas y reportes
+                    </a>
+                </li>
+            </ul>
+
+            <!-- MÓDULOS -->
+            <ul class="sidebar-menu">
+                <li>
+                    <a href="#">
+                        <i class="bi bi-folder"></i>
+                        Aspirantes
+                        <i class="bi bi-chevron-right ms-auto"></i>
+                    </a>
+                </li>
+                <li>
+                    <!-- Enlace activo -->
+                    <a href="convocatorias.html" class="active">
+                        <i class="bi bi-folder"></i>
+                        Convocatorias y Cursos
+                        <i class="bi bi-chevron-right ms-auto"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="bi bi-folder"></i>
+                        Cursos
+                        <i class="bi bi-chevron-right ms-auto"></i>
+                    </a>
+                </li>
+            </ul>
+
+        </aside>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <div class="main-content">
+
+            <!-- BARRA SUPERIOR -->
+            <header class="topbar">
+                <h1 class="topbar-title">
+                    Portal del Evaluador
+                </h1>
+
+                <!-- BUSCADOR -->
+                <div class="search-box">
+                    <i class="bi bi-search"></i>
+                    <input type="text" placeholder="Buscar registro...">
+                </div>
+
+                <!-- USUARIO -->
+                <div class="topbar-user">
+                    <span>Juan Pérez</span>
+                    <i class="bi bi-person-circle"></i>
+                </div>
+            </header>
+
+            <!-- SECCIÓN PRINCIPAL DE GESTIÓN -->
+            <main class="dashboard-container">
+
+                <!-- 1. SECCIÓN DE CONVOCATORIAS -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="dashboard-title mb-0">
+                        Gestión de Convocatorias
+                    </h2>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalConvocatoria" onclick="prepararCreacionConvocatoria()">
+                        + Nueva Convocatoria
+                    </button>
+                </div>
+
+                <!-- Tarjeta contenedora de la tabla de convocatorias -->
+                <div class="card card-custom p-3 mb-5">
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Curso</th>
+                                    <th>Fechas (Inicio / Cierre)</th>
+                                    <th>Plazas</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaConvocatorias">
+                                <!-- Los datos se inyectarán dinámicamente con JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 2. SECCIÓN DE GESTIÓN DE CURSOS -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="dashboard-title mb-0">
+                        Gestión de Cursos
+                    </h2>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCurso" onclick="prepararCreacionCurso()">
+                        + Nuevo Curso
+                    </button>
+                </div>
+
+                <!-- Contenedor en grilla de Tarjetas de Cursos -->
+                <div class="row g-4 mb-5" id="contenedorCursos">
+                    <!-- Las tarjetas de cursos se inyectarán dinámicamente con JavaScript -->
+                </div>
+
+            </main>
+
+        </div>
+
+    </div>
+
+    <!-- MODAL PARA CREAR / EDITAR CONVOCATORIA -->
+    <div class="modal fade" id="modalConvocatoria" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content card-custom p-3">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold" id="modalTituloConvocatoria">Nueva Convocatoria</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formConvocatoria">
+                        <input type="hidden" id="convocatoriaId">
+                       
+                        <div class="mb-3">
+                            <label for="cursoSelect" class="form-label fw-semibold small">Cursos Disponibles</label>
+                            <select class="form-select" id="cursoSelect" required>
+                                <option value="" selected disabled>Seleccione un curso...</option>
+                                <option value="Análisis de datos con herramientas de IA">Análisis de datos con herramientas de IA</option>
+                                <option value="Logística portuaria y cadena de suministros">Logística portuaria y cadena de suministros</option>
+                                <option value="Lenguajes de programación: JavaScript y C#">Lenguajes de programación: JavaScript y C#</option>
+                                <option value="Asistente Administrativo y Manejo de Caja">Asistente Administrativo y Manejo de Caja</option>
+                                <option value="Redes informáticas">Redes informáticas</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="fechaInicio" class="form-label fw-semibold small">Fecha de Inicio</label>
+                            <input type="date" class="form-control" id="fechaInicio" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="fechaCierre" class="form-label fw-semibold small">Fecha de Cierre</label>
+                            <input type="date" class="form-control" id="fechaCierre" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="numPlazas" class="form-label fw-semibold small">Número de Plazas</label>
+                            <input type="number" class="form-control" id="numPlazas" min="1" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="estadoSelect" class="form-label fw-semibold small">Estado de Convocatoria</label>
+                            <select class="form-select" id="estadoSelect" required>
+                                <option value="Activa">Activa</option>
+                                <option value="Cerrada">Cerrada</option>
+                                <option value="Próximamente">Próximamente</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 mt-2">Guardar Convocatoria</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL COMPACTO PARA CREAR / EDITAR CURSO -->
+    <div class="modal fade" id="modalCurso" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content card-custom p-3">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold fs-6" id="modalCursoTitulo">Nuevo Curso</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body pt-2">
+                    <form id="formCurso">
+                        <input type="hidden" id="cursoId">
+                       
+                        <div class="mb-2">
+                            <label for="nombreCurso" class="form-label fw-semibold small">Nombre del Curso</label>
+                            <input type="text" class="form-control form-control-sm" id="nombreCurso" placeholder="Ej. Redes informáticas" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="descCurso" class="form-label fw-semibold small">Breve Descripción</label>
+                            <textarea class="form-control form-control-sm" id="descCurso" rows="3" placeholder="Detalles administrativos..." required></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-sm w-100">Guardar Curso</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Script unificado -->
+    <script src="js/script.js"></script>
+</body>
+
+</html>
