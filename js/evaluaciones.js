@@ -54,7 +54,7 @@ seleccionarAspirante.addEventListener("change", function () {
         aspiranteSeleccionado.municipio + ", " +
         aspiranteSeleccionado.distrito;
 
-    document.getElementById("edadCandidato").textContent =
+document.getElementById("edadCandidato").textContent =
     calcularEdad(aspiranteSeleccionado.fechaNacimiento);
 
 
@@ -76,6 +76,35 @@ if (evaluacionGuardada) {
 
     document.getElementById("comentarios").value =
         evaluacionGuardada.observaciones;
+
+            // Recuperar las puntuaciones guardadas
+    document.getElementById("habilidades").value =
+        evaluacionGuardada.habilidades;
+
+    document.getElementById("calidadVideo").value =
+        evaluacionGuardada.calidadVideo;
+
+    document.getElementById("perfilAcademico").value =
+        evaluacionGuardada.perfilAcademico;
+
+    // Mostrar visualmente las estrellas guardadas
+    var grupos = document.querySelectorAll(".estrellas");
+
+    for (var i = 0; i < grupos.length; i++) {
+
+        var criterio = grupos[i].getAttribute("data-criterio");
+        var valorGuardado = evaluacionGuardada[criterio];
+        var estrellas = grupos[i].querySelectorAll(".estrella");
+
+        for (var j = 0; j < estrellas.length; j++) {
+
+            if (j < valorGuardado) {
+                estrellas[j].classList.add("seleccionada");
+            } else {
+                estrellas[j].classList.remove("seleccionada");
+            }
+        }
+    }
 }
 
 });
@@ -99,6 +128,7 @@ function calcularEdad(fechaNacimiento) {
 
     return edad;
 }
+
 // Seleccionar los grupos de estrellas
 var gruposEstrellas = document.querySelectorAll(".estrellas");
 
