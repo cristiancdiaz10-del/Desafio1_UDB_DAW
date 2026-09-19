@@ -21,6 +21,62 @@ for (var i = 0; i < aspirantes.length; i++) {
     seleccionarAspirante.appendChild(opcion);
 }
 
+// Mostrar información del aspirante seleccionado
+seleccionarAspirante.addEventListener("change", function () {
+
+    var emailSeleccionado = seleccionarAspirante.value;
+
+    var aspiranteSeleccionado = aspirantes.find(function(aspirante) {
+        return aspirante.email === emailSeleccionado;
+    });
+
+    if (!aspiranteSeleccionado) {
+        return;
+    }
+
+    document.getElementById("nombreCandidato").textContent =
+        aspiranteSeleccionado.nombreCompleto;
+
+    document.getElementById("cursoCandidato").textContent =
+        aspiranteSeleccionado.cursoFormacion;
+
+    document.getElementById("duiCandidato").textContent =
+        aspiranteSeleccionado.numeroDUI || "--";
+
+    document.getElementById("telefonoCandidato").textContent =
+        aspiranteSeleccionado.numeroTelefono || "--";
+
+    document.getElementById("correoCandidato").textContent =
+        aspiranteSeleccionado.email;
+
+    document.getElementById("domicilioCandidato").textContent =
+        aspiranteSeleccionado.departamento + ", " +
+        aspiranteSeleccionado.municipio + ", " +
+        aspiranteSeleccionado.distrito;
+
+    document.getElementById("edadCandidato").textContent =
+        calcularEdad(aspiranteSeleccionado.fechaNacimiento);
+});
+
+
+// Calcular edad a partir de la fecha de nacimiento
+function calcularEdad(fechaNacimiento) {
+
+    var nacimiento = new Date(fechaNacimiento);
+    var hoy = new Date();
+
+    var edad = hoy.getFullYear() - nacimiento.getFullYear();
+
+    var mes = hoy.getMonth() - nacimiento.getMonth();
+
+    if (mes < 0 ||
+        (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
+
+        edad--;
+    }
+
+    return edad;
+}
 // Seleccionar los grupos de estrellas
 var gruposEstrellas = document.querySelectorAll(".estrellas");
 
@@ -79,7 +135,7 @@ function calcularPromedio() {
         promedio.toFixed(2) + " / 5";
 }
 // Función para registrar la decisión de la evaluación
-// Función para registrar la decisión de la evaluación
+
 function registrarDecision(estado) {
 
     var habilidades = parseInt(document.getElementById("habilidades").value);
@@ -132,7 +188,7 @@ function registrarDecision(estado) {
 
     alert("Evaluación registrada correctamente.");
 }
-}
+
 // Botón Rechazar
 document.getElementById("btnRechazar").addEventListener("click", function () {
     registrarDecision("Rechazado");
