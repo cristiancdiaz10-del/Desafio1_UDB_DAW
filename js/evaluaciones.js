@@ -255,3 +255,5 @@ document.getElementById("btnAjustes").addEventListener("click", function () {
 document.getElementById("btnAprobar").addEventListener("click", function () {
     registrarDecision("Aprobado");
 });
+
+
