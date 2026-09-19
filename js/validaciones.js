@@ -1,6 +1,6 @@
 // REGISTRO DE ASPIRANTES
 
-// 1. Cargar API de Departamentos, Municipios y Distritos
+//Cargar API de Departamentos, Municipios y Distritos
 const URL_API = "https://juanmedina100.github.io/departamentos-distritos-municipios-el-salvador/departamentos-distritos-municipios-sv.json";
 
 const selectDepto = document.getElementById("departamento");
@@ -67,7 +67,7 @@ if (selectMuni) {
     });
 }
 
-// 2. Validación Mayor / Menor de edad para mostrar DUI o NIT
+//Validación Mayor y Menor de edad para mostrar DUI o NIT
 const inputFecha = document.getElementById("nacimiento");
 const inputDui = document.getElementById("DUI");
 const inputNit = document.getElementById("NIT");
@@ -100,7 +100,7 @@ if (inputFecha) {
     });
 }
 
-// 3. Modal de Consentimiento Informado
+//Modal de Consentimiento Informado
 const modal = document.getElementById("modalConsentimiento");
 const abrir = document.getElementById("abrirConsentimiento");
 const cerrar = document.getElementById("cerrarConsentimiento");
@@ -118,7 +118,7 @@ if (cerrar && modal) {
     });
 }
 
-// 4. Guardado de registros de Aspirantes
+//Guardado de registros de Aspirantes
 
 document.addEventListener("DOMContentLoaded", function () {
 

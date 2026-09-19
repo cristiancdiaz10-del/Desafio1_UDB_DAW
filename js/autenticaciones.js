@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        // Guardamos la sesión
+        // Guardado de la sesión
         localStorage.setItem("usuarioActual", JSON.stringify(usuario));
 
         // Comprobar el rol
@@ -42,11 +42,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 
-// Función global para cerrar sesión y redirigir
+// Función global para cerrar sesión y redirigir a login
 function cerrarSesion() {
-    // 1. Eliminar los datos de la sesión activa
+    //Eliminar los datos de la sesión activa
     localStorage.removeItem('sesion');
     
-    // 2. Redirigir al usuario al login
+    //Redirigir al usuario al login
     window.location.href = 'login.html';
 }

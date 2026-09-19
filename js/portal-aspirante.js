@@ -1,12 +1,12 @@
-// js/portal-aspirante.js - Lógica del Portal del Aspirante
+//Lógica del Portal del Aspirante
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Proteger la vista: Solo rol 'usuario' o admins
+    //Protege la vista: Solo rol 'usuario' o admins
     if (typeof protegerVista === 'function') {
         protegerVista(['usuario', 'administrador', 'superadministrador']);
     }
 
-    // 2. Obtener datos de la sesión activa
+    //Obtener datos de la sesión activa
     const sesion = JSON.parse(localStorage.getItem('sesion'));
     if (!sesion) return;
 
@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
         lblUsuario.innerText = `Bienvenido, ${sesion.nombre}`;
     }
 
-    // 3. Cargar expediente del aspirante desde localStorage
+    //Cargar expediente del aspirante desde localStorage
     const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
     const perfil = usuarios.find(u => u.email === sesion.email || u.id === sesion.id);
 

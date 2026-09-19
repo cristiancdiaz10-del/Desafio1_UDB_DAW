@@ -1,6 +1,6 @@
-// js/script.js - Gestión de Convocatorias y Cursos (CRUD)
+//Gestión de Convocatorias y Cursos
 
-// 1. ESTADO INICIAL
+//ESTADO INICIAL
 let convocatorias = JSON.parse(localStorage.getItem('convocatorias')) || [
     { id: 1, curso: "Análisis de datos con herramientas de IA", fechaInicio: "2026-10-01", fechaCierre: "2026-10-25", plazas: 30, estado: "Activa" },
     { id: 2, curso: "Lenguajes de programación: JavaScript y C#", fechaInicio: "2026-11-05", fechaCierre: "2026-11-30", plazas: 25, estado: "Próximamente" }
@@ -15,7 +15,7 @@ let cursos = JSON.parse(localStorage.getItem('cursos')) || [
 let modalConvocatoriaBS = null;
 let modalCursoBS = null;
 
-// 2. INICIALIZACIÓN
+//INICIALIZACIÓN
 document.addEventListener('DOMContentLoaded', () => {
     // Proteger vista para evaluadores/admins si existe la función
     if (typeof protegerVista === 'function') {
@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderizarCursos();
 });
 
-// 3. LÓGICA DE CONVOCATORIAS
+//LÓGICA DE CONVOCATORIAS
 function renderizarTablaConvocatorias() {
     const tabla = document.getElementById('tablaConvocatorias');
     if (!tabla) return;
@@ -104,7 +104,7 @@ function eliminarConvocatoria(id) {
     }
 }
 
-// 4. LÓGICA DE CURSOS
+//LÓGICA DE CURSOS
 function renderizarCursos() {
     const contenedor = document.getElementById('contenedorCursos');
     if (!contenedor) return;
@@ -163,7 +163,7 @@ function eliminarCurso(id) {
     }
 }
 
-// 5. SUBMIT DE FORMULARIOS
+//SUBMIT DE FORMULARIOS
 function configurarFormularios() {
     const formConv = document.getElementById('formConvocatoria');
     if (formConv) {

@@ -1,16 +1,14 @@
-// js/dashboard.js - Panel del Evaluador y Métricas en Tiempo Real
-
 // Referencias a instancias globales de Chart.js para permitir su actualización
 let chartFlujoInstance = null;
 let chartEstadosInstance = null;
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Proteger la vista solo para administradores / evaluadores
+    //Protege la vista solo para administradores / evaluadores
     if (typeof protegerVista === 'function') {
         protegerVista(['administrador', 'superadministrador']);
     }
 
-    // 2. Cargar métricas, tabla y gráficas con datos 100% reales
+    //Carga las métricas, tabla y gráficas con datos reales
     cargarDashboardReal();
 });
 
@@ -22,7 +20,7 @@ function cargarDashboardReal() {
     const aspirantes = usuarios.filter(u => u.rol === 'usuario');
 
     // -------------------------------------------------------------
-    // A. CÁLCULO DE KPIs REALES
+    //CÁLCULO DE KPIs REALES
     // -------------------------------------------------------------
     const total = aspirantes.length;
     const revision = aspirantes.filter(a => a.estado === 'En revisión').length;
@@ -38,7 +36,7 @@ function cargarDashboardReal() {
     if (document.getElementById('kpi-rechazados')) document.getElementById('kpi-rechazados').innerText = rechazados;
 
     // -------------------------------------------------------------
-    // B. TABLA DE SOLICITUDES
+    // TABLA DE SOLICITUDES
     // -------------------------------------------------------------
     const tbody = document.getElementById('tablaSolicitudesBody');
     if (tbody) {
@@ -76,7 +74,7 @@ function cargarDashboardReal() {
     }
 
     // -------------------------------------------------------------
-    // C. GRÁFICAS DE CHART.JS CON DATOS DINÁMICOS
+    //GRÁFICAS DE CHART.JS CON DATOS DINÁMICOS
     // -------------------------------------------------------------
     renderizarGraficasReales(aspirantes, total, revision, entrevistados, seleccionados, rechazados);
 }
@@ -132,7 +130,7 @@ function renderizarGraficasReales(aspirantes, total, revision, entrevistados, se
         });
     }
 
-    // 2. Gráfica 2: Distribución por Estados
+    //Gráfica 2: Distribución por Estados
     const ctxEstados = document.getElementById('estadosAspirantes');
     if (ctxEstados) {
         // Si no hay registros aún, se contabiliza 0 en todo
