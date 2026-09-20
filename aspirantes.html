@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ProTalento - Aspirantes</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Iconos -->
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- Estilos del proyecto -->
+    <link rel="stylesheet" href="css/estilo.css">
+
+    <!-- Logo -->
+    <link rel="icon" href="recursos/logo_AIDEL.jpeg">
+</head>
+
+<body>
+
+    <div class="portal">
+
+        <!-- MENÚ LATERAL -->
+        <aside class="sidebar">
+
+            <!-- LOGO -->
+            <div>
+                <img src="recursos/logo_AIDEL.png"
+                    alt="logo dashboard"
+                    class="logo_convocatorias">
+            </div>
+
+            <!-- USUARIO -->
+            <div class="sidebar-user">
+                <i class="bi bi-person-circle"></i>
+                <span id="lbl-admin-sidebar">Cargando...</span>
+            </div>
+
+            <!-- FAVORITOS -->
+            <div class="sidebar-title">
+                Favoritos
+            </div>
+
+            <ul class="sidebar-menu">
+
+                <li>
+                    <a href="dashboard.html">
+                        <i class="bi bi-house"></i>
+                        Inicio
+                    </a>
+                </li>
+
+                <li>
+                    <a href="aspirantes.html" class="active">
+                        <i class="bi bi-people"></i>
+                        Aspirantes
+                    </a>
+                </li>
+
+            </ul>
+
+            <!-- DASHBOARDS -->
+            <div class="sidebar-title">
+                Dashboards
+            </div>
+
+            <ul class="sidebar-menu">
+
+                <li>
+                    <a href="dashboard.html">
+                        <i class="bi bi-pie-chart-fill"></i>
+                        Métricas y reportes
+                    </a>
+                </li>
+
+            </ul>
+
+            <!-- MÓDULOS -->
+            <ul class="sidebar-menu">
+
+                <li>
+                    <a href="aspirantes.html" class="active">
+                        <i class="bi bi-folder"></i>
+                        Aspirantes
+                        <i class="bi bi-chevron-right ms-auto"></i>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="convocatorias.html">
+                        <i class="bi bi-folder"></i>
+                        Convocatorias y Cursos
+                        <i class="bi bi-chevron-right ms-auto"></i>
+                    </a>
+                </li>
+
+            </ul>
+
+        </aside>
+
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <div class="main-content">
+
+            <!-- BARRA SUPERIOR -->
+            <header class="topbar">
+
+                <h1 class="topbar-title">
+                    Portal del evaluador
+                </h1>
+
+                <div class="topbar-user d-flex align-items-center gap-3 ms-auto">
+
+                    <!-- BUSCADOR -->
+                    <div class="search-box">
+                        <i class="bi bi-search"></i>
+
+                        <input
+                            type="text"
+                            id="inputBuscarAspirante"
+                            placeholder="Buscar aspirante">
+                    </div>
+
+                    <!-- USUARIO -->
+                    <span id="lbl-admin-topbar">
+                        Cargando...
+                    </span>
+
+                    <i class="bi bi-person-circle"></i>
+
+                    <button
+                        onclick="cerrarSesion()"
+                        class="btn btn-outline-danger btn-sm font-weight-bold">
+                        Salir
+                    </button>
+
+                </div>
+
+            </header>
+
+
+            <!-- CONTENIDO -->
+            <main class="dashboard-container">
+
+                <!-- TABLA DE ASPIRANTES -->
+                <section class="requests-card">
+
+                    <div class="requests-header">
+
+                        <h3>
+                            Solicitudes
+                        </h3>
+
+                        <button
+                            class="options-button"
+                            type="button"
+                            aria-label="Más opciones">
+
+                            <i class="bi bi-three-dots"></i>
+
+                        </button>
+
+                    </div>
+
+
+                    <table class="requests-table">
+
+                        <thead>
+
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Curso</th>
+                                <th>Estado</th>
+                                <th>Documentos</th>
+                                <th>Acciones</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="tablaAspirantesBody">
+
+                            <!-- Los aspirantes se cargarán con JavaScript -->
+
+                        </tbody>
+
+                    </table>
+
+                </section>
+
+            </main>
+
+        </div>
+
+    </div>
+
+
+    <!-- JavaScript -->
+    <script src="js/autenticaciones.js"></script>
+    <script src="js/aspirantes.js"></script>
+
+</body>
+
+</html>

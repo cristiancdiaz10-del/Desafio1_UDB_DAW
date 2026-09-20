@@ -1,0 +1,226 @@
+ <!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Portal del evaluador - ProTalento AIDEL">
+    <title>Portal del evaluador - ProTalento</title>
+
+    <!-- Framework Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+
+    <!-- Iconos de Bootstrap -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- Hoja de estilos unificada -->
+    <link rel="stylesheet" type="text/css" href="css/estilo.css">
+    
+    <!-- Ícono de la app -->
+    <link rel="icon" href="recursos/logo_AIDEL.jpeg">
+</head>
+
+<body>
+
+    <!-- CONTENEDOR PRINCIPAL DEL PORTAL -->
+    <div class="portal">
+
+        <!-- MENÚ LATERAL -->
+        <aside class="sidebar">
+
+            <!-- LOGO -->
+            <div>
+                <img src="recursos/logo_AIDEL.png" alt="logo dashboard" class="logo_convocatorias">
+            </div>
+
+            <!-- USUARIO -->
+            <div class="sidebar-user">
+                <i class="bi bi-person-circle"></i>
+                <span id="lbl-admin-sidebar">Cargando...</span>
+            </div>
+
+            <!-- FAVORITOS -->
+            <div class="sidebar-title">
+                Favoritos
+            </div>
+
+            <ul class="sidebar-menu">
+                <li>
+                    <a href="dashboard.html" class="active">
+                        <i class="bi bi-house"></i>
+                        Inicio
+                    </a>
+                </li>
+                <li>
+    <a href="aspirantes.html">
+        <i class="bi bi-people"></i>
+        Aspirantes
+    </a>
+</li>
+            </ul>
+
+            <!-- DASHBOARDS -->
+            <div class="sidebar-title">
+                Dashboards
+            </div>
+
+            <ul class="sidebar-menu">
+                <li>
+                    <a href="dashboard.html" class="active">
+                        <i class="bi bi-pie-chart-fill"></i>
+                        Métricas y reportes
+                    </a>
+                </li>
+            </ul>
+
+            <!-- MÓDULOS -->
+            <ul class="sidebar-menu">
+                <li>
+    <a href="aspirantes.html">
+        <i class="bi bi-folder"></i>
+        Aspirantes
+        <i class="bi bi-chevron-right ms-auto"></i>
+    </a>
+</li>
+                <li>
+                    <a href="convocatorias.html">
+                        <i class="bi bi-folder"></i>
+                        Convocatorias y Cursos
+                        <i class="bi bi-chevron-right ms-auto"></i>
+                    </a>
+                </li>
+            </ul>
+
+        </aside>
+
+        <!-- CONTENEDOR PRINCIPAL -->
+        <div class="main-content">
+
+            <!-- BARRA SUPERIOR -->
+            <header class="topbar">
+                <h1 class="topbar-title">
+                    Portal del evaluador
+                </h1>
+
+                <div class="topbar-user d-flex align-items-center gap-3 ms-auto">
+                <!-- BUSCADOR -->
+                <div class="search-box">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="inputBuscarAspirante" placeholder="Buscar aspirante">
+                </div>
+
+                <!-- USUARIO -->
+                    <span id="lbl-admin-topbar">Cargando...</span>
+                    <i class="bi bi-person-circle"></i>
+                    <button onclick="cerrarSesion()" class="btn btn-outline-danger btn-sm font-weight-bold">
+                        Salir
+                    </button>
+                </div>
+            </header>
+
+            <!-- DASHBOARD -->
+            <main class="dashboard-container">
+
+                <h2 class="dashboard-title">
+                    Métricas (KPIs)
+                </h2>
+
+                <!-- TARJETAS KPI -->
+                <section class="kpi-grid">
+
+                    <!-- TOTAL POSTULADOS -->
+                    <article class="kpi-card">
+                        <h3>Total Postulados</h3>
+                        <p class="kpi-number" id="kpi-total">0</p>
+                    </article>
+
+                    <!-- EN REVISIÓN -->
+                    <article class="kpi-card">
+                        <h3>En Revisión</h3>
+                        <p class="kpi-number" id="kpi-revision">0</p>
+                    </article>
+
+                    <!-- ENTREVISTADOS -->
+                    <article class="kpi-card">
+                        <h3>Entrevistados</h3>
+                        <p class="kpi-number" id="kpi-entrevistados">0</p>
+                    </article>
+
+                    <!-- SELECCIONADOS -->
+                    <article class="kpi-card">
+                        <h3>Seleccionados</h3>
+                        <p class="kpi-number" id="kpi-seleccionados">0</p>
+                    </article>
+
+                    <!-- RECHAZADOS -->
+                    <article class="kpi-card">
+                        <h3>Rechazados</h3>
+                        <p class="kpi-number" id="kpi-rechazados">0</p>
+                    </article>
+
+                </section>
+
+                <!-- GRÁFICAS -->
+                <section class="charts-grid">
+
+                    <!-- GRÁFICA DE FLUJO -->
+                    <article class="chart-card">
+                        <h3>Flujo de solicitudes</h3>
+                        <div class="chart-container">
+                            <canvas id="flujoSolicitudes"></canvas>
+                        </div>
+                    </article>
+
+                    <!-- GRÁFICA DE ESTADOS -->
+                    <article class="chart-card">
+                        <h3>Estados</h3>
+                        <div class="chart-container">
+                            <canvas id="estadosAspirantes"></canvas>
+                        </div>
+                    </article>
+
+                </section>
+
+                <!-- SOLICITUDES -->
+                <section class="requests-card">
+
+                    <!-- CABECERA -->
+                    <div class="requests-header">
+                        <h3>Solicitudes</h3>
+                        <button class="options-button" type="button" aria-label="Más opciones">
+                            <i class="bi bi-three-dots"></i>
+                        </button>
+                    </div>
+
+                    <!-- TABLA -->
+                    <table class="requests-table">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Curso</th>
+                                <th>Estado</th>
+                                <th>Documentos</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaSolicitudesBody">
+                            <!-- Filas dinámicas cargadas desde el JS -->
+                        </tbody>
+                    </table>
+
+                </section>
+
+            </main>
+
+        </div>
+
+    </div>
+
+    <!-- LIBRERÍAS Y SCRIPTS DE JAVASCRIPT -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/autenticaciones.js"></script>
+    <script src="js/dashboard.js"></script>
+
+</body>
+
+</html>
