@@ -1,5 +1,24 @@
 // Lógica de Aspirantes
+// js/dashboard.js - Lógica del Dashboard de Evaluación / Admin
 
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Proteger la vista: Solo permite el acceso a Administradores
+    if (typeof protegerVista === 'function') {
+        protegerVista(['administrador', 'superadministrador']);
+    }
+
+    // 2. Obtener datos de la sesión activa
+    const sesion = JSON.parse(localStorage.getItem('sesion'));
+    if (!sesion) return;
+
+    // 3. Actualizar el nombre en el encabezado o barra superior (Topbar)
+    const lblAdmin = document.getElementById('lbl-admin-topbar') || document.getElementById('lbl-usuario');
+    
+    if (lblAdmin) {
+        // Muestra el nombre registrado en la sesión
+        lblAdmin.innerText = sesion.nombre; 
+    }
+});
 document.addEventListener('DOMContentLoaded', () => {
 
     if (typeof protegerVista === 'function') {
@@ -115,4 +134,12 @@ function evaluarAspirante(email) {
 
     window.location.href =
         'páginas/evaluaciones.html';
+}
+
+function evaluarAspirante(email) {
+    // 1. Guardar temporalmente el correo del usuario seleccionado
+    localStorage.setItem("emailEvaluar", email);
+    
+    // 2. Redirigir a la vista de evaluaciones
+    window.location.href = "evaluaciones.html";
 }

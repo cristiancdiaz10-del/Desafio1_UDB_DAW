@@ -2,12 +2,25 @@
 let chartFlujoInstance = null;
 let chartEstadosInstance = null;
 
+// js/dashboard.js - Lógica del Dashboard de Evaluación / Admin
+
 document.addEventListener('DOMContentLoaded', () => {
-    //Protege la vista solo para administradores / evaluadores
+    //Proteger la vista: Solo permite el acceso a Administradores
     if (typeof protegerVista === 'function') {
         protegerVista(['administrador', 'superadministrador']);
     }
 
+    //Obtener datos de la sesión activa
+    const sesion = JSON.parse(localStorage.getItem('sesion'));
+    if (!sesion) return;
+
+    //Actualizar el nombre en el encabezado o barra superior (Topbar)
+    const lblAdmin = document.getElementById('lbl-admin-topbar') || document.getElementById('lbl-usuario');
+    
+    if (lblAdmin) {
+        // Muestra el nombre registrado en la sesión
+        lblAdmin.innerText = sesion.nombre; 
+    }
     //Carga las métricas, tabla y gráficas con datos reales
     cargarDashboardReal();
 });

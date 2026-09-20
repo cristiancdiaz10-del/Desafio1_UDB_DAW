@@ -1,5 +1,24 @@
 //Gestión de Convocatorias y Cursos
+// js/dashboard.js - Lógica del Dashboard de Evaluación / Admin
 
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Proteger la vista: Solo permite el acceso a Administradores
+    if (typeof protegerVista === 'function') {
+        protegerVista(['administrador', 'superadministrador']);
+    }
+
+    // 2. Obtener datos de la sesión activa
+    const sesion = JSON.parse(localStorage.getItem('sesion'));
+    if (!sesion) return;
+
+    // 3. Actualizar el nombre en el encabezado o barra superior (Topbar)
+    const lblAdmin = document.getElementById('lbl-admin-topbar') || document.getElementById('lbl-usuario');
+    
+    if (lblAdmin) {
+        // Muestra el nombre registrado en la sesión
+        lblAdmin.innerText = sesion.nombre; 
+    }
+});
 //ESTADO INICIAL
 let convocatorias = JSON.parse(localStorage.getItem('convocatorias')) || [
     { id: 1, curso: "Análisis de datos con herramientas de IA", fechaInicio: "2026-10-01", fechaCierre: "2026-10-25", plazas: 30, estado: "Activa" },

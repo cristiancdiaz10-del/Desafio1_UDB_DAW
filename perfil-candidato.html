@@ -30,9 +30,8 @@
 
                 <div class="col-8 d-flex align-items-center">
                     <div>
-                        <a href="dashboard.html">
-                            <img src="recursos/logo_AIDEL.png" alt="logo_evaluaciones" class="logo_evaluaciones">
-                        </a>
+                        <img src="recursos/logo_AIDEL.png" alt="logo_evaluaciones" class="logo_evaluaciones">
+                        <button class="btn btn-primary" onclick="window.location.href = 'panel-control.html'">Volver a inicio</button>
                     </div>
 
                     <h1 class="titulo-principal">
@@ -40,10 +39,10 @@
                     </h1>
                 </div>
                 <div class="col-4 d-flex align-items-center justify-content-end gap-3">
-                    <span id="lbl-admin-topbar">Juan Pérez</span>
+                    <span id="lbl-admin-topbar">Cargando...</span>
                     <i class="bi bi-person-circle fs-5"></i>
                     <button onclick="cerrarSesion()" class="btn btn-outline-danger btn-sm font-weight-bold">
-                        Salir
+                        Cerrar sesión
                     </button>
                 </div>
             </div>
@@ -103,17 +102,17 @@
                         </div>
 
                         <!-- Datos -->
-                        <div class="col-md-8">
+                        <div class="col-md-8" style="text-align: left;">
 
-                            <h3 id="nombreCandidato">
-                                Candidato seleccionado
-                            </h3>
+                            <h2>
+                                <span id="nombreCandidato">
+                                    Candidato seleccionado
+                                </span>
+                            </h2>
 
                             <p class="curso-aspirante">
-                                Aspirante:
-                                <span id="cursoCandidato">
-                                    Curso
-                                </span>
+                                <strong>Aspirante</strong>
+                                <span id="cursoCandidato">--</span>
                             </p>
 
                             <p>
