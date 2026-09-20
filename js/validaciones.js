@@ -124,6 +124,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const formRegistro = document.getElementById("formRegistro");
 
+    // Verificar que el formulario exista
+    if (!formRegistro) {
+        return;
+    }
+
     formRegistro.addEventListener("submit", function (event) {
         event.preventDefault();
 
@@ -153,14 +158,67 @@ document.addEventListener("DOMContentLoaded", function () {
         // Obtener usuarios registrados
         let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
 
-       // Verificar si el correo ya existe
+        // NORMALIZAR DATOS PARA COMPARARLOS
+
+        // El correo no distingue entre mayúsculas y minúsculas
+        const emailNormalizado = email.toLowerCase();
+
+        // Se eliminan espacios y guiones para evitar
+        // que se pueda registrar el mismo documento
+        // usando un formato diferente.
+        const duiNormalizado = DUI.replace(/[\s-]/g, "");
+        const nitNormalizado = NIT.replace(/[\s-]/g, "");
+
+        // Verificar si el correo ya existe
         const correoExiste = usuarios.some(function (usuario) {
-            return usuario.email === email;
-});
+            return (
+                (usuario.email || "")
+                    .trim()
+                    .toLowerCase() === emailNormalizado
+            );
+        });
 
         if (correoExiste) {
-            alert("Este correo ya está registrado.");
+            alert("Este correo ya está registrado. Utiliza otro correo.");
             return;
+        }
+
+        // VERIFICAR DUI DUPLICADO
+
+        if (duiNormalizado !== "") {
+
+            const duiExiste = usuarios.some(function (usuario) {
+
+                const duiRegistrado =
+                    (usuario.DUI || "")
+                        .replace(/[\s-]/g, "");
+
+                return duiRegistrado === duiNormalizado;
+            });
+
+            if (duiExiste) {
+                alert("Este DUI ya está registrado. No puedes realizar otro registro con este DUI.");
+                return;
+            }
+        }
+
+        // VERIFICAR NIT DUPLICADO
+
+        if (nitNormalizado !== "") {
+
+            const nitExiste = usuarios.some(function (usuario) {
+
+                const nitRegistrado =
+                    (usuario.NIT || "")
+                        .replace(/[\s-]/g, "");
+
+                return nitRegistrado === nitNormalizado;
+            });
+
+            if (nitExiste) {
+                alert("Este NIT ya está registrado. No puedes realizar otro registro con este NIT.");
+                return;
+            }
         }
 
         const nuevoUsuario = {

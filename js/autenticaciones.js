@@ -1,6 +1,6 @@
-// js/autenticaciones.js - Control de Login y Roles
+//AUTENTICACIONES
 
-// 1. Creación de usuarios semilla (Administradores por defecto)
+//Creación de usuarios administradores
 function crearUsuariosIniciales() {
     let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
 
@@ -51,7 +51,7 @@ function crearUsuariosIniciales() {
 // Ejecutar la verificación de administradores
 crearUsuariosIniciales();
 
-// 2. Control de Inicio de Sesión y Redirección por Rol
+//Control de Inicio de Sesión y Redirección por Rol
 document.addEventListener("DOMContentLoaded", () => {
     const formLogin = document.getElementById("formLogin");
 
@@ -106,7 +106,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-// 3. Función para cerrar sesión globalmente
+//Función para cerrar sesión globalmente
 function cerrarSesion() {
     localStorage.removeItem("sesion");
     window.location.href = "login.html";

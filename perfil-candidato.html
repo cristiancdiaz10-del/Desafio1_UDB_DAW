@@ -1,153 +1,226 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ProTalento-Perfil de candidato</title>
 
-    <title>ProTalento-Perfil de candidato</title>
+<!-- Bootstrap -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet">
 
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-          rel="stylesheet">
-    
-    <!-- Iconos de Bootstrap -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<!-- Iconos de Bootstrap -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-    <!-- CSS propio -->
-    <link rel="stylesheet" type="text/css" href="css/estilo.css">
+<!-- CSS propio -->
+<link rel="stylesheet" type="text/css" href="css/estilo.css">
 
-     <!-- Ícono de la app -->
-    <link rel="icon" href="recursos/logo_AIDEL.jpeg">
+ <!-- Ícono de la app -->
+<link rel="icon" href="recursos/logo_AIDEL.jpeg">
 </head>
 
 <body>
+<!-- ENCABEZADO -->
+<header class="encabezado">
+    <div class="container-fluid">
+        <div class="row align-items-center">
 
-    <!-- ENCABEZADO -->
-    <header class="encabezado">
-        <div class="container-fluid">
-            <div class="row align-items-center">
-
-                <div class="col-8 d-flex align-items-center">
-                    <div>
-                        <img src="recursos/logo_AIDEL.png" alt="logo_evaluaciones" class="logo_evaluaciones">
-                        <button class="btn btn-primary" onclick="window.location.href = 'panel-control.html'">Volver a inicio</button>
-                    </div>
-
-                    <h1 class="titulo-principal">
-                        ProTalento - Perfil de candidato
-                    </h1>
+            <div class="col-8 d-flex align-items-center">
+                <div>
+                    <img src="recursos/logo_AIDEL.png" alt="logo_evaluaciones" class="logo_evaluaciones">
+                    <button class="btn btn-primary" onclick="window.location.href = 'panel-control.html'">Volver a inicio</button>
                 </div>
-                <div class="col-4 d-flex align-items-center justify-content-end gap-3">
-                    <span id="lbl-admin-topbar">Cargando...</span>
-                    <i class="bi bi-person-circle fs-5"></i>
-                    <button onclick="cerrarSesion()" class="btn btn-outline-danger btn-sm font-weight-bold">
-                        Cerrar sesión
-                    </button>
-                </div>
+
+                <h1 class="titulo-principal">
+                    ProTalento - Perfil de candidato
+                </h1>
+            </div>
+            <div class="col-4 d-flex align-items-center justify-content-end gap-3">
+                <span id="lbl-admin-topbar">Cargando...</span>
+                <i class="bi bi-person-circle fs-5"></i>
+                <button onclick="cerrarSesion()" class="btn btn-outline-danger btn-sm font-weight-bold">
+                    Cerrar sesión
+                </button>
             </div>
         </div>
-    </header>
+    </div>
+</header>
 
 
-    <!-- CONTENIDO PRINCIPAL -->
-    <main class="container-fluid contenido-principal">
+<!-- CONTENIDO PRINCIPAL -->
+<main class="container-fluid contenido-principal">
 
-        <div class="row g-4">
+    <div class="row g-4">
 
-            <!-- COLUMNA IZQUIERDA -->
-            <section class="col-lg-7">
+        <!-- COLUMNA IZQUIERDA -->
+        <section class="col-lg-7">
 
-                <h2 class="titulo-seccion">
-                    Información general del candidato
-                </h2>
-                
-                <div class="mb-3">
-                     <label for="seleccionarAspirante" class="form-label">
-                        Seleccionar aspirante
-                </label>
+            <h2 class="titulo-seccion">
+                Información general del candidato
+            </h2>
+            
+            <div class="mb-3">
+                 <label for="seleccionarAspirante" class="form-label">
+                    Seleccionar aspirante
+            </label>
 
-                <select id="seleccionarAspirante" class="form-select">
-                    <option value="">Seleccione un aspirante</option>
-                </select>
-                </div>
+            <select id="seleccionarAspirante" class="form-select">
+                <option value="">Seleccione un aspirante</option>
+            </select>
+            </div>
 
-                <div class="mb-3">
-                 <label for="fechaEvaluacion" class="form-label">
-                Fecha de evaluación
-                 </label>
-                <input type="date"
-                id="fechaEvaluacion"
-                 class="form-control">
-                </div>
+            <div class="mb-3">
+             <label for="fechaEvaluacion" class="form-label">
+            Fecha de evaluación
+             </label>
+            <input type="date"
+            id="fechaEvaluacion"
+             class="form-control">
+            </div>
 
-<div class="mb-3">
-    <button type="button"
-            id="btnProgramar"
-            class="btn btn-primary w-100">
-        Programar evaluación
-    </button>
-</div>
+            <div class="mb-3">
+                <button type="button"
+                        id="btnProgramar"
+                        class="btn btn-primary w-100">
+                    Programar evaluación
+                </button>
+            </div>
 
-                <!-- INFORMACIÓN DEL ASPIRANTE -->
-                <div class="panel candidato-panel">
+            <!-- NUEVO: AVANCE DEL PROCESO DE EVALUACIÓN -->
+            <div class="mb-3">
+                <button type="button"
+                        id="btnCompletarValidacion"
+                        class="btn btn-success w-100">
+                    Validación completada → Pasar Entrevista Virtual
+                </button>
+            </div>
+            
+            <div class="mb-3">
+                <button type="button"
+                        id="btnCompletarEntrevista"
+                        class="btn btn-success w-100">
+                    Entrevista virtual completada → Pasar a Pruebas Psicométricas
+                </button>
+            </div>
 
-                    <div class="row align-items-center">
+            <div class="mb-3">
+                <button type="button"
+                        id="btnCompletarPsicometrica"
+                        class="btn btn-success w-100">
+                    Pruebas Psicométricas completadas → Pasar a Prueba Técnica
+                </button>
+            </div>
 
-                        <!-- Fotografía -->
-                        <div class="col-md-4 text-center">
-                            <div class="foto-candidato">
-                                Foto del aspirante
-                            </div>
+            <!-- INFORMACIÓN DEL ASPIRANTE -->
+            <div class="panel candidato-panel">
+
+                <div class="row align-items-center">
+
+                    <!-- Fotografía -->
+                    <div class="col-md-4 text-center">
+                        <div class="foto-candidato">
+                            Foto del aspirante
+                        </div>
+                    </div>
+
+                    <!-- Datos -->
+                    <div class="col-md-8" style="text-align: left;">
+
+                        <h2>
+                            <span id="nombreCandidato">
+                                Candidato seleccionado
+                            </span>
+                        </h2>
+
+                        <p class="curso-aspirante">
+                            <strong>Aspirante</strong>
+                            <span id="cursoCandidato">--</span>
+                        </p>
+
+                        <p>
+                            <strong>Edad:</strong>
+                            <span id="edadCandidato">--</span>
+                        </p>
+
+                        <p>
+                            <strong>Número de DUI:</strong>
+                            <span id="duiCandidato">--</span>
+                        </p>
+
+                        <p>
+                            <strong>Teléfono:</strong>
+                            <span id="telefonoCandidato">--</span>
+                        </p>
+
+                        <p>
+                            <strong>E-mail:</strong>
+                            <span id="correoCandidato">--</span>
+                        </p>
+
+                        <p>
+                            <strong>Domicilio:</strong>
+                            <span id="domicilioCandidato">--</span>
+                        </p>
+
+                        <div class="estado-candidato">
+                            <strong>Estatus:</strong>
+
+                            <span id="estadoCandidato"
+                                  class="estado-evaluacion">
+                                En evaluación
+                            </span>
                         </div>
 
-                        <!-- Datos -->
-                        <div class="col-md-8" style="text-align: left;">
+                    </div>
 
-                            <h2>
-                                <span id="nombreCandidato">
-                                    Candidato seleccionado
-                                </span>
-                            </h2>
+                </div>
 
-                            <p class="curso-aspirante">
-                                <strong>Aspirante</strong>
-                                <span id="cursoCandidato">--</span>
-                            </p>
+            </div>
 
-                            <p>
-                                <strong>Edad:</strong>
-                                <span id="edadCandidato">--</span>
-                            </p>
 
-                            <p>
-                                <strong>Número de DUI:</strong>
-                                <span id="duiCandidato">--</span>
-                            </p>
+            <!-- ARCHIVOS ADJUNTOS -->
+            <div class="panel archivos-panel">
 
-                            <p>
-                                <strong>Teléfono:</strong>
-                                <span id="telefonoCandidato">--</span>
-                            </p>
+                <h3 class="titulo-archivos">
+                    Archivos adjuntos
+                </h3>
 
-                            <p>
-                                <strong>E-mail:</strong>
-                                <span id="correoCandidato">--</span>
-                            </p>
+                <div class="row g-4">
 
-                            <p>
-                                <strong>Domicilio:</strong>
-                                <span id="domicilioCandidato">--</span>
-                            </p>
+                    <!-- CV -->
+                    <div class="col-md-6">
 
-                            <div class="estado-candidato">
-                                <strong>Estatus:</strong>
+                        <div class="archivo">
 
-                                <span id="estadoCandidato"
-                                      class="estado-evaluacion">
-                                    En evaluación
-                                </span>
+                            <div class="archivo-nombre">
+                                📄 CV del aspirante
                             </div>
+
+                            <button type="button"
+                                    id="btnCV"
+                                    class="btn btn-primary w-100">
+                                Ver CV
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- VIDEO -->
+                    <div class="col-md-6">
+
+                        <div class="archivo">
+
+                            <div class="archivo-nombre">
+                                ▶ Video de presentación
+                            </div>
+
+                            <button type="button"
+                                    id="btnVideo"
+                                    class="btn btn-primary w-100">
+                                Reproducir vídeo
+                            </button>
 
                         </div>
 
@@ -155,114 +228,29 @@
 
                 </div>
 
+            </div>
 
-                <!-- ARCHIVOS ADJUNTOS -->
-                <div class="panel archivos-panel">
-
-                    <h3 class="titulo-archivos">
-                        Archivos adjuntos
-                    </h3>
-
-                    <div class="row g-4">
-
-                        <!-- CV -->
-                        <div class="col-md-6">
-
-                            <div class="archivo">
-
-                                <div class="archivo-nombre">
-                                    📄 CV del aspirante
-                                </div>
-
-                                <button type="button"
-                                        id="btnCV"
-                                        class="btn btn-primary w-100">
-                                    Ver CV
-                                </button>
-
-                            </div>
-
-                        </div>
+        </section>
 
 
-                        <!-- VIDEO -->
-                        <div class="col-md-6">
+        <!-- COLUMNA DERECHA -->
+        <section class="col-lg-5">
 
-                            <div class="archivo">
+            <h2 class="titulo-seccion">
+                Panel de evaluación
+            </h2>
 
-                                <div class="archivo-nombre">
-                                    ▶ Video de presentación
-                                </div>
+            <div class="panel evaluacion-panel">
 
-                                <button type="button"
-                                        id="btnVideo"
-                                        class="btn btn-primary w-100">
-                                    Reproducir vídeo
-                                </button>
+                <!-- CRITERIOS -->
+                <div class="criterios-evaluacion">
 
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </section>
-
-
-            <!-- COLUMNA DERECHA -->
-            <section class="col-lg-5">
-
-                <h2 class="titulo-seccion">
-                    Panel de evaluación
-                </h2>
-
-                <div class="panel evaluacion-panel">
-
-                    <!-- CRITERIOS -->
-                    <div class="criterios-evaluacion">
-
-    <div class="criterio">
-        <label for="habilidades">
-            Habilidades técnicas y de expresión:
-        </label>
-
-        <div class="estrellas" data-criterio="habilidades">
-            <span class="estrella" data-valor="1">★</span>
-            <span class="estrella" data-valor="2">★</span>
-            <span class="estrella" data-valor="3">★</span>
-            <span class="estrella" data-valor="4">★</span>
-            <span class="estrella" data-valor="5">★</span>
-        </div>
-
-        <input type="hidden" id="habilidades" value="0">
-    </div>
-
-
-    <div class="criterio">
-        <label for="calidadVideo">
-            Calidad del vídeo:
-        </label>
-
-        <div class="estrellas" data-criterio="calidadVideo">
-            <span class="estrella" data-valor="1">★</span>
-            <span class="estrella" data-valor="2">★</span>
-            <span class="estrella" data-valor="3">★</span>
-            <span class="estrella" data-valor="4">★</span>
-            <span class="estrella" data-valor="5">★</span>
-        </div>
-
-        <input type="hidden" id="calidadVideo" value="0">
-    </div>
-
-
-   <div class="criterio">
-    <label for="perfilAcademico">
-        Perfil académico y laboral:
+<div class="criterio">
+    <label for="habilidades">
+        Habilidades técnicas y de expresión:
     </label>
 
-    <div class="estrellas" data-criterio="perfilAcademico">
+    <div class="estrellas" data-criterio="habilidades">
         <span class="estrella" data-valor="1">★</span>
         <span class="estrella" data-valor="2">★</span>
         <span class="estrella" data-valor="3">★</span>
@@ -270,7 +258,41 @@
         <span class="estrella" data-valor="5">★</span>
     </div>
 
-    <input type="hidden" id="perfilAcademico" value="0">
+    <input type="hidden" id="habilidades" value="0">
+</div>
+
+
+<div class="criterio">
+    <label for="calidadVideo">
+        Calidad del vídeo:
+    </label>
+
+    <div class="estrellas" data-criterio="calidadVideo">
+        <span class="estrella" data-valor="1">★</span>
+        <span class="estrella" data-valor="2">★</span>
+        <span class="estrella" data-valor="3">★</span>
+        <span class="estrella" data-valor="4">★</span>
+        <span class="estrella" data-valor="5">★</span>
+    </div>
+
+    <input type="hidden" id="calidadVideo" value="0">
+</div>
+
+   <div class="criterio">
+    <label for="perfilAcademico">
+        Perfil académico y laboral:
+    </label>
+
+<div class="estrellas" data-criterio="perfilAcademico">
+    <span class="estrella" data-valor="1">★</span>
+    <span class="estrella" data-valor="2">★</span>
+    <span class="estrella" data-valor="3">★</span>
+    <span class="estrella" data-valor="4">★</span>
+    <span class="estrella" data-valor="5">★</span>
+</div>
+
+<input type="hidden" id="perfilAcademico" value="0">
+
 </div>
 
 <div class="resultado-puntuacion">
@@ -282,55 +304,75 @@
                     <!-- OBSERVACIONES -->
                     <div class="observaciones">
 
-                        <label for="comentarios"
-                               class="form-label">
-                            Observaciones del evaluador
-                        </label>
+                    <label for="comentarios"
+                           class="form-label">
+                        Observaciones del evaluador
+                    </label>
 
-                        <textarea id="comentarios"
-                                  class="form-control"
-                                  rows="6"
-                                  placeholder="Comentarios del evaluador..."></textarea>
-
-                    </div>
+                    <textarea id="comentarios"
+                              class="form-control"
+                              rows="6"
+                              placeholder="Comentarios del evaluador..."></textarea>
 
                 </div>
 
-
-                <!-- BOTONES DE RESULTADO -->
-                <div class="acciones-evaluacion">
-
-                    <button type="button"
-                            id="btnRechazar"
-                            class="btn btn-danger">
-                        Rechazar
-                    </button>
-
-                    <button type="button"
-                            id="btnAjustes"
-                            class="btn btn-warning">
-                        Requiere ajustes
-                    </button>
-
-                    <button type="button"
-                            id="btnAprobar"
-                            class="btn btn-success">
-                        Aprobar
-                    </button>
-
-                </div>
-
-            </section>
-
-        </div>
-
-    </main>
+            </div>
 
 
-    <!-- JavaScript propio -->
-    <script src="js/evaluaciones.js"></script>
-    <script src="js/autenticaciones.js"></script>
+            <!-- BOTONES DE RESULTADO -->
+            <div class="acciones-evaluacion">
+
+                <button type="button"
+                        id="btnRechazar"
+                        class="btn btn-danger">
+                    Rechazar
+                </button>
+
+                <button type="button"
+                        id="btnAjustes"
+                        class="btn btn-warning">
+                    Requiere ajustes
+                </button>
+
+                <button type="button"
+                        id="btnAprobar"
+                        class="btn btn-success">
+                    Aprobar
+                </button>
+
+            </div>
+
+            <!-- NUEVO: RESULTADO FINAL DE LA ETAPA TÉCNICA -->
+            <div class="mt-4">
+
+                <h3 class="titulo-seccion">
+                    Resultado final - Etapa Técnica
+                </h3>
+
+                <button type="button"
+                        id="btnAprobarFinal"
+                        class="btn btn-success w-100 mb-2">
+                    Aprobar candidato
+                </button>
+
+                <button type="button"
+                        id="btnDenegarFinal"
+                        class="btn btn-danger w-100">
+                    Denegar candidato
+                </button>
+
+            </div>
+
+        </section>
+
+    </div>
+
+</main>
+
+
+<!-- JavaScript propio -->
+<script src="js/perfil-candidato.js"></script>
+<script src="js/autenticaciones.js"></script>
 
 </body>
-
 </html>

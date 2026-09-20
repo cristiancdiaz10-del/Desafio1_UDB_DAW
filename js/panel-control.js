@@ -2,12 +2,10 @@
 let chartFlujoInstance = null;
 let chartEstadosInstance = null;
 
-// js/dashboard.js - Lógica del Dashboard de Evaluación / Admin
-
 document.addEventListener('DOMContentLoaded', () => {
     //Proteger la vista: Solo permite el acceso a Administradores
     if (typeof protegerVista === 'function') {
-        protegerVista(['administrador', 'superadministrador']);
+        protegerVista(['administrador', 'superadministrador', 'evaluador']);
     }
 
     //Obtener datos de la sesión activa
@@ -21,11 +19,28 @@ document.addEventListener('DOMContentLoaded', () => {
         // Muestra el nombre registrado en la sesión
         lblAdmin.innerText = sesion.nombre; 
     }
+
+    // Mostrar nombre en la barra lateral si existe
+    const lblSidebar = document.getElementById('lbl-admin-sidebar');
+
+    if (lblSidebar) {
+        lblSidebar.innerText = sesion.nombre;
+    }
+
     //Carga las métricas, tabla y gráficas con datos reales
     cargarDashboardReal();
+
+    // Buscador de aspirantes
+    const buscador = document.getElementById('inputBuscarAspirante');
+
+    if (buscador) {
+        buscador.addEventListener('input', () => {
+            cargarDashboardReal(buscador.value);
+        });
+    }
 });
 
-function cargarDashboardReal() {
+function cargarDashboardReal(busqueda = '') {
     // Obtener la lista de usuarios desde localStorage
     const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
     
@@ -52,10 +67,21 @@ function cargarDashboardReal() {
     // TABLA DE SOLICITUDES
     // -------------------------------------------------------------
     const tbody = document.getElementById('tablaSolicitudesBody');
+
     if (tbody) {
         tbody.innerHTML = '';
 
-        if (aspirantes.length === 0) {
+        // Filtrar aspirantes por nombre o correo
+        const texto = busqueda.toLowerCase().trim();
+
+        const aspirantesFiltrados = aspirantes.filter(asp => {
+            return (
+                (asp.nombreCompleto || '').toLowerCase().includes(texto) ||
+                (asp.email || '').toLowerCase().includes(texto)
+            );
+        });
+
+        if (aspirantesFiltrados.length === 0) {
             tbody.innerHTML = `
                 <tr>
                     <td colspan="5" class="text-center text-muted py-4">
@@ -63,11 +89,12 @@ function cargarDashboardReal() {
                     </td>
                 </tr>`;
         } else {
-            aspirantes.forEach(asp => {
+            aspirantesFiltrados.forEach(asp => {
                 const tr = document.createElement('tr');
+
                 tr.innerHTML = `
-                    <td class="fw-semibold">${asp.nombre || 'Sin nombre'}</td>
-                    <td>${asp.cursoInteres || 'General'}</td>
+                    <td class="fw-semibold">${asp.nombre || asp.nombreCompleto || 'Sin nombre'}</td>
+                    <td>${asp.cursoInteres || asp.curso || 'General'}</td>
                     <td><span class="status status-${(asp.estado || 'postulado').toLowerCase().replace(' ', '')}">${asp.estado || 'Postulado'}</span></td>
                     <td>
                         <small class="text-muted">
@@ -76,11 +103,12 @@ function cargarDashboardReal() {
                         </small>
                     </td>
                     <td>
-                        <button class="btn btn-sm btn-outline-primary" onclick="evaluarAspirante('${asp.id}')">
+                        <button class="btn btn-sm btn-outline-primary" onclick="evaluarAspirante('${asp.email}')">
                             Evaluar
                         </button>
                     </td>
                 `;
+
                 tbody.appendChild(tr);
             });
         }
@@ -95,6 +123,7 @@ function cargarDashboardReal() {
 function renderizarGraficasReales(aspirantes, total, revision, entrevistados, seleccionados, rechazados) {
     // 1. Gráfica 1: Flujo de Solicitudes por Mes (se calcula analizando la fechaRegistro de cada aspirante)
     const ctxFlujo = document.getElementById('flujoSolicitudes');
+
     if (ctxFlujo) {
         // Agrupar registros reales por mes (Enero a Diciembre)
         const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
@@ -103,7 +132,8 @@ function renderizarGraficasReales(aspirantes, total, revision, entrevistados, se
         aspirantes.forEach(asp => {
             if (asp.fechaRegistro) {
                 const fecha = new Date(asp.fechaRegistro);
-                const mesIndex = fecha.getMonth(); // 0 = Ene, 11 = Dic
+                const mesIndex = fecha.getMonth();
+
                 if (mesIndex >= 0 && mesIndex < 12) {
                     conteoPorMes[mesIndex]++;
                 }
@@ -145,6 +175,7 @@ function renderizarGraficasReales(aspirantes, total, revision, entrevistados, se
 
     //Gráfica 2: Distribución por Estados
     const ctxEstados = document.getElementById('estadosAspirantes');
+
     if (ctxEstados) {
         // Si no hay registros aún, se contabiliza 0 en todo
         const postuladosSolo = aspirantes.filter(a => a.estado === 'Postulado' || !a.estado).length;
@@ -174,6 +205,20 @@ function renderizarGraficasReales(aspirantes, total, revision, entrevistados, se
     }
 }
 
-function evaluarAspirante(id) {
-    alert(`Evaluación rápida para el aspirante ID: ${id}`);
+function evaluarAspirante(email) {
+    const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
+
+    const aspirante = usuarios.find(u => u.email === email);
+
+    if (!aspirante) {
+        alert('No se encontró el aspirante.');
+        return;
+    }
+
+    localStorage.setItem(
+        'aspiranteEvaluar',
+        JSON.stringify(aspirante)
+    );
+
+    window.location.href = 'páginas/evaluaciones.html';
 }

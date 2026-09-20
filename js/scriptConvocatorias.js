@@ -1,5 +1,4 @@
 //Gestión de Convocatorias y Cursos
-// js/dashboard.js - Lógica del Dashboard de Evaluación / Admin
 
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Proteger la vista: Solo permite el acceso a Administradores
@@ -7,18 +6,26 @@ document.addEventListener('DOMContentLoaded', () => {
         protegerVista(['administrador', 'superadministrador']);
     }
 
-    // 2. Obtener datos de la sesión activa
+    //Obtener datos de la sesión activa
     const sesion = JSON.parse(localStorage.getItem('sesion'));
     if (!sesion) return;
 
-    // 3. Actualizar el nombre en el encabezado o barra superior (Topbar)
+    //Actualizar el nombre en el encabezado o barra superior (Topbar)
     const lblAdmin = document.getElementById('lbl-admin-topbar') || document.getElementById('lbl-usuario');
     
     if (lblAdmin) {
         // Muestra el nombre registrado en la sesión
         lblAdmin.innerText = sesion.nombre; 
     }
+
+    // Mostrar nombre del usuario en la barra lateral
+    const lblSidebar = document.getElementById('lbl-admin-sidebar');
+
+    if (lblSidebar) {
+        lblSidebar.innerText = sesion.nombre;
+    }
 });
+
 //ESTADO INICIAL
 let convocatorias = JSON.parse(localStorage.getItem('convocatorias')) || [
     { id: 1, curso: "Análisis de datos con herramientas de IA", fechaInicio: "2026-10-01", fechaCierre: "2026-10-25", plazas: 30, estado: "Activa" },
@@ -26,7 +33,7 @@ let convocatorias = JSON.parse(localStorage.getItem('convocatorias')) || [
 ];
 
 let cursos = JSON.parse(localStorage.getItem('cursos')) || [
-    { id: 1, nombre: "Análisis de datos con herramientas de IA", descripcion: "Capacitación avanzada en modelos predictivos y análisis estadístico enfocado en toma de decisiones." },
+    { id: 1, nombre: "Análisis de datos con herramientas de IA", descripcion: "Capacitación avanzada en modelos predictivos y análisis estadístico enfocado a toma de decisiones." },
     { id: 2, nombre: "Lenguajes de programación: JavaScript y C#", descripcion: "Fundamentos de lógica, desarrollo frontend interactivo y backend robusto orientado a objetos." }
 ];
 
@@ -55,10 +62,35 @@ document.addEventListener('DOMContentLoaded', () => {
     // Escuchar eventos de guardado (Submit de formularios)
     configurarFormularios();
 
+    // Cargar cursos disponibles en el selector
+    cargarCursosEnSelect();
+
     // Renderizar vistas
     renderizarTablaConvocatorias();
     renderizarCursos();
 });
+
+// Cargar cursos guardados en el selector de convocatorias
+function cargarCursosEnSelect() {
+
+    const select = document.getElementById('cursoSelect');
+
+    if (!select) return;
+
+    select.innerHTML = `
+        <option value="" selected disabled>Seleccione un curso...</option>
+    `;
+
+    cursos.forEach(curso => {
+
+        const option = document.createElement('option');
+
+        option.value = curso.nombre;
+        option.textContent = curso.nombre;
+
+        select.appendChild(option);
+    });
+}
 
 //LÓGICA DE CONVOCATORIAS
 function renderizarTablaConvocatorias() {
@@ -179,6 +211,9 @@ function eliminarCurso(id) {
         cursos = cursos.filter(c => c.id !== id);
         localStorage.setItem('cursos', JSON.stringify(cursos));
         renderizarCursos();
+
+        // Actualizar el selector de convocatorias
+        cargarCursosEnSelect();
     }
 }
 
@@ -229,6 +264,10 @@ function configurarFormularios() {
 
             localStorage.setItem('cursos', JSON.stringify(cursos));
             renderizarCursos();
+
+            // Actualizar el selector de convocatorias
+            cargarCursosEnSelect();
+
             if (modalCursoBS) modalCursoBS.hide();
         });
     }
