@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            if (avanzarAspirante(5, "En proceso")) {
+            if (avanzarAspirante(4, "En proceso")) {
 
                 const estadoCandidato =
                     document.getElementById("estadoCandidato");

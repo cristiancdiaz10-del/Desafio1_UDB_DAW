@@ -28,9 +28,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const alerta = document.getElementById('alerta-portal');
 
             if (alerta) {
-                alerta.innerText = perfil.resultadoFinal === 'Aprobado'
-                    ? '¡Felicidades! Has sido aprobado.'
-                    : 'Tu proceso ha finalizado. No has sido seleccionado.';
+                alerta.innerText = perfil.resultadoFinal === 'Seleccionado/a'
+                    ? '¡Felicidades! Has sido seleccionado/a.'
+                    : 'Tu proceso ha finalizado. No has sido seleccionado/a.';
 
                 alerta.classList.remove('d-none');
             }
@@ -281,9 +281,9 @@ async function guardarEntregaEtapa2(evento, tipo) {
 
         // Si adjuntó ambos, avanza a Etapa 3 (Validación)
         if (usuarios[index].cvAdjuntado && usuarios[index].videoAdjuntado) {
-            usuarios[index].etapaActual = 3;
+            usuarios[index].etapaActual = 2;
             usuarios[index].estado = 'En revisión';
-            renderizarProgreso(3);
+            renderizarProgreso(2);
         }
 
 
