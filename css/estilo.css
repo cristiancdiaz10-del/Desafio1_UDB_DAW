@@ -740,3 +740,299 @@ RESPONSIVIDAD (MEDIA QUERIES)
         display: none;
     }
 }
+
+/*==================================== 
+MÓDULO DE EVALUACIONES - PROTALENTO 
+======================================*/
+
+body {
+    margin: 0;
+    background-color: #ffffff;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #111111;
+}
+
+/* ENCABEZADO */
+
+.encabezado {
+    background-color: #d9d9d9;
+    padding: 12px 25px;
+    margin-bottom: 25px;
+}
+
+.logo_evaluaciones {
+    width: 110px;
+    height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.titulo-principal {
+    margin: 0;
+    font-size: 32px;
+    font-weight: bold;
+}
+
+.nombre-evaluador {
+    font-size: 16px;
+}
+
+/* CONTENIDO GENERAL */
+
+.contenido-principal {
+    padding: 0 30px 30px 30px;
+}
+
+.titulo-seccion {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+/* PANELES */
+
+.panel {
+    background-color: #e5f1ff;
+    border: 1px solid #b7c3cf;
+    border-radius: 18px;
+    padding: 22px;
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.25);
+}
+
+.candidato-panel {
+    min-height: 340px;
+}
+
+/* INFORMACIÓN DEL CANDIDATO */
+
+.foto-candidato {
+    width: 100%;
+    max-width: 240px;
+    height: 240px;
+    margin: auto;
+    border-radius: 18px;
+    background-color: #a8bfd8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-weight: bold;
+    color: #31465c;
+}
+
+.candidato-panel h3 {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.curso-aspirante {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 25px;
+}
+
+.candidato-panel p {
+    margin-bottom: 14px;
+}
+
+.estado-candidato {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.estado-evaluacion {
+    background-color: #eef26b;
+    padding: 12px 18px;
+    border-radius: 20px;
+    font-weight: bold;
+}
+
+
+/* ARCHIVOS ADJUNTOS */
+
+.archivos-panel {
+    margin-top: 35px;
+}
+
+.titulo-archivos {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 25px;
+}
+
+.archivo {
+    background-color: #ffffff;
+    border: 1px solid #0d6efd;
+    border-radius: 18px;
+    padding: 18px;
+    min-height: 190px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.archivo-nombre {
+    font-weight: bold;
+    padding: 20px 5px;
+}
+
+.archivo .btn {
+    border-radius: 15px;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+
+/* PANEL DE EVALUACIÓN */
+
+.evaluacion-panel {
+    min-height: 640px;
+}
+
+.criterios-evaluacion {
+    background-color: #ffffff;
+    border: 1px solid #0d6efd;
+    border-radius: 18px;
+    padding: 20px;
+}
+
+.criterio {
+    padding: 20px 0;
+    border-bottom: 1px solid #4c8ddd;
+}
+
+.criterio:last-child {
+    border-bottom: none;
+}
+
+.criterio label {
+    display: block;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 12px;
+}
+
+/* Estrellas de evaluación */
+
+.estrellas {
+    display: flex;
+    gap: 5px;
+    justify-content: flex-end;
+}
+
+.estrella {
+    font-size: 34px;
+    color: #cccccc;
+    cursor: pointer;
+    user-select: none;
+}
+
+.estrella.seleccionada {
+    color: #ffb52e;
+}
+
+/* OBSERVACIONES */
+
+.observaciones {
+    margin-top: 20px;
+}
+
+.observaciones label {
+    font-size: 21px;
+    font-weight: bold;
+}
+
+.observaciones textarea {
+    border: 1px solid #0d6efd;
+    border-radius: 18px;
+    resize: none;
+    font-size: 17px;
+}
+
+/* BOTONES DE RESULTADO */
+
+.acciones-evaluacion {
+    display: flex;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.acciones-evaluacion .btn {
+    flex: 1;
+    border-radius: 18px;
+    padding: 13px 8px;
+    font-size: 17px;
+    font-weight: bold;
+}
+
+
+/* DISEÑO RESPONSIVE */
+
+@media (max-width: 991px) {
+
+    .titulo-principal {
+        font-size: 24px;
+    }
+
+    .logo-aidel {
+        width: 80px;
+        height: 70px;
+        margin-right: 15px;
+    }
+
+    .evaluacion-panel {
+        min-height: auto;
+    }
+
+}
+
+
+@media (max-width: 767px) {
+
+    .encabezado {
+        padding: 10px;
+    }
+
+    .titulo-principal {
+        font-size: 19px;
+    }
+
+    .nombre-evaluador {
+        font-size: 13px;
+    }
+
+    .contenido-principal {
+        padding: 0 15px 20px 15px;
+    }
+
+    .titulo-seccion {
+        font-size: 21px;
+    }
+
+    .foto-candidato {
+        margin-bottom: 25px;
+    }
+
+    .candidato-panel h3 {
+        text-align: center;
+    }
+
+    .curso-aspirante {
+        text-align: center;
+    }
+
+    .estado-candidato {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .acciones-evaluacion {
+        flex-direction: column;
+    }
+
+}
