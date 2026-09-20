@@ -40,7 +40,7 @@ seleccionarAspirante.addEventListener("change", function () {
         aspiranteSeleccionado.nombreCompleto;
 
     document.getElementById("cursoCandidato").textContent =
-        aspiranteSeleccionado.cursoFormacion;
+        aspiranteSeleccionado.curso || "--";
 
     document.getElementById("duiCandidato").textContent =
         aspiranteSeleccionado.numeroDUI || "--";

@@ -134,8 +134,8 @@ document.addEventListener("DOMContentLoaded", function () {
         const departamento = document.getElementById("departamento").value;
         const municipio = document.getElementById("municipio").value;
         const distrito = document.getElementById("distrito").value;
-        const DUI = document.getElementById("DUI").value.trim;
-        const NIT = document.getElementById("NIT").value.trim;
+        const DUI = document.getElementById("DUI").value.trim();
+        const NIT = document.getElementById("NIT").value.trim();
         const discapacidad = document.getElementById("discapacidad").value;
         const nivelEducativo = document.getElementById("nivel-educativo").value;
         const situacionActual = document.getElementById("situacion-actual").value;
@@ -144,19 +144,19 @@ document.addEventListener("DOMContentLoaded", function () {
         const dominioComputadora = document.getElementById("dominio-computadora").value;
         const vinculacionLaboral = document.getElementById("vinculacion").value;
         const medioPreferido = document.getElementById("medio-contacto").value;
-        const telefono1 = document.getElementById("telefono").value.trim;
-        const telefono2 = document.getElementById("telefono2").value.trim;
-        const email = document.getElementById("email").value.trim;
+        const telefono1 = document.getElementById("telefono").value.trim();
+        const telefono2 = document.getElementById("telefono2").value.trim();
+        const email = document.getElementById("email").value.trim();
         const password = document.getElementById("password").value;
         const consentimientoInformado = document.getElementById("aceptarConsentimiento").checked;
 
         // Obtener usuarios registrados
         let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
 
-        // Verificar si el correo ya existe
+       // Verificar si el correo ya existe
         const correoExiste = usuarios.some(function (usuario) {
-            return usuario.correo === correo;
-        });
+            return usuario.email === email;
+});
 
         if (correoExiste) {
             alert("Este correo ya está registrado.");
