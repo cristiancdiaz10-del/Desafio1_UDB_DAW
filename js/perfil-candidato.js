@@ -87,136 +87,126 @@ document.addEventListener('DOMContentLoaded', () => {
         );
     }
 
-    // Evento de Programación
-    if (btnProgramar) {
-        btnProgramar.addEventListener("click", () => {
-            const emailAspirante = seleccionarAspirante.value;
-            const fechaEvaluacion = document.getElementById("fechaEvaluacion").value;
+    // Evento de Programación (Sincronizado con el usuario)
+if (btnProgramar) {
+    btnProgramar.addEventListener("click", () => {
+        const emailAspirante = seleccionarAspirante.value;
+        const fechaEvaluacion = document.getElementById("fechaEvaluacion").value;
 
-            if (!emailAspirante) {
-                alert("Debe seleccionar un aspirante.");
-                return;
+        if (!emailAspirante) {
+            alert("Debe seleccionar un aspirante.");
+            return;
+        }
+
+        if (!fechaEvaluacion) {
+            alert("Debe seleccionar una fecha para la evaluación.");
+            return;
+        }
+
+        // 1. Guardar en 'programacionesEvaluacion'
+        let programaciones = JSON.parse(localStorage.getItem("programacionesEvaluacion")) || [];
+        const indiceProg = programaciones.findIndex(p => p.aspiranteEmail === emailAspirante);
+
+        const nuevaProgramacion = {
+            aspiranteEmail: emailAspirante,
+            fechaEvaluacion: fechaEvaluacion
+        };
+
+        if (indiceProg !== -1) {
+            programaciones[indiceProg] = nuevaProgramacion;
+        } else {
+            programaciones.push(nuevaProgramacion);
+        }
+
+        localStorage.setItem("programacionesEvaluacion", JSON.stringify(programaciones));
+
+        // 2. Sincronizar directamente con el perfil del usuario en 'usuarios'
+        let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+        const indiceUsuario = usuarios.findIndex(u => u.email === emailAspirante);
+
+        if (indiceUsuario !== -1) {
+            usuarios[indiceUsuario].fechaEvaluacion = fechaEvaluacion;
+            localStorage.setItem("usuarios", JSON.stringify(usuarios));
+        }
+
+        alert("Evaluación programada correctamente.");
+    });
+}
+
+// Completar validación y pasar a Entrevista Virtual (Etapa 4)
+const btnCompletarValidacion = document.getElementById("btnCompletarValidacion");
+
+if (btnCompletarValidacion) {
+    btnCompletarValidacion.addEventListener("click", () => {
+        const emailAspirante = seleccionarAspirante.value;
+
+        if (!emailAspirante) {
+            alert("Debe seleccionar un aspirante.");
+            return;
+        }
+
+        // Avanza a la Etapa 4: Entrevista Virtual
+        if (avanzarAspirante(4, "En entrevista")) {
+            const estadoCandidato = document.getElementById("estadoCandidato");
+
+            if (estadoCandidato) {
+                estadoCandidato.textContent = "Entrevista Virtual";
             }
 
-            if (!fechaEvaluacion) {
-                alert("Debe seleccionar una fecha para la evaluación.");
-                return;
+            alert("Validación completada correctamente. El aspirante ha avanzado a Entrevista Virtual (Etapa 4).");
+        }
+    });
+}
+
+// Completar entrevista y pasar a Pruebas Psicométricas (Etapa 5)
+const btnCompletarEntrevista = document.getElementById("btnCompletarEntrevista");
+
+if (btnCompletarEntrevista) {
+    btnCompletarEntrevista.addEventListener("click", () => {
+        const emailAspirante = seleccionarAspirante.value;
+
+        if (!emailAspirante) {
+            alert("Debe seleccionar un aspirante.");
+            return;
+        }
+
+        // Avanza a la Etapa 5: Pruebas Psicométricas
+        if (avanzarAspirante(5, "En psicométricas")) {
+            const estadoCandidato = document.getElementById("estadoCandidato");
+
+            if (estadoCandidato) {
+                estadoCandidato.textContent = "Pruebas Psicométricas";
             }
 
-            let programaciones = JSON.parse(localStorage.getItem("programacionesEvaluacion")) || [];
-            const indice = programaciones.findIndex(p => p.aspiranteEmail === emailAspirante);
+            alert("Entrevista completada correctamente. El aspirante ha avanzado a Pruebas Psicométricas (Etapa 5).");
+        }
+    });
+}
 
-            const nuevaProgramacion = {
-                aspiranteEmail: emailAspirante,
-                fechaEvaluacion: fechaEvaluacion
-            };
+// Completar psicométricas y pasar a Prueba Técnica (Etapa 6)
+const btnCompletarPsicometrica = document.getElementById("btnCompletarPsicometrica");
 
-            if (indice !== -1) {
-                programaciones[indice] = nuevaProgramacion;
-            } else {
-                programaciones.push(nuevaProgramacion);
+if (btnCompletarPsicometrica) {
+    btnCompletarPsicometrica.addEventListener("click", () => {
+        const emailAspirante = seleccionarAspirante.value;
+
+        if (!emailAspirante) {
+            alert("Debe seleccionar un aspirante.");
+            return;
+        }
+
+        // Avanza a la Etapa 6: Prueba Técnica
+        if (avanzarAspirante(6, "En prueba técnica")) {
+            const estadoCandidato = document.getElementById("estadoCandidato");
+
+            if (estadoCandidato) {
+                estadoCandidato.textContent = "Prueba Técnica";
             }
 
-            localStorage.setItem(
-                "programacionesEvaluacion",
-                JSON.stringify(programaciones)
-            );
-
-            alert("Evaluación programada correctamente.");
-        });
-    }
-
-    // Completar validación y pasar a entrevista
-    const btnCompletarValidacion =
-        document.getElementById("btnCompletarValidacion");
-
-    if (btnCompletarValidacion) {
-        btnCompletarValidacion.addEventListener("click", () => {
-
-            const emailAspirante = seleccionarAspirante.value;
-
-            if (!emailAspirante) {
-                alert("Debe seleccionar un aspirante.");
-                return;
-            }
-
-            if (avanzarAspirante(4, "En proceso")) {
-
-                const estadoCandidato =
-                    document.getElementById("estadoCandidato");
-
-                if (estadoCandidato) {
-                    estadoCandidato.textContent = "Entrevista";
-                }
-
-                alert(
-                    "Validación completada correctamente. El aspirante ha avanzado a la etapa de Entrevista Virtual."
-                );
-            }
-        });
-    }
-
-
-    // Completar entrevista y pasar a Psicométricas
-    const btnCompletarEntrevista =
-        document.getElementById("btnCompletarEntrevista");
-
-    if (btnCompletarEntrevista) {
-        btnCompletarEntrevista.addEventListener("click", () => {
-
-            const emailAspirante = seleccionarAspirante.value;
-
-            if (!emailAspirante) {
-                alert("Debe seleccionar un aspirante.");
-                return;
-            }
-
-            if (avanzarAspirante(5, "En proceso")) {
-
-                const estadoCandidato =
-                    document.getElementById("estadoCandidato");
-
-                if (estadoCandidato) {
-                    estadoCandidato.textContent = "Prueba Psicométricas";
-                }
-
-                alert(
-                    "Entrevista completada correctamente. El aspirante ha avanzado a la etapa de Pruebas Psicométricas."
-                );
-            }
-        });
-    }
-
-    // Completar psicométricas y pasar a Técnica
-    const btnCompletarPsicometrica =
-        document.getElementById("btnCompletarPsicometrica");
-
-    if (btnCompletarPsicometrica) {
-        btnCompletarPsicometrica.addEventListener("click", () => {
-
-            const emailAspirante = seleccionarAspirante.value;
-
-            if (!emailAspirante) {
-                alert("Debe seleccionar un aspirante.");
-                return;
-            }
-
-            if (avanzarAspirante(6, "En proceso")) {
-
-                const estadoCandidato =
-                    document.getElementById("estadoCandidato");
-
-                if (estadoCandidato) {
-                    estadoCandidato.textContent = "Prueba Técnica";
-                }
-
-                alert(
-                    "Evaluación psicométrica completada correctamente. El aspirante ha avanzado a la etapa de Prueba Técnica."
-                );
-            }
-        });
-    }
-
+            alert("Evaluación psicométrica completada correctamente. El aspirante ha avanzado a Prueba Técnica (Etapa 6).");
+        }
+    });
+}
     // Aprobar candidato al finalizar la etapa Técnica
     const btnAprobarFinal =
         document.getElementById("btnAprobarFinal");
