@@ -43,10 +43,10 @@ seleccionarAspirante.addEventListener("change", function () {
         aspiranteSeleccionado.curso || "--";
 
     document.getElementById("duiCandidato").textContent =
-        aspiranteSeleccionado.numeroDUI || "--";
+        aspiranteSeleccionado.DUI || "--";
 
     document.getElementById("telefonoCandidato").textContent =
-        aspiranteSeleccionado.numeroTelefono || "--";
+        aspiranteSeleccionado.telefono1 || "--";
 
     document.getElementById("correoCandidato").textContent =
         aspiranteSeleccionado.email;
