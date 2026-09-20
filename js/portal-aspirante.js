@@ -394,11 +394,11 @@ function obtenerNombreEtapa(numeroEtapa) {
 
     const etapas = [
         'Registro',
-        'CV y Vídeo',
+        'Envío CV y Vídeo',
         'Validación',
-        'Entrevista',
-        'Psicométricas',
-        'Técnica'
+        'Entrevista Virtual',
+        'Pruebas Psicométricas',
+        'Prueba Técnica'
     ];
 
     return etapas[numeroEtapa - 1];
