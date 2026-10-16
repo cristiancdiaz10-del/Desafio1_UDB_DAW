@@ -220,5 +220,5 @@ function evaluarAspirante(email) {
         JSON.stringify(aspirante)
     );
 
-    window.location.href = 'páginas/evaluaciones.html';
+    window.location.href = "perfil-candidato.html";
 }
