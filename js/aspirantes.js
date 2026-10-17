@@ -129,14 +129,6 @@ function evaluarAspirante(email) {
         'aspiranteEvaluar',
         JSON.stringify(aspirante)
     );
-
-    window.location.href =
-        'páginas/evaluaciones.html';
-}
-
-function evaluarAspirante(email) {
-    // 1. Guardar temporalmente el correo del usuario seleccionado
-    localStorage.setItem("emailEvaluar", email);
     
     // 2. Redirigir a la vista de evaluaciones
     window.location.href = "perfil-candidato.html";

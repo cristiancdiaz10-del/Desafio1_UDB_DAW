@@ -1,4 +1,4 @@
-//Gestión de Convocatorias y Cursos
+// Gestión de Convocatorias y Cursos
 
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Proteger la vista: Solo permite el acceso a Administradores
@@ -6,11 +6,11 @@ document.addEventListener('DOMContentLoaded', () => {
         protegerVista(['administrador', 'superadministrador']);
     }
 
-    //Obtener datos de la sesión activa
+    // Obtener datos de la sesión activa
     const sesion = JSON.parse(localStorage.getItem('sesion'));
     if (!sesion) return;
 
-    //Actualizar el nombre en el encabezado o barra superior (Topbar)
+    // Actualizar el nombre en el encabezado o barra superior (Topbar)
     const lblAdmin = document.getElementById('lbl-admin-topbar') || document.getElementById('lbl-usuario');
     
     if (lblAdmin) {
@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-//ESTADO INICIAL
+// ESTADO INICIAL
 let convocatorias = JSON.parse(localStorage.getItem('convocatorias')) || [
     { id: 1, curso: "Análisis de datos con herramientas de IA", fechaInicio: "2026-10-01", fechaCierre: "2026-10-25", plazas: 30, estado: "Activa" },
     { id: 2, curso: "Lenguajes de programación: JavaScript y C#", fechaInicio: "2026-11-05", fechaCierre: "2026-11-30", plazas: 25, estado: "Próximamente" }
@@ -41,7 +41,7 @@ let cursos = JSON.parse(localStorage.getItem('cursos')) || [
 let modalConvocatoriaBS = null;
 let modalCursoBS = null;
 
-//INICIALIZACIÓN
+// INICIALIZACIÓN
 document.addEventListener('DOMContentLoaded', () => {
     // Proteger vista para evaluadores/admins si existe la función
     if (typeof protegerVista === 'function') {
@@ -72,7 +72,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Cargar cursos guardados en el selector de convocatorias
 function cargarCursosEnSelect() {
-
     const select = document.getElementById('cursoSelect');
 
     if (!select) return;
@@ -82,7 +81,6 @@ function cargarCursosEnSelect() {
     `;
 
     cursos.forEach(curso => {
-
         const option = document.createElement('option');
 
         option.value = curso.nombre;
@@ -92,7 +90,7 @@ function cargarCursosEnSelect() {
     });
 }
 
-//LÓGICA DE CONVOCATORIAS
+// LÓGICA DE CONVOCATORIAS
 function renderizarTablaConvocatorias() {
     const tabla = document.getElementById('tablaConvocatorias');
     if (!tabla) return;
@@ -148,21 +146,31 @@ function prepararEdicionConvocatoria(id) {
 }
 
 function eliminarConvocatoria(id) {
-    confirmarEliminacion("esta convocatoria").then((confirmado) => {
-        if (!confirmado) return;
-
-        convocatorias = convocatorias.filter(c => c.id !== id);
-        localStorage.setItem('convocatorias', JSON.stringify(convocatorias));
-        renderizarTablaConvocatorias();
-
-        mostrarExito(
-            "Convocatoria eliminada",
-            "La convocatoria se eliminó correctamente."
-        );
+    Swal.fire({
+        title: '¿Estás seguro?',
+        text: "¡No podrás revertir esta acción!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            convocatorias = convocatorias.filter(c => c.id !== id);
+            localStorage.setItem('convocatorias', JSON.stringify(convocatorias));
+            renderizarTablaConvocatorias();
+            
+            Swal.fire(
+                '¡Eliminado!',
+                'La convocatoria ha sido borrada exitosamente.',
+                'success'
+            );
+        }
     });
 }
 
-//LÓGICA DE CURSOS
+// LÓGICA DE CURSOS
 function renderizarCursos() {
     const contenedor = document.getElementById('contenedorCursos');
     if (!contenedor) return;
@@ -214,6 +222,7 @@ function prepararEdicionCurso(id) {
 }
 
 function eliminarCurso(id) {
+<<<<<<< HEAD
     confirmarEliminacion("este curso").then((confirmado) => {
         if (!confirmado) return;
 
@@ -226,10 +235,36 @@ function eliminarCurso(id) {
             "Curso eliminado",
             "El curso se eliminó correctamente."
         );
+=======
+    Swal.fire({
+        title: '¿Estás seguro?',
+        text: "¡No podrás revertir esta acción!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            cursos = cursos.filter(c => c.id !== id);
+            localStorage.setItem('cursos', JSON.stringify(cursos));
+            renderizarCursos();
+
+            // Actualizar el selector de convocatorias
+            cargarCursosEnSelect();
+
+            Swal.fire(
+                '¡Eliminado!',
+                'El curso ha sido borrado exitosamente.',
+                'success'
+            );
+        }
+>>>>>>> origin/Branch_Crystel
     });
 }
 
-//SUBMIT DE FORMULARIOS
+// SUBMIT DE FORMULARIOS
 function configurarFormularios() {
     const formConv = document.getElementById('formConvocatoria');
     if (formConv) {
@@ -254,6 +289,14 @@ function configurarFormularios() {
             localStorage.setItem('convocatorias', JSON.stringify(convocatorias));
             renderizarTablaConvocatorias();
             if (modalConvocatoriaBS) modalConvocatoriaBS.hide();
+
+            Swal.fire({
+                icon: 'success',
+                title: '¡Guardado!',
+                text: 'La convocatoria se ha registrado correctamente.',
+                timer: 2000,
+                showConfirmButton: false
+            });
         });
     }
 
@@ -281,6 +324,14 @@ function configurarFormularios() {
             cargarCursosEnSelect();
 
             if (modalCursoBS) modalCursoBS.hide();
+
+            Swal.fire({
+                icon: 'success',
+                title: '¡Guardado!',
+                text: 'El curso se ha registrado correctamente.',
+                timer: 2000,
+                showConfirmButton: false
+            });
         });
     }
 }
