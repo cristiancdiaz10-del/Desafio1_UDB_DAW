@@ -148,11 +148,18 @@ function prepararEdicionConvocatoria(id) {
 }
 
 function eliminarConvocatoria(id) {
-    if (confirm('¿Deseas eliminar esta convocatoria?')) {
+    confirmarEliminacion("esta convocatoria").then((confirmado) => {
+        if (!confirmado) return;
+
         convocatorias = convocatorias.filter(c => c.id !== id);
         localStorage.setItem('convocatorias', JSON.stringify(convocatorias));
         renderizarTablaConvocatorias();
-    }
+
+        mostrarExito(
+            "Convocatoria eliminada",
+            "La convocatoria se eliminó correctamente."
+        );
+    });
 }
 
 //LÓGICA DE CURSOS
@@ -207,14 +214,19 @@ function prepararEdicionCurso(id) {
 }
 
 function eliminarCurso(id) {
-    if (confirm('¿Deseas eliminar este curso?')) {
+    confirmarEliminacion("este curso").then((confirmado) => {
+        if (!confirmado) return;
+
         cursos = cursos.filter(c => c.id !== id);
         localStorage.setItem('cursos', JSON.stringify(cursos));
         renderizarCursos();
-
-        // Actualizar el selector de convocatorias
         cargarCursosEnSelect();
-    }
+
+        mostrarExito(
+            "Curso eliminado",
+            "El curso se eliminó correctamente."
+        );
+    });
 }
 
 //SUBMIT DE FORMULARIOS
