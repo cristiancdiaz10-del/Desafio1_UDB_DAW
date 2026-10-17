@@ -1,6 +1,6 @@
 // Módulo de Evaluaciones y Resultados - ProTalento
 
-document.addEventListener('DOMContentLoaded', () => {
+function iniciarPerfilCandidato() {
 
     //Proteger la vista: Solo permite el acceso a Administradores
     if (typeof protegerVista === 'function') {
@@ -70,10 +70,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnProgramar = document.getElementById("btnProgramar");
 
     if (btnRechazar) {
-        btnRechazar.addEventListener("click", () =>
-            registrarDecision("Rechazado", seleccionarAspirante.value)
-        );
-    }
+    btnRechazar.addEventListener("click", async () => {
+        const emailAspirante = seleccionarAspirante.value;
+
+        if (!emailAspirante) {
+            mostrarError(
+                "Aspirante no seleccionado",
+                "Selecciona un aspirante antes de rechazarlo."
+            );
+            return;
+        }
+
+        const nombreAspirante =
+            seleccionarAspirante.options[seleccionarAspirante.selectedIndex].text;
+
+        const confirmado = await confirmarRechazo(nombreAspirante);
+
+        if (confirmado) {
+            registrarDecision("Rechazado", emailAspirante);
+        }
+    });
+}
 
     if (btnAjustes) {
         btnAjustes.addEventListener("click", () =>
@@ -82,10 +99,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (btnAprobar) {
-        btnAprobar.addEventListener("click", () =>
-            registrarDecision("Aprobado", seleccionarAspirante.value)
-        );
-    }
+    btnAprobar.addEventListener("click", async () => {
+        const emailAspirante = seleccionarAspirante.value;
+
+        if (!emailAspirante) {
+            mostrarError(
+                "Aspirante no seleccionado",
+                "Selecciona un aspirante antes de aprobarlo."
+            );
+            return;
+        }
+
+        const nombreAspirante =
+            seleccionarAspirante.options[seleccionarAspirante.selectedIndex].text;
+
+        const confirmado = await confirmarAprobacion(nombreAspirante);
+
+        if (confirmado) {
+            registrarDecision("Aprobado", emailAspirante);
+        }
+    });
+}
 
     // Evento de Programación (Sincronizado con el usuario)
 if (btnProgramar) {
@@ -208,95 +242,129 @@ if (btnCompletarPsicometrica) {
     });
 }
     // Aprobar candidato al finalizar la etapa Técnica
-    const btnAprobarFinal =
-        document.getElementById("btnAprobarFinal");
+const btnAprobarFinal = document.getElementById("btnAprobarFinal");
 
-    if (btnAprobarFinal) {
-        btnAprobarFinal.addEventListener("click", () => {
+if (btnAprobarFinal) {
+    btnAprobarFinal.addEventListener("click", async () => {
+        const emailAspirante = seleccionarAspirante.value;
 
-            const emailAspirante = seleccionarAspirante.value;
-
-            if (!emailAspirante) {
-                alert("Debe seleccionar un aspirante.");
-                return;
-            }
-
-            let usuariosActuales =
-                JSON.parse(localStorage.getItem("usuarios")) || [];
-
-            const indice = usuariosActuales.findIndex(
-                usuario => usuario.email === emailAspirante
+        if (!emailAspirante) {
+            mostrarError(
+                "Aspirante no seleccionado",
+                "Selecciona un aspirante antes de aprobarlo."
             );
+            return;
+        }
 
-            if (indice === -1) {
-                alert("No se encontró el aspirante.");
-                return;
-            }
+        const usuariosActuales =
+            JSON.parse(localStorage.getItem("usuarios")) || [];
 
-            usuariosActuales[indice].resultadoFinal = "Seleccionado/a";
-            usuariosActuales[indice].estado = "Seleccionado/a";
+        const indice = usuariosActuales.findIndex(
+            usuario => usuario.email === emailAspirante
+        );
 
-            localStorage.setItem(
-                "usuarios",
-                JSON.stringify(usuariosActuales)
+        if (indice === -1) {
+            mostrarError(
+                "Aspirante no encontrado",
+                "No fue posible encontrar el aspirante seleccionado."
             );
+            return;
+        }
 
-            const estadoCandidato =
-                document.getElementById("estadoCandidato");
+        const nombreAspirante =
+            seleccionarAspirante.options[seleccionarAspirante.selectedIndex].text;
 
-            if (estadoCandidato) {
-                estadoCandidato.textContent = "Seleccionado/a";
-            }
+        const confirmado = await confirmarAprobacion(nombreAspirante);
 
-            alert("El aspirante ha sido seleccionado exitosamente.");
-        });
-    }
+        if (!confirmado) return;
 
-    // Denegar candidato al finalizar la etapa Técnica
-    const btnDenegarFinal =
-        document.getElementById("btnDenegarFinal");
+        usuariosActuales[indice].resultadoFinal = "Seleccionado/a";
+        usuariosActuales[indice].estado = "Seleccionado/a";
 
-    if (btnDenegarFinal) {
-        btnDenegarFinal.addEventListener("click", () => {
+        localStorage.setItem(
+            "usuarios",
+            JSON.stringify(usuariosActuales)
+        );
 
-            const emailAspirante = seleccionarAspirante.value;
+        const estadoCandidato =
+            document.getElementById("estadoCandidato");
 
-            if (!emailAspirante) {
-                alert("Debe seleccionar un aspirante.");
-                return;
-            }
+        if (estadoCandidato) {
+            estadoCandidato.textContent = "Seleccionado/a";
+        }
 
-            let usuariosActuales =
-                JSON.parse(localStorage.getItem("usuarios")) || [];
+        mostrarExito(
+            "Aspirante aprobado",
+            "El aspirante ha sido seleccionado exitosamente."
+        );
+    });
+}
 
-            const indice = usuariosActuales.findIndex(
-                usuario => usuario.email === emailAspirante
+// Denegar candidato al finalizar la etapa Técnica
+const btnDenegarFinal = document.getElementById("btnDenegarFinal");
+
+if (btnDenegarFinal) {
+    btnDenegarFinal.addEventListener("click", async () => {
+        const emailAspirante = seleccionarAspirante.value;
+
+        if (!emailAspirante) {
+            mostrarError(
+                "Aspirante no seleccionado",
+                "Selecciona un aspirante antes de rechazarlo."
             );
+            return;
+        }
 
-            if (indice === -1) {
-                alert("No se encontró el aspirante.");
-                return;
-            }
+        const usuariosActuales =
+            JSON.parse(localStorage.getItem("usuarios")) || [];
 
-            usuariosActuales[indice].resultadoFinal = "No seleccionado/a";
-            usuariosActuales[indice].estado = "No seleccionado/a";
+        const indice = usuariosActuales.findIndex(
+            usuario => usuario.email === emailAspirante
+        );
 
-            localStorage.setItem(
-                "usuarios",
-                JSON.stringify(usuariosActuales)
+        if (indice === -1) {
+            mostrarError(
+                "Aspirante no encontrado",
+                "No fue posible encontrar el aspirante seleccionado."
             );
+            return;
+        }
 
-            const estadoCandidato =
-                document.getElementById("estadoCandidato");
+        const nombreAspirante =
+            seleccionarAspirante.options[seleccionarAspirante.selectedIndex].text;
 
-            if (estadoCandidato) {
-                estadoCandidato.textContent = "No seleccionado/a";
-            }
+        const confirmado = await confirmarRechazo(nombreAspirante);
 
-            alert("El/la aspirante no ha sido seleccionado/a.");
-        });
-    }
-});
+        if (!confirmado) return;
+
+        usuariosActuales[indice].resultadoFinal = "No seleccionado/a";
+        usuariosActuales[indice].estado = "No seleccionado/a";
+
+        localStorage.setItem(
+            "usuarios",
+            JSON.stringify(usuariosActuales)
+        );
+
+        const estadoCandidato =
+            document.getElementById("estadoCandidato");
+
+        if (estadoCandidato) {
+            estadoCandidato.textContent = "No seleccionado/a";
+        }
+
+        mostrarExito(
+            "Aspirante rechazado",
+            "El/la aspirante no ha sido seleccionado/a."
+        );
+    });
+}
+}
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", iniciarPerfilCandidato);
+} else {
+    iniciarPerfilCandidato();
+}
 
 // --- FUNCIONES AUXILIARES ---
 
