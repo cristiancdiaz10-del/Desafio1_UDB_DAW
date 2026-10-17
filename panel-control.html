@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+< lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -176,13 +176,23 @@
             <!-- SOLICITUDES -->
             <section class="requests-card">
 
-                <!-- CABECERA -->
-                <div class="requests-header">
-                    <h3>Solicitudes</h3>
-                    <button class="options-button" type="button" aria-label="Más opciones">
-                        <i class="bi bi-three-dots"></i>
-                    </button>
-                </div>
+              <!-- CABECERA DE SOLICITUDES CON FILTRO -->
+              <div class="requests-header d-flex flex-wrap align-items-center gap-3">
+                <h3 class="mb-0">Solicitudes</h3>
+
+                    <!-- Selector de Curso Técnico para el filtro -->
+                 <div class="ms-auto d-flex align-items-center gap-2">
+                      <label for="filtroCurso" class="form-label mb-0 small text-muted fw-semibold">Curso:</label>
+                      <select id="filtroCurso" class="form-select form-select-sm" style="width: 180px;">
+                      <option value="todos">Todos los cursos</option>
+                </select>
+         </div>
+
+         <button class="options-button" type="button" aria-label="Más opciones">
+            <i class="bi bi-three-dots"></i>
+         </button>
+     </div>
+                 
 
                 <!-- TABLA -->
                 <table class="requests-table">
