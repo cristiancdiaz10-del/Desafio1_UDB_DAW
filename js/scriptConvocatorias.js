@@ -222,12 +222,12 @@ function prepararEdicionCurso(id) {
 }
 
 function eliminarCurso(id) {
-<<<<<<< HEAD
     confirmarEliminacion("este curso").then((confirmado) => {
         if (!confirmado) return;
 
         cursos = cursos.filter(c => c.id !== id);
         localStorage.setItem('cursos', JSON.stringify(cursos));
+
         renderizarCursos();
         cargarCursosEnSelect();
 
@@ -235,32 +235,6 @@ function eliminarCurso(id) {
             "Curso eliminado",
             "El curso se eliminó correctamente."
         );
-=======
-    Swal.fire({
-        title: '¿Estás seguro?',
-        text: "¡No podrás revertir esta acción!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            cursos = cursos.filter(c => c.id !== id);
-            localStorage.setItem('cursos', JSON.stringify(cursos));
-            renderizarCursos();
-
-            // Actualizar el selector de convocatorias
-            cargarCursosEnSelect();
-
-            Swal.fire(
-                '¡Eliminado!',
-                'El curso ha sido borrado exitosamente.',
-                'success'
-            );
-        }
->>>>>>> origin/Branch_Crystel
     });
 }
 
@@ -334,4 +308,100 @@ function configurarFormularios() {
             });
         });
     }
+}
+
+// Exportar convocatorias activas a CSV
+function exportarConvocatoriasCSV() {
+    exportarConvocatorias('csv');
+}
+
+// Exportar convocatorias activas a Excel
+function exportarConvocatoriasExcel() {
+    exportarConvocatorias('excel');
+}
+
+// Función común de exportación
+function exportarConvocatorias(formato) {
+    const tabla = document.getElementById('tablaConvocatorias');
+
+    if (!tabla) {
+        alert('No se encontró la tabla de convocatorias.');
+        return;
+    }
+
+    const filas = Array.from(tabla.querySelectorAll('tr'));
+
+    const datos = filas.map(fila => {
+        const celdas = fila.querySelectorAll('td');
+
+        if (celdas.length < 4) return null;
+
+        return {
+            Curso: celdas[0].innerText.trim(),
+            Fechas: celdas[1].innerText.trim(),
+            Plazas: celdas[2].innerText.trim(),
+            Estado: celdas[3].innerText.trim()
+        };
+    }).filter(convocatoria =>
+        convocatoria &&
+        convocatoria.Estado.toLowerCase().includes('activa')
+    );
+
+    if (datos.length === 0) {
+        alert('No hay convocatorias activas para exportar.');
+        return;
+    }
+
+    if (formato === 'csv') {
+        const columnas = ['Curso', 'Fechas', 'Plazas', 'Estado'];
+
+        const escapar = valor =>
+            '"' + String(valor ?? '').replace(/"/g, '""') + '"';
+
+        const contenido = [
+            columnas.map(escapar).join(';'),
+            ...datos.map(fila =>
+                columnas.map(columna => escapar(fila[columna])).join(';')
+            )
+        ].join('\r\n');
+
+        const blob = new Blob(
+            ['\uFEFF' + contenido],
+            { type: 'text/csv;charset=utf-8;' }
+        );
+
+        descargarArchivo(blob, 'convocatorias_activas.csv');
+    }
+
+    if (formato === 'excel') {
+        if (typeof XLSX === 'undefined') {
+            alert('No se pudo cargar la biblioteca de Excel.');
+            return;
+        }
+
+        const hoja = XLSX.utils.json_to_sheet(datos);
+        const libro = XLSX.utils.book_new();
+
+        XLSX.utils.book_append_sheet(
+            libro,
+            hoja,
+            'Convocatorias activas'
+        );
+
+        XLSX.writeFile(libro, 'convocatorias_activas.xlsx');
+    }
+}
+
+// Descargar archivo generado
+function descargarArchivo(blob, nombre) {
+    const url = URL.createObjectURL(blob);
+    const enlace = document.createElement('a');
+
+    enlace.href = url;
+    enlace.download = nombre;
+    document.body.appendChild(enlace);
+    enlace.click();
+    enlace.remove();
+
+    URL.revokeObjectURL(url);
 }

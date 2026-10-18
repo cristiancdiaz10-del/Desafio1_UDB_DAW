@@ -128,12 +128,22 @@ if (btnProgramar) {
         const fechaEvaluacion = document.getElementById("fechaEvaluacion").value;
 
         if (!emailAspirante) {
-            alert("Debe seleccionar un aspirante.");
+            Swal.fire({
+            icon: 'warning',
+            title: 'Aspirante no seleccionado',
+            text: 'Selecciona un aspirante antes de continuar.',
+            confirmButtonText: 'Entendido'
+            });
             return;
         }
 
         if (!fechaEvaluacion) {
-            alert("Debe seleccionar una fecha para la evaluación.");
+            Swal.fire({
+            icon: 'warning',
+            title: 'Fecha requerida',
+            text: 'Selecciona una fecha para la evaluación.',
+            confirmButtonText: 'Entendido'
+            });
             return;
         }
 
@@ -163,7 +173,12 @@ if (btnProgramar) {
             localStorage.setItem("usuarios", JSON.stringify(usuarios));
         }
 
-        alert("Evaluación programada correctamente.");
+        Swal.fire({
+        icon: 'success',
+        title: '¡Programación exitosa!',
+        text: 'La evaluación se programó correctamente.',
+        confirmButtonText: 'Aceptar'
+        });
     });
 }
 
@@ -175,19 +190,33 @@ if (btnCompletarValidacion) {
         const emailAspirante = seleccionarAspirante.value;
 
         if (!emailAspirante) {
-            alert("Debe seleccionar un aspirante.");
+            Swal.fire({
+            icon: 'warning',
+            title: 'Aspirante no seleccionado',
+            text: 'Selecciona un aspirante antes de continuar.',
+            confirmButtonText: 'Entendido'
+            });
             return;
         }
 
         // Avanza a la Etapa 4: Entrevista Virtual
         if (avanzarAspirante(4, "En entrevista")) {
+            const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+            const aspirante = usuarios.find(u => u.email === emailAspirante);
+            if (aspirante) actualizarBotonesEtapa(aspirante);
+            
             const estadoCandidato = document.getElementById("estadoCandidato");
 
             if (estadoCandidato) {
                 estadoCandidato.textContent = "Entrevista Virtual";
             }
 
-            alert("Validación completada correctamente. El aspirante ha avanzado a Entrevista Virtual (Etapa 4).");
+            Swal.fire({
+            icon: 'success',
+            title: 'Validación completada',
+            text: 'El aspirante ha avanzado a Entrevista Virtual (Etapa 4).',
+            confirmButtonText: 'Continuar'
+            });
         }
     });
 }
@@ -200,19 +229,33 @@ if (btnCompletarEntrevista) {
         const emailAspirante = seleccionarAspirante.value;
 
         if (!emailAspirante) {
-            alert("Debe seleccionar un aspirante.");
+            Swal.fire({
+            icon: 'warning',
+            title: 'Aspirante no seleccionado',
+            text: 'Selecciona un aspirante antes de continuar.',
+            confirmButtonText: 'Entendido'
+            });
             return;
         }
 
         // Avanza a la Etapa 5: Pruebas Psicométricas
         if (avanzarAspirante(5, "En psicométricas")) {
+            const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+            const aspirante = usuarios.find(u => u.email === emailAspirante);
+            if (aspirante) actualizarBotonesEtapa(aspirante);
+            
             const estadoCandidato = document.getElementById("estadoCandidato");
 
             if (estadoCandidato) {
                 estadoCandidato.textContent = "Pruebas Psicométricas";
             }
 
-            alert("Entrevista completada correctamente. El aspirante ha avanzado a Pruebas Psicométricas (Etapa 5).");
+            Swal.fire({
+            icon: 'success',
+            title: 'Entrevista completada',
+            text: 'El aspirante ha avanzado a Pruebas Psicométricas (Etapa 5).',
+            confirmButtonText: 'Continuar'
+            });
         }
     });
 }
@@ -225,19 +268,33 @@ if (btnCompletarPsicometrica) {
         const emailAspirante = seleccionarAspirante.value;
 
         if (!emailAspirante) {
-            alert("Debe seleccionar un aspirante.");
+            Swal.fire({
+            icon: 'warning',
+            title: 'Aspirante no seleccionado',
+            text: 'Selecciona un aspirante antes de continuar.',
+            confirmButtonText: 'Entendido'
+            });
             return;
         }
 
         // Avanza a la Etapa 6: Prueba Técnica
         if (avanzarAspirante(6, "En prueba técnica")) {
+            const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+            const aspirante = usuarios.find(u => u.email === emailAspirante);
+            if (aspirante) actualizarBotonesEtapa(aspirante);
+            
             const estadoCandidato = document.getElementById("estadoCandidato");
 
             if (estadoCandidato) {
                 estadoCandidato.textContent = "Prueba Técnica";
             }
 
-            alert("Evaluación psicométrica completada correctamente. El aspirante ha avanzado a Prueba Técnica (Etapa 6).");
+            Swal.fire({
+            icon: 'success',
+            title: 'Evaluación completada',
+            text: 'El aspirante ha avanzado a Prueba Técnica (Etapa 6).',
+            confirmButtonText: 'Continuar'
+            });
         }
     });
 }
@@ -249,10 +306,12 @@ if (btnAprobarFinal) {
         const emailAspirante = seleccionarAspirante.value;
 
         if (!emailAspirante) {
-            mostrarError(
-                "Aspirante no seleccionado",
-                "Selecciona un aspirante antes de aprobarlo."
-            );
+            Swal.fire({
+            icon: 'warning',
+            title: 'Aspirante no seleccionado',
+            text: 'Selecciona un aspirante antes de aprobarlo.',
+            confirmButtonText: 'Entendido'
+            });
             return;
         }
 
@@ -376,6 +435,7 @@ function cargarDatosAspirante(emailSeleccionado, aspirantes) {
         aspirantes.find(u => u.email === emailSeleccionado);
 
     if (!aspirante) return;
+    actualizarBotonesEtapa(aspirante);
 
     // Renderizar información del perfil
     const elemNombre = document.getElementById("nombreCandidato");
@@ -435,6 +495,18 @@ function cargarDatosAspirante(emailSeleccionado, aspirantes) {
         evaluaciones.find(
             e => e.aspiranteEmail === emailSeleccionado
         );
+
+    // Limpiar los datos de la evaluación anterior
+    document.getElementById("habilidades").value = 0;
+    document.getElementById("calidadVideo").value = 0;
+    document.getElementById("perfilAcademico").value = 0;
+    document.getElementById("comentarios").value = "";
+
+    document.getElementById("promedioEvaluacion").textContent = "0.00 / 5";
+
+    document.querySelectorAll(".estrella").forEach(estrella => {
+    estrella.classList.remove("seleccionada");
+    });
 
     if (evaluacionGuardada) {
 
@@ -669,10 +741,53 @@ function avanzarAspirante(etapa, estado) {
     return true;
 }
 
+function actualizarBotonesEtapa(aspirante) {
+    const botonesPorEtapa = [
+        { id: "btnCompletarValidacion", etapa: 3 },
+        { id: "btnCompletarEntrevista", etapa: 4 },
+        { id: "btnCompletarPsicometrica", etapa: 5 }
+    ];
+
+    const etapaActual = Number(aspirante?.etapaActual || 2);
+    const procesoFinalizado = [
+        "Seleccionado/a",
+        "No seleccionado/a",
+        "Rechazado"
+    ].includes(aspirante?.resultadoFinal || aspirante?.estado);
+
+    botonesPorEtapa.forEach(({ id, etapa }) => {
+        const boton = document.getElementById(id);
+
+        if (boton) {
+            boton.classList.toggle(
+                "d-none",
+                procesoFinalizado || etapaActual > etapa
+            );
+        }
+    });
+
+    // Aprobar o denegar al terminar la prueba técnica
+    ["btnAprobarFinal", "btnDenegarFinal"].forEach(id => {
+        const boton = document.getElementById(id);
+
+        if (boton) {
+            boton.classList.toggle(
+                "d-none",
+                procesoFinalizado || etapaActual < 6
+            );
+        }
+    });
+}
+
 function registrarDecision(estado, emailAspirante) {
 
     if (!emailAspirante) {
-        alert("Debe seleccionar un aspirante.");
+        Swal.fire({
+        icon: 'warning',
+        title: 'Aspirante no seleccionado',
+        text: 'Selecciona un aspirante antes de continuar.',
+        confirmButtonText: 'Entendido'
+        });
         return;
     }
 
@@ -692,9 +807,12 @@ function registrarDecision(estado, emailAspirante) {
         );
 
     if (hab === 0 || vid === 0 || aca === 0) {
-        alert(
-            "Debe evaluar todos los criterios antes de registrar una decisión."
-        );
+        Swal.fire({
+            icon: 'warning',
+            title: 'Criterios no evaluados',
+            text: 'Debe evaluar todos los criterios antes de registrar una decisión.',
+            confirmButtonText: 'Entendido'
+        });
         return;
     }
 
@@ -733,6 +851,22 @@ function registrarDecision(estado, emailAspirante) {
         JSON.stringify(evaluaciones)
     );
 
+    // Sincronizar el estado del aspirante
+    const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+
+    const indiceAspirante = usuarios.findIndex(
+    u => u.email === emailAspirante
+    );
+
+    if (indiceAspirante !== -1) {
+    usuarios[indiceAspirante].estado = estado;
+
+    localStorage.setItem(
+        "usuarios",
+        JSON.stringify(usuarios)
+    );
+    }
+
     const estadoCandidato =
         document.getElementById("estadoCandidato");
 
@@ -740,7 +874,10 @@ function registrarDecision(estado, emailAspirante) {
         estadoCandidato.textContent = estado;
     }
 
-    alert(
-        `Evaluación registrada correctamente con el estado: ${estado}`
-    );
+    Swal.fire({
+    icon: 'success',
+    title: 'Evaluación registrada',
+    text: `Evaluación registrada correctamente con el estado: ${estado}`,
+    confirmButtonText: 'Aceptar'
+    });
 }

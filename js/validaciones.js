@@ -345,3 +345,53 @@ if (campoFechaNacimiento) {
     });
     }
 });
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    const selectorCurso = document.getElementById('curso');
+
+    // Si esta página no tiene selector de cursos, no hacer nada.
+    if (!selectorCurso) return;
+
+    let cursosGuardados = [];
+
+    try {
+        cursosGuardados = JSON.parse(
+            localStorage.getItem('cursos') || '[]'
+        );
+    } catch (error) {
+        console.error('No se pudieron cargar los cursos:', error);
+        return;
+    }
+
+    // Si todavía no hay cursos guardados, conservar las opciones actuales.
+    if (!Array.isArray(cursosGuardados) || cursosGuardados.length === 0) {
+        return;
+    }
+
+    // Conservar la opción inicial del formulario.
+    selectorCurso.innerHTML = '';
+
+    const opcionInicial = document.createElement('option');
+    opcionInicial.value = '';
+    opcionInicial.textContent =
+        'Selecciona el curso de formación que te interesa';
+    opcionInicial.disabled = true;
+    opcionInicial.selected = true;
+
+    selectorCurso.appendChild(opcionInicial);
+
+    // Cargar los cursos administrados desde el panel.
+    cursosGuardados.forEach(curso => {
+        const nombreCurso =
+            typeof curso === 'string' ? curso : curso.nombre;
+
+        if (!nombreCurso) return;
+
+        const opcion = document.createElement('option');
+        opcion.value = nombreCurso;
+        opcion.textContent = nombreCurso;
+
+        selectorCurso.appendChild(opcion);
+    });
+});

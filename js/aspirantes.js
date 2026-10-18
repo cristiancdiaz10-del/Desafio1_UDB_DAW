@@ -1,45 +1,60 @@
 // Lógica de Aspirantes
+
 document.addEventListener('DOMContentLoaded', () => {
-    //Proteger la vista: Solo permite el acceso a Administradores
+
+    // Proteger la vista para los roles autorizados.
     if (typeof protegerVista === 'function') {
-        protegerVista(['administrador', 'superadministrador']);
+        const accesoPermitido = protegerVista([
+            'administrador',
+            'superadministrador',
+            'evaluador'
+        ]);
+
+        if (!accesoPermitido) return;
     }
 
-    //Obtener datos de la sesión activa
-    const sesion = JSON.parse(localStorage.getItem('sesion'));
+    // Obtener los datos de la sesión activa.
+    let sesion;
+
+    try {
+        sesion = JSON.parse(localStorage.getItem('sesion'));
+    } catch (error) {
+        sesion = null;
+    }
+
     if (!sesion) return;
 
-    //Actualizar el nombre en el encabezado o barra superior (Topbar)
-    const lblAdmin = document.getElementById('lbl-admin-topbar') || document.getElementById('lbl-usuario');
-    
-    if (lblAdmin) {
-        // Muestra el nombre registrado en la sesión
-        lblAdmin.innerText = sesion.nombre; 
-    }
-});
-document.addEventListener('DOMContentLoaded', () => {
+    // Mostrar el nombre del usuario en los encabezados.
+    const nombreUsuario =
+        sesion.nombreCompleto || sesion.nombre || 'Usuario';
 
-    if (typeof protegerVista === 'function') {
-        protegerVista(['administrador', 'superadministrador', 'evaluador']);
-    }
+    const lblAdminSidebar =
+        document.getElementById('lbl-admin-sidebar');
 
-    const usuarioActual =
-        JSON.parse(localStorage.getItem('usuarioActual'));
+    const lblAdminTopbar =
+        document.getElementById('lbl-admin-topbar');
 
-    if (usuarioActual) {
-        document.getElementById('lbl-admin-sidebar').innerText =
-            usuarioActual.nombreCompleto;
+    const lblUsuario =
+        document.getElementById('lbl-usuario');
 
-        document.getElementById('lbl-admin-topbar').innerText =
-            usuarioActual.nombreCompleto;
+    if (lblAdminSidebar) {
+        lblAdminSidebar.innerText = nombreUsuario;
     }
 
+    if (lblAdminTopbar || lblUsuario) {
+        (lblAdminTopbar || lblUsuario).innerText = nombreUsuario;
+    }
+
+    // Cargar la tabla y activar el buscador.
     cargarAspirantes();
 
-    document.getElementById('inputBuscarAspirante')
-        .addEventListener('input', cargarAspirantes);
-});
+    const inputBuscar =
+        document.getElementById('inputBuscarAspirante');
 
+    if (inputBuscar) {
+        inputBuscar.addEventListener('input', cargarAspirantes);
+    }
+});
 
 function cargarAspirantes() {
 
@@ -132,4 +147,62 @@ function evaluarAspirante(email) {
     
     // 2. Redirigir a la vista de evaluaciones
     window.location.href = "perfil-candidato.html";
+}
+
+// Función auxiliar para exportar CSV por si se requiere externamente
+function exportarCSVParticipantes() {
+    const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
+    const aspirantes = usuarios.filter(u => u.rol === 'usuario');
+
+    if (aspirantes.length === 0) {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire('Aviso', 'No hay aspirantes registrados para exportar.', 'warning');
+        } else {
+            alert('No hay aspirantes registrados para exportar.');
+        }
+        return;
+    }
+    let csvContent = "Nombre,Correo,Curso,Estado\n";
+    aspirantes.forEach(asp => {
+        const nombre = `"${asp.nombre || asp.nombreCompleto || 'Sin nombre'}"`;
+        const correo = `"${asp.email || ''}"`;
+        const curso = `"${asp.cursoInteres || asp.curso || 'General'}"`;
+        const estado = `"${asp.estado || 'Postulado'}"`;
+        csvContent += `${nombre},${correo},${curso},${estado}\n`;
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "reporte_participantes_protalento.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+// Función auxiliar para exportar XLSX por si se requiere externamente.
+    function exportarExcelParticipantes() {
+    const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
+    const aspirantes = usuarios.filter(u => u.rol === 'usuario');
+
+    if (aspirantes.length === 0) {
+        alert('No hay aspirantes registrados para exportar.');
+        return;
+    }
+
+    const datos = aspirantes.map(asp => ({
+        Nombre: asp.nombreCompleto || asp.nombre || 'Sin nombre',
+        Correo: asp.email || '',
+        Curso: asp.cursoInteres || asp.curso || 'General',
+        Estado: asp.estado || 'Postulado',
+        CV: asp.cvAdjuntado ? 'Adjunto' : 'Pendiente',
+        Video: asp.videoAdjuntado ? 'Adjunto' : 'Pendiente'
+    }));
+
+    const hoja = XLSX.utils.json_to_sheet(datos);
+    const libro = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(libro, hoja, 'Aspirantes');
+
+    XLSX.writeFile(libro, 'reporte_aspirantes_protalento.xlsx');
 }

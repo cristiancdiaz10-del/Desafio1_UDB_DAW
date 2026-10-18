@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-< lang="es">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -146,7 +146,7 @@
 
                 <!-- RECHAZADOS -->
                 <article class="kpi-card">
-                    <h3>Rechazados</h3>
+                    <h3>No seleccionados</h3>
                     <p class="kpi-number" id="kpi-rechazados">0</p>
                 </article>
 
@@ -192,7 +192,24 @@
             <i class="bi bi-three-dots"></i>
          </button>
      </div>
-                 
+                 <!--botones para exportar archivos-->
+                <div class="d-flex gap-2 flex-wrap">
+                    <button
+                        type="button"
+                        class="btn btn-outline-primary"
+                        onclick="exportarCSVParticipantes()">
+                        <i class="bi bi-filetype-csv"></i>
+                        Descargar CSV
+                    </button>
+
+                    <button
+                        type="button"
+                        class="btn btn-outline-success"
+                        onclick="exportarExcelParticipantes()">
+                        <i class="bi bi-file-earmark-excel"></i>
+                        Descargar Excel
+                    </button>
+                </div>
 
                 <!-- TABLA -->
                 <table class="requests-table">
@@ -209,7 +226,6 @@
                         <!-- Filas dinámicas cargadas desde el JS -->
                     </tbody>
                 </table>
-
             </section>
 
         </main>
@@ -221,6 +237,10 @@
 <!-- LIBRERÍAS Y SCRIPTS DE JAVASCRIPT -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="js/autenticaciones.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="js/panel-control.js"></script>
+<script src="js/descargas-aspirantes.js"></script>
 </body>
 </html>

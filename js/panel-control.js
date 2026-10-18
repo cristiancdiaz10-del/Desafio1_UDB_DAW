@@ -87,8 +87,10 @@ function cargarDashboardReal(busqueda = '', filtroEstado = 'todos', filtroCurso 
     const total = aspirantes.length;
     const revision = aspirantes.filter(a => a.estado === 'En revisión').length;
     const entrevistados = aspirantes.filter(a => a.estado === 'Entrevistado').length;
-    const seleccionados = aspirantes.filter(a => a.estado === 'Aprobado' || a.estado === 'Seleccionado').length;
-    const rechazados = aspirantes.filter(a => a.estado === 'Rechazado').length;
+    const seleccionados = aspirantes.filter(a =>
+    ['Aprobado', 'Seleccionado', 'Seleccionado/a'].includes(a.estado)).length;
+    const rechazados = aspirantes.filter(a =>
+    ['Rechazado', 'No seleccionado/a'].includes(a.estado)).length;
 
     if (document.getElementById('kpi-total')) document.getElementById('kpi-total').innerText = total;
     if (document.getElementById('kpi-revision')) document.getElementById('kpi-revision').innerText = revision;
@@ -111,14 +113,23 @@ function cargarDashboardReal(busqueda = '', filtroEstado = 'todos', filtroCurso 
 
             const estadoAsp = asp.estado || 'Postulado';
             let cumpleEstado = true;
-            if (filtroEstado !== 'todos') {
-                if (filtroEstado === 'Seleccionados') {
-                    cumpleEstado = (estadoAsp === 'Aprobado' || estadoAsp === 'Seleccionado');
-                } else {
-                    cumpleEstado = (estadoAsp === filtroEstado);
-                }
-            }
 
+            if (filtroEstado !== 'todos') {
+            if (filtroEstado === 'Seleccionados') {
+            cumpleEstado = [
+            'Aprobado',
+            'Seleccionado',
+            'Seleccionado/a'
+        ].includes(estadoAsp);
+            } else if (filtroEstado === 'Entrevistados') {
+            cumpleEstado = [
+            'Entrevistado',
+            'En entrevista'
+        ].includes(estadoAsp);
+    } else {
+        cumpleEstado = estadoAsp === filtroEstado;
+    }
+        }
             const cursoAsp = (asp.cursoInteres || asp.curso || 'General').trim();
             let cumpleCurso = true;
             if (filtroCurso !== 'todos') {
@@ -156,7 +167,7 @@ function cargarDashboardReal(busqueda = '', filtroEstado = 'todos', filtroCurso 
                                 Evaluar
                             </button>
                             <!-- Botón integrado de PDF que conecta con el módulo jsPDF de tu compañero -->
-                            <button class="btn btn-sm btn-outline-success d-flex align-items-center gap-1" onclick="descargarPDF('${asp.email}')" title="Descargar PDF">
+                            <button class="btn btn-sm btn-outline-success d-flex align-items-center gap-1" onclick="descargarPerfilPDF('${asp.email}')" title="Descargar PDF">
                                 <i class="bi bi-file-earmark-pdf"></i> PDF
                             </button>
                         </div>
@@ -249,7 +260,7 @@ function renderizarGraficasReales(aspirantes, total, revision, entrevistados, se
         chartEstadosInstance = new Chart(ctxEstados, {
             type: 'doughnut',
             data: {
-                labels: ['En revisión', 'Entrevistados', 'Seleccionados', 'Rechazados'],
+                labels: ['En revisión', 'Entrevistados', 'Seleccionados', 'No seleccionados'],
                 datasets: [{
                     data: [revision, entrevistados, seleccionados, rechazados],
                     backgroundColor: ['#6b7280', '#f59e0b', '#3b82f6', '#10b981'],
@@ -305,7 +316,7 @@ function renderizarGraficasReales(aspirantes, total, revision, entrevistados, se
     }
 }
 
-// Función auxiliar para exportar CSV por si se requiere externamente, manteniendo tu lógica
+// Función auxiliar para exportar CSV por si se requiere externamente
 function exportarCSVParticipantes() {
     const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
     const aspirantes = usuarios.filter(u => u.rol === 'usuario');
@@ -338,6 +349,33 @@ function exportarCSVParticipantes() {
     document.body.removeChild(link);
 }
 
+// Función auxiliar para exportar XLSX por si se requiere externamente.
+    function exportarExcelParticipantes() {
+    const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
+    const aspirantes = usuarios.filter(u => u.rol === 'usuario');
+
+    if (aspirantes.length === 0) {
+        alert('No hay aspirantes registrados para exportar.');
+        return;
+    }
+
+    const datos = aspirantes.map(asp => ({
+        Nombre: asp.nombreCompleto || asp.nombre || 'Sin nombre',
+        Correo: asp.email || '',
+        Curso: asp.cursoInteres || asp.curso || 'General',
+        Estado: asp.estado || 'Postulado',
+        CV: asp.cvAdjuntado ? 'Adjunto' : 'Pendiente',
+        Video: asp.videoAdjuntado ? 'Adjunto' : 'Pendiente'
+    }));
+
+    const hoja = XLSX.utils.json_to_sheet(datos);
+    const libro = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(libro, hoja, 'Aspirantes');
+
+    XLSX.writeFile(libro, 'reporte_aspirantes_protalento.xlsx');
+}
+
 function evaluarAspirante(email) {
     const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
     const aspirante = usuarios.find(u => u.email === email);
@@ -352,5 +390,5 @@ function evaluarAspirante(email) {
         JSON.stringify(aspirante)
     );
 
-    window.location.href = "páginas/evaluaciones.html";
+    window.location.href = "perfil-candidato.html";
 }
