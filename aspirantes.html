@@ -161,6 +161,24 @@
 
                     </div>
 
+                <!--botones para exportar archivos-->
+                <div class="d-flex gap-2 flex-wrap">
+                    <button
+                        type="button"
+                        class="btn btn-outline-primary"
+                        onclick="exportarCSVParticipantes()">
+                        <i class="bi bi-filetype-csv"></i>
+                        Descargar CSV
+                    </button>
+
+                    <button
+                        type="button"
+                        class="btn btn-outline-success"
+                        onclick="exportarExcelParticipantes()">
+                        <i class="bi bi-file-earmark-excel"></i>
+                        Descargar Excel
+                    </button>
+                </div>
 
                     <table class="requests-table">
 
@@ -192,11 +210,15 @@
 
     </div>
 
-
+    <!-- jsPDF y SheetJS -->
+     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
     <!-- JavaScript -->
     <script src="js/autenticaciones.js"></script>
     <script src="js/aspirantes.js"></script>
-    <script src="js/evaluaciones.js"></script>
+    <script src="js/descargas-aspirantes.js"></script>
+    <script src="js/alertas.js"></script>
 
 </body>
 

@@ -1,13 +1,19 @@
 //Lógica del Portal del Aspirante
+document.addEventListener('DOMContentLoaded', function () {
 
-document.addEventListener('DOMContentLoaded', () => {
-    //Protege la vista: Solo rol 'usuario' o admins
-    if (typeof protegerVista === 'function') {
-        protegerVista(['usuario', 'administrador', 'superadministrador']);
-    }
+    // Protege la vista: solo aspirantes y administradores
+if (typeof protegerVista === 'function') {
+    const accesoPermitido = protegerVista([
+        'usuario',
+        'administrador',
+        'superadministrador'
+    ]);
 
+    if (!accesoPermitido) return;
+}
     //Obtener datos de la sesión activa
-    const sesion = JSON.parse(localStorage.getItem('sesion'));
+    let sesion;
+    try {sesion = JSON.parse(localStorage.getItem('sesion'));} catch (error) {sesion = null;}
     if (!sesion) return;
 
     // Actualizar nombre en el encabezado
@@ -21,7 +27,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const perfil = usuarios.find(u => u.email === sesion.email || u.id === sesion.id);
 
     if (perfil) {
+        // Mostrar la etapa correspondiente al estado del aspirante
+        if (
+            perfil.resultadoFinal === 'Seleccionado/a' ||
+            perfil.resultadoFinal === 'No seleccionado/a'
+            ) {
+        renderizarProgreso(6);
+        } else {
         renderizarProgreso(perfil.etapaActual || 2);
+            }
 
         // Mostrar resultado final del proceso
         if (perfil.resultadoFinal) {
@@ -47,14 +61,19 @@ function guardarPDF(email, archivo) {
         const solicitud = indexedDB.open('ProTalentoDB', 1);
 
         solicitud.onupgradeneeded = (evento) => {
-
-            const db = evento.target.result;
+        const db = evento.target.result;
 
             if (!db.objectStoreNames.contains('curriculums')) {
                 db.createObjectStore('curriculums', {
-                    keyPath: 'email'
-                });
+                keyPath: 'email'
+            });
             }
+
+            if (!db.objectStoreNames.contains('videos')) {
+                db.createObjectStore('videos', {
+                keyPath: 'email'
+            });
+        }
         };
 
         solicitud.onsuccess = () => {
@@ -93,6 +112,67 @@ function guardarPDF(email, archivo) {
     });
 }
 
+
+function guardarVideo(email, archivo) {
+
+    return new Promise((resolve, reject) => {
+
+        const solicitud = indexedDB.open('ProTalentoDB', 1);
+
+        solicitud.onupgradeneeded = (evento) => {
+    const db = evento.target.result;
+
+    if (!db.objectStoreNames.contains('curriculums')) {
+        db.createObjectStore('curriculums', {
+            keyPath: 'email'
+        });
+    }
+
+    if (!db.objectStoreNames.contains('videos')) {
+        db.createObjectStore('videos', {
+            keyPath: 'email'
+        });
+    }
+};
+
+        solicitud.onsuccess = () => {
+
+            const db = solicitud.result;
+
+            if (!db.objectStoreNames.contains('videos')) {
+                db.close();
+                reject(new Error('No existe el almacén de vídeos.'));
+                return;
+            }
+
+            const transaccion = db.transaction('videos', 'readwrite');
+            const store = transaccion.objectStore('videos');
+
+            store.put({
+                email: email,
+                nombreArchivo: archivo.name,
+                tipoArchivo: archivo.type,
+                tamano: archivo.size,
+                fecha: new Date().toISOString(),
+                archivo: archivo
+            });
+
+            transaccion.oncomplete = () => {
+                db.close();
+                resolve();
+            };
+
+            transaccion.onerror = () => {
+                db.close();
+                reject(transaccion.error);
+            };
+        };
+
+        solicitud.onerror = () => {
+            reject(solicitud.error);
+        };
+    });
+}
 
 // Mostrar archivo PDF seleccionado
 function mostrarArchivoCV(input) {
@@ -167,8 +247,24 @@ async function guardarEntregaEtapa2(evento, tipo) {
     const sesion = JSON.parse(localStorage.getItem('sesion'));
     if (!sesion) return;
 
-    let usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
-    const index = usuarios.findIndex(u => u.email === sesion.email || u.id === sesion.id);
+    let usuarios;
+
+    try {
+    usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
+    } catch (error) {
+    console.error('Error al cargar los aspirantes:', error);
+    alert('No se pudieron cargar los datos del expediente.');
+    return;
+    }
+
+    if (!Array.isArray(usuarios)) {
+    alert('Los datos de los aspirantes no tienen un formato válido.');
+    return;
+    }
+
+const index = usuarios.findIndex(
+    u => u.email === sesion.email || u.id === sesion.id
+);
 
     if (index !== -1) {
 
@@ -275,15 +371,24 @@ async function guardarEntregaEtapa2(evento, tipo) {
                 return;
             }
 
-            usuarios[index].videoAdjuntado = true;
-        }
+            try {
+            await guardarVideo(sesion.email, archivo);
+            } catch (error) {
+            console.error('Error al guardar el vídeo:', error);
 
+            alert('No se pudo guardar el vídeo. Inténtalo nuevamente.');
+            return;
+            }
+
+            usuarios[index].videoAdjuntado = true;
+
+        }
 
         // Si adjuntó ambos, avanza a Etapa 3 (Validación)
         if (usuarios[index].cvAdjuntado && usuarios[index].videoAdjuntado) {
-            usuarios[index].etapaActual = 2;
+            usuarios[index].etapaActual = 3;
             usuarios[index].estado = 'En revisión';
-            renderizarProgreso(2);
+            renderizarProgreso(3);
         }
 
 

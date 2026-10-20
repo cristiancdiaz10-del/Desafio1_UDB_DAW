@@ -129,9 +129,10 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
-    formRegistro.addEventListener("submit", function (event) {
+    formRegistro.addEventListener("submit", async function (event) {
         event.preventDefault();
 
+       
         const cursoFormacion = document.getElementById("curso").value;
         const nombreCompleto = document.getElementById("nombre").value.trim();
         const sexo = document.getElementById("sexo").value;
@@ -179,7 +180,12 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         if (correoExiste) {
-            alert("Este correo ya está registrado. Utiliza otro correo.");
+            Swal.fire({
+                icon: 'warning',
+                title: 'Correo ya registrado',
+                text: 'Este correo ya está registrado. Utiliza otro correo.',
+                confirmButtonText: 'Aceptar'
+            });
             return;
         }
 
@@ -197,7 +203,12 @@ document.addEventListener("DOMContentLoaded", function () {
             });
 
             if (duiExiste) {
-                alert("Este DUI ya está registrado. No puedes realizar otro registro con este DUI.");
+               Swal.fire({
+                icon: "warning",
+                title: "DUI ya registrado",
+                text: "Este DUI ya está registrado. No puedes realizar otro registro con este DUI.",
+                confirmButtonText: "Entendido"
+                });
                 return;
             }
         }
@@ -216,7 +227,12 @@ document.addEventListener("DOMContentLoaded", function () {
             });
 
             if (nitExiste) {
-                alert("Este NIT ya está registrado. No puedes realizar otro registro con este NIT.");
+                Swal.fire({
+                icon: "warning",
+                title: "NIT ya registrado",
+                text: "Este NIT ya está registrado. No puedes realizar otro registro con este NIT.",
+                confirmButtonText: "Entendido"
+            });
                 return;
             }
         }
@@ -251,9 +267,131 @@ document.addEventListener("DOMContentLoaded", function () {
 
         localStorage.setItem("usuarios", JSON.stringify(usuarios));
 
-        alert("Usuario registrado correctamente.");
+        await Swal.fire({
+        icon: "success",
+        title: "¡Registro exitoso!",
+        text: "Tu registro se ha completado correctamente.",
+        confirmButtonText: "Continuar"
+        });
 
         window.location.href = "login.html";
     });
 
+});
+
+// Validación de campos del formulario de registro
+
+document.addEventListener("DOMContentLoaded", function () {
+    const camposDocumento = [
+        {
+            id: "DUI",
+            mensaje: "El DUI debe tener 8 dígitos, un guion y un dígito final. Ejemplo: 01234567-8."
+        },
+        {
+            id: "NIT",
+            mensaje: "El NIT debe tener el formato 0123-456789-1203-4."
+        },
+        {
+            id: "password",
+            mensaje: "La contraseña debe tener al menos 8 caracteres, incluyendo una letra mayúscula, una letra minúscula y un número."
+        }
+    ];
+
+    camposDocumento.forEach(function (campo) {
+        const input = document.getElementById(campo.id);
+
+        if (!input) return;
+
+        input.addEventListener("blur", function () {
+            if (!input.value.trim()) {
+                return;
+            }
+
+            if (!input.checkValidity()) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Revisa este campo",
+                    text: campo.mensaje,
+                    confirmButtonText: "Entendido"
+                    }).then(() => {
+                    input.focus();
+                });
+            }
+        });
+    });
+    const campoFechaNacimiento = document.getElementById("nacimiento");
+
+if (campoFechaNacimiento) {
+    const hoy = new Date();
+    const anio = hoy.getFullYear();
+    const mes = String(hoy.getMonth() + 1).padStart(2, "0");
+    const dia = String(hoy.getDate()).padStart(2, "0");
+
+    const fechaActual = `${anio}-${mes}-${dia}`;
+
+    campoFechaNacimiento.max = fechaActual;
+
+    campoFechaNacimiento.addEventListener("change", function () {
+        if (this.value && this.value > fechaActual) {
+            Swal.fire({
+                icon: "warning",
+                title: "Fecha inválida",
+                text: "La fecha de nacimiento no puede ser posterior al día de hoy.",
+                confirmButtonText: "Entendido"
+            });
+            this.value = "";
+            this.focus();
+        }
+    });
+    }
+});
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    const selectorCurso = document.getElementById('curso');
+
+    // Si esta página no tiene selector de cursos, no hacer nada.
+    if (!selectorCurso) return;
+
+    let cursosGuardados = [];
+
+    try {
+        cursosGuardados = JSON.parse(
+            localStorage.getItem('cursos') || '[]'
+        );
+    } catch (error) {
+        console.error('No se pudieron cargar los cursos:', error);
+        return;
+    }
+
+    // Si todavía no hay cursos guardados, conservar las opciones actuales.
+    if (!Array.isArray(cursosGuardados) || cursosGuardados.length === 0) {
+        return;
+    }
+
+    // Conservar la opción inicial del formulario.
+    selectorCurso.innerHTML = '';
+
+    const opcionInicial = document.createElement('option');
+    opcionInicial.value = '';
+    opcionInicial.textContent =
+        'Selecciona el curso de formación que te interesa';
+    opcionInicial.disabled = true;
+    opcionInicial.selected = true;
+
+    selectorCurso.appendChild(opcionInicial);
+
+    // Cargar los cursos administrados desde el panel.
+    cursosGuardados.forEach(curso => {
+        const nombreCurso =
+            typeof curso === 'string' ? curso : curso.nombre;
+
+        if (!nombreCurso) return;
+
+        const opcion = document.createElement('option');
+        opcion.value = nombreCurso;
+        opcion.textContent = nombreCurso;
+
+        selectorCurso.appendChild(opcion);
+    });
 });

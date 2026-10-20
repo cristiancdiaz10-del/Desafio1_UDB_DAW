@@ -49,7 +49,7 @@
                                     <option value="" disabled selected>Selecciona el curso de formación que te interesa</option>
                                     <option value="Análisis de datos con herramientas de IA">Análisis de datos con herramientas de IA</option>
                                     <option value="Logística portuaria y cadena de suministros">Logística portuaria y cadena de suministros</option>
-                                    <option value="JavaScript y C#">Lenguajes de programación: JavaScript y C#</option>
+                                    <option value="Lenguajes de programación: JavaScript y C#">Lenguajes de programación: JavaScript y C#</option>
                                     <option value="Asistente Administrativo y Manejo de Caja">Asistente Administrativo y Manejo de Caja</option>
                                     <option value="Redes informáticas">Redes informáticas</option>
                                 </select>
@@ -58,7 +58,7 @@
 
                         <div class="mb-3">
                             <label for="nombre" class="form-label">Nombre completo</label>
-                            <input type="text" class="form-control" id="nombre" placeholder="Juan Pérez" required>
+                            <input type="text" class="form-control" id="nombre" placeholder="Juan Pérez" minlength="20" maxlength="100" pattern="[A-Za-zÁÉÍÓÚáéíóúÜüÑñ ]+" title="Introduce tus nombres y apellidos" required>
                         </div>
 
                         <div class="mb-3">
@@ -99,12 +99,12 @@
                         <!-- Ocultos inicialmente para activarse dinámicamente según edad -->
                         <div class="mb-3 d-none" id="NDUI">
                             <label for="DUI" class="form-label">Número de DUI</label>
-                            <input type="text" class="form-control" id="DUI" placeholder="12345678-9" maxlength="10">
+                            <input type="text" class="form-control" id="DUI" placeholder="01234567-8" maxlength="10" pattern="[0-9]{8}-[0-9]" title="Introduce un número de DUI válido (ej. 01234567-8)" autocomplete="off">
                         </div>
 
                         <div class="mb-3 d-none" id="NNIT">
                             <label for="NIT" class="form-label">Número de NIT</label>
-                            <input type="text" class="form-control" id="NIT" placeholder="1234-567890-123-4" maxlength="17">
+                            <input type="text" class="form-control" id="NIT" placeholder="0123-456789-123-4" maxlength="17" pattern="[0-9]{4}-[0-9]{6}-[0-9]{3}-[0-9]" title="Introduce un número de NIT válido (ej. 0123-456789-123-4)" autocomplete="off">
                         </div>
 
                         <div class="mb-3">
@@ -193,12 +193,12 @@
 
                         <div class="mb-3">
                             <label for="telefono" class="form-label">Número de teléfono principal</label>
-                            <input type="tel" class="form-control" id="telefono" placeholder="1234-5678" required>
+                            <input type="tel" class="form-control" id="telefono" placeholder="1234-5678" pattern="^\d{4}-\d{4}$" title="Introduce un número de teléfono válido (ej. 1234-5678)" minlength="8" maxlength="13" required>
                         </div>
 
                         <div class="mb-3">
                             <label for="telefono2" class="form-label">Número de teléfono secundario (opcional)</label>
-                            <input type="tel" class="form-control" id="telefono2" placeholder="1234-5678">
+                            <input type="tel" class="form-control" id="telefono2" placeholder="1234-5678" pattern="^\d{4}-\d{4}$" title="Introduce un número de teléfono válido (ej. 1234-5678)" minlength="8" maxlength="13">
                         </div>
 
                         <div class="mb-3">
@@ -208,7 +208,7 @@
 
                         <div class="mb-3">
                             <label for="password" class="form-label">Contraseña de usuario</label>
-                            <input type="password" class="form-control" id="password" placeholder="Contraseña" required>
+                            <input type="password" class="form-control" id="password" placeholder="Contraseña" minlength="8" maxlength="100" required>
                         </div>
 
                         <div class="col-completa">
@@ -300,8 +300,13 @@
     <!-- LIBRERÍAS DE JAVASCRIPT -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <!-- Scripts de Lógica (Carga limpia) -->
     <script src="js/validaciones.js"></script>
+    <script src="js/portal-aspirante.js"></script>
+    <script src="js/alertas.js"></script>
 </body>
 
 </html>

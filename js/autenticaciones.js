@@ -111,3 +111,39 @@ function cerrarSesion() {
     localStorage.removeItem("sesion");
     window.location.href = "login.html";
 }
+
+//Función para proteger vistas según roles permitidos
+function protegerVista(rolesPermitidos = []) {
+    let sesion;
+
+    try {
+        sesion = JSON.parse(localStorage.getItem("sesion"));
+    } catch (error) {
+        sesion = null;
+    }
+
+    // Si no hay una sesión válida, enviar al inicio de sesión.
+    if (!sesion || !sesion.rol) {
+        localStorage.removeItem("sesion");
+        window.location.replace("login.html");
+        return false;
+    }
+
+    // Si el rol no está autorizado, redirigir según su tipo.
+    if (!rolesPermitidos.includes(sesion.rol)) {
+        if (sesion.rol === "usuario") {
+            window.location.replace("portal-aspirante.html");
+        } else if (
+            sesion.rol === "administrador" ||
+            sesion.rol === "superadministrador"
+        ) {
+            window.location.replace("panel-control.html");
+        } else {
+            cerrarSesion();
+        }
+
+        return false;
+    }
+
+    return true;
+}

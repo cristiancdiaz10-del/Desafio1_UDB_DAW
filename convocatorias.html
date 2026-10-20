@@ -18,6 +18,10 @@
 
      <!-- Ícono de la app -->
     <link rel="icon" href="recursos/logo_AIDEL.jpeg">
+
+      <!-- SweetAlert2 library -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 </head>
 
 <body>
@@ -129,6 +133,24 @@
                 <!-- Tarjeta contenedora de la tabla de convocatorias -->
                 <div class="card card-custom p-3 mb-5">
                     <div class="table-responsive">
+                        <!--botones para exportar archivos-->
+                <div class="d-flex gap-2 flex-wrap">
+                    <button
+                        type="button"
+                        class="btn btn-outline-primary"
+                        onclick="exportarConvocatoriasCSV()">
+                        <i class="bi bi-filetype-csv"></i>
+                        Descargar CSV
+                    </button>
+
+                    <button
+                        type="button"
+                        class="btn btn-outline-success"
+                        onclick="exportarConvocatoriasExcel()">
+                        <i class="bi bi-file-earmark-excel"></i>
+                        Descargar Excel
+                    </button>
+                </div>
                         <table class="table align-middle">
                             <thead>
                                 <tr>
@@ -254,6 +276,9 @@
    <!-- LIBRERÍAS DE JAVASCRIPT -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <!-- Script unificado -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+    <script src="js/alertas.js"></script>
     <script src="js/scriptConvocatorias.js"></script>
     <script src="js/autenticaciones.js"></script>
 </body>

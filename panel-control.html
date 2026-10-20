@@ -146,7 +146,7 @@
 
                 <!-- RECHAZADOS -->
                 <article class="kpi-card">
-                    <h3>Rechazados</h3>
+                    <h3>No seleccionados</h3>
                     <p class="kpi-number" id="kpi-rechazados">0</p>
                 </article>
 
@@ -176,11 +176,38 @@
             <!-- SOLICITUDES -->
             <section class="requests-card">
 
-                <!-- CABECERA -->
-                <div class="requests-header">
-                    <h3>Solicitudes</h3>
-                    <button class="options-button" type="button" aria-label="Más opciones">
-                        <i class="bi bi-three-dots"></i>
+              <!-- CABECERA DE SOLICITUDES CON FILTRO -->
+              <div class="requests-header d-flex flex-wrap align-items-center gap-3">
+                <h3 class="mb-0">Solicitudes</h3>
+
+                    <!-- Selector de Curso Técnico para el filtro -->
+                 <div class="ms-auto d-flex align-items-center gap-2">
+                      <label for="filtroCurso" class="form-label mb-0 small text-muted fw-semibold">Curso:</label>
+                      <select id="filtroCurso" class="form-select form-select-sm" style="width: 180px;">
+                      <option value="todos">Todos los cursos</option>
+                </select>
+         </div>
+
+         <button class="options-button" type="button" aria-label="Más opciones">
+            <i class="bi bi-three-dots"></i>
+         </button>
+     </div>
+                 <!--botones para exportar archivos-->
+                <div class="d-flex gap-2 flex-wrap">
+                    <button
+                        type="button"
+                        class="btn btn-outline-primary"
+                        onclick="exportarCSVParticipantes()">
+                        <i class="bi bi-filetype-csv"></i>
+                        Descargar CSV
+                    </button>
+
+                    <button
+                        type="button"
+                        class="btn btn-outline-success"
+                        onclick="exportarExcelParticipantes()">
+                        <i class="bi bi-file-earmark-excel"></i>
+                        Descargar Excel
                     </button>
                 </div>
 
@@ -199,7 +226,6 @@
                         <!-- Filas dinámicas cargadas desde el JS -->
                     </tbody>
                 </table>
-
             </section>
 
         </main>
@@ -211,6 +237,10 @@
 <!-- LIBRERÍAS Y SCRIPTS DE JAVASCRIPT -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="js/autenticaciones.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="js/panel-control.js"></script>
+<script src="js/descargas-aspirantes.js"></script>
 </body>
 </html>
