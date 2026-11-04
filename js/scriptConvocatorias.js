@@ -1,13 +1,39 @@
-//Gestión de Convocatorias y Cursos
+// Gestión de Convocatorias y Cursos
 
-//ESTADO INICIAL
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Proteger la vista: Solo permite el acceso a Administradores
+    if (typeof protegerVista === 'function') {
+        protegerVista(['administrador', 'superadministrador']);
+    }
+
+    // Obtener datos de la sesión activa
+    const sesion = JSON.parse(localStorage.getItem('sesion'));
+    if (!sesion) return;
+
+    // Actualizar el nombre en el encabezado o barra superior (Topbar)
+    const lblAdmin = document.getElementById('lbl-admin-topbar') || document.getElementById('lbl-usuario');
+    
+    if (lblAdmin) {
+        // Muestra el nombre registrado en la sesión
+        lblAdmin.innerText = sesion.nombre; 
+    }
+
+    // Mostrar nombre del usuario en la barra lateral
+    const lblSidebar = document.getElementById('lbl-admin-sidebar');
+
+    if (lblSidebar) {
+        lblSidebar.innerText = sesion.nombre;
+    }
+});
+
+// ESTADO INICIAL
 let convocatorias = JSON.parse(localStorage.getItem('convocatorias')) || [
     { id: 1, curso: "Análisis de datos con herramientas de IA", fechaInicio: "2026-10-01", fechaCierre: "2026-10-25", plazas: 30, estado: "Activa" },
     { id: 2, curso: "Lenguajes de programación: JavaScript y C#", fechaInicio: "2026-11-05", fechaCierre: "2026-11-30", plazas: 25, estado: "Próximamente" }
 ];
 
 let cursos = JSON.parse(localStorage.getItem('cursos')) || [
-    { id: 1, nombre: "Análisis de datos con herramientas de IA", descripcion: "Capacitación avanzada en modelos predictivos y análisis estadístico enfocado en toma de decisiones." },
+    { id: 1, nombre: "Análisis de datos con herramientas de IA", descripcion: "Capacitación avanzada en modelos predictivos y análisis estadístico enfocado a toma de decisiones." },
     { id: 2, nombre: "Lenguajes de programación: JavaScript y C#", descripcion: "Fundamentos de lógica, desarrollo frontend interactivo y backend robusto orientado a objetos." }
 ];
 
@@ -15,11 +41,11 @@ let cursos = JSON.parse(localStorage.getItem('cursos')) || [
 let modalConvocatoriaBS = null;
 let modalCursoBS = null;
 
-//INICIALIZACIÓN
+// INICIALIZACIÓN
 document.addEventListener('DOMContentLoaded', () => {
     // Proteger vista para evaluadores/admins si existe la función
     if (typeof protegerVista === 'function') {
-        protegerVista(['administrador', 'superadministrador', 'evaluador']);
+        protegerVista(['administrador', 'superadministrador']);
     }
 
     // Inicializar instancias de los modales de Bootstrap
@@ -31,22 +57,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const elemModalCurso = document.getElementById('modalCurso');
     if (elemModalCurso) {
         modalCursoBS = new bootstrap.Modal(elemModalCurso, { backdrop: 'static' });
-    }
-
-    // Mostrar nombre del usuario actual
-    const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual'));
-
-    if (usuarioActual) {
-        const lblSidebar = document.getElementById('lbl-admin-sidebar');
-        const lblTopbar = document.getElementById('lbl-admin-topbar');
-
-        if (lblSidebar) {
-            lblSidebar.innerText = usuarioActual.nombreCompleto;
-        }
-
-        if (lblTopbar) {
-            lblTopbar.innerText = usuarioActual.nombreCompleto;
-        }
     }
 
     // Escuchar eventos de guardado (Submit de formularios)
@@ -62,7 +72,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Cargar cursos guardados en el selector de convocatorias
 function cargarCursosEnSelect() {
-
     const select = document.getElementById('cursoSelect');
 
     if (!select) return;
@@ -72,7 +81,6 @@ function cargarCursosEnSelect() {
     `;
 
     cursos.forEach(curso => {
-
         const option = document.createElement('option');
 
         option.value = curso.nombre;
@@ -82,7 +90,7 @@ function cargarCursosEnSelect() {
     });
 }
 
-//LÓGICA DE CONVOCATORIAS
+// LÓGICA DE CONVOCATORIAS
 function renderizarTablaConvocatorias() {
     const tabla = document.getElementById('tablaConvocatorias');
     if (!tabla) return;
@@ -138,14 +146,31 @@ function prepararEdicionConvocatoria(id) {
 }
 
 function eliminarConvocatoria(id) {
-    if (confirm('¿Deseas eliminar esta convocatoria?')) {
-        convocatorias = convocatorias.filter(c => c.id !== id);
-        localStorage.setItem('convocatorias', JSON.stringify(convocatorias));
-        renderizarTablaConvocatorias();
-    }
+    Swal.fire({
+        title: '¿Estás seguro?',
+        text: "¡No podrás revertir esta acción!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            convocatorias = convocatorias.filter(c => c.id !== id);
+            localStorage.setItem('convocatorias', JSON.stringify(convocatorias));
+            renderizarTablaConvocatorias();
+            
+            Swal.fire(
+                '¡Eliminado!',
+                'La convocatoria ha sido borrada exitosamente.',
+                'success'
+            );
+        }
+    });
 }
 
-//LÓGICA DE CURSOS
+// LÓGICA DE CURSOS
 function renderizarCursos() {
     const contenedor = document.getElementById('contenedorCursos');
     if (!contenedor) return;
@@ -197,15 +222,23 @@ function prepararEdicionCurso(id) {
 }
 
 function eliminarCurso(id) {
-    if (confirm('¿Deseas eliminar este curso?')) {
+    confirmarEliminacion("este curso").then((confirmado) => {
+        if (!confirmado) return;
+
         cursos = cursos.filter(c => c.id !== id);
         localStorage.setItem('cursos', JSON.stringify(cursos));
+
         renderizarCursos();
         cargarCursosEnSelect();
-    }
+
+        mostrarExito(
+            "Curso eliminado",
+            "El curso se eliminó correctamente."
+        );
+    });
 }
 
-//SUBMIT DE FORMULARIOS
+// SUBMIT DE FORMULARIOS
 function configurarFormularios() {
     const formConv = document.getElementById('formConvocatoria');
     if (formConv) {
@@ -230,6 +263,14 @@ function configurarFormularios() {
             localStorage.setItem('convocatorias', JSON.stringify(convocatorias));
             renderizarTablaConvocatorias();
             if (modalConvocatoriaBS) modalConvocatoriaBS.hide();
+
+            Swal.fire({
+                icon: 'success',
+                title: '¡Guardado!',
+                text: 'La convocatoria se ha registrado correctamente.',
+                timer: 2000,
+                showConfirmButton: false
+            });
         });
     }
 
@@ -257,6 +298,110 @@ function configurarFormularios() {
             cargarCursosEnSelect();
 
             if (modalCursoBS) modalCursoBS.hide();
+
+            Swal.fire({
+                icon: 'success',
+                title: '¡Guardado!',
+                text: 'El curso se ha registrado correctamente.',
+                timer: 2000,
+                showConfirmButton: false
+            });
         });
     }
+}
+
+// Exportar convocatorias activas a CSV
+function exportarConvocatoriasCSV() {
+    exportarConvocatorias('csv');
+}
+
+// Exportar convocatorias activas a Excel
+function exportarConvocatoriasExcel() {
+    exportarConvocatorias('excel');
+}
+
+// Función común de exportación
+function exportarConvocatorias(formato) {
+    const tabla = document.getElementById('tablaConvocatorias');
+
+    if (!tabla) {
+        alert('No se encontró la tabla de convocatorias.');
+        return;
+    }
+
+    const filas = Array.from(tabla.querySelectorAll('tr'));
+
+    const datos = filas.map(fila => {
+        const celdas = fila.querySelectorAll('td');
+
+        if (celdas.length < 4) return null;
+
+        return {
+            Curso: celdas[0].innerText.trim(),
+            Fechas: celdas[1].innerText.trim(),
+            Plazas: celdas[2].innerText.trim(),
+            Estado: celdas[3].innerText.trim()
+        };
+    }).filter(convocatoria =>
+        convocatoria &&
+        convocatoria.Estado.toLowerCase().includes('activa')
+    );
+
+    if (datos.length === 0) {
+        alert('No hay convocatorias activas para exportar.');
+        return;
+    }
+
+    if (formato === 'csv') {
+        const columnas = ['Curso', 'Fechas', 'Plazas', 'Estado'];
+
+        const escapar = valor =>
+            '"' + String(valor ?? '').replace(/"/g, '""') + '"';
+
+        const contenido = [
+            columnas.map(escapar).join(';'),
+            ...datos.map(fila =>
+                columnas.map(columna => escapar(fila[columna])).join(';')
+            )
+        ].join('\r\n');
+
+        const blob = new Blob(
+            ['\uFEFF' + contenido],
+            { type: 'text/csv;charset=utf-8;' }
+        );
+
+        descargarArchivo(blob, 'convocatorias_activas.csv');
+    }
+
+    if (formato === 'excel') {
+        if (typeof XLSX === 'undefined') {
+            alert('No se pudo cargar la biblioteca de Excel.');
+            return;
+        }
+
+        const hoja = XLSX.utils.json_to_sheet(datos);
+        const libro = XLSX.utils.book_new();
+
+        XLSX.utils.book_append_sheet(
+            libro,
+            hoja,
+            'Convocatorias activas'
+        );
+
+        XLSX.writeFile(libro, 'convocatorias_activas.xlsx');
+    }
+}
+
+// Descargar archivo generado
+function descargarArchivo(blob, nombre) {
+    const url = URL.createObjectURL(blob);
+    const enlace = document.createElement('a');
+
+    enlace.href = url;
+    enlace.download = nombre;
+    document.body.appendChild(enlace);
+    enlace.click();
+    enlace.remove();
+
+    URL.revokeObjectURL(url);
 }

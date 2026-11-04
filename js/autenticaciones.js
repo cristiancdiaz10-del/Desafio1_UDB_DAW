@@ -1,57 +1,149 @@
-// Modulo de autenticacion
+//AUTENTICACIONES
 
-document.addEventListener("DOMContentLoaded", function () {
+//Creación de usuarios administradores
+function crearUsuariosIniciales() {
+    let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
 
-    const formLogin = document.getElementById("formLogin");
-
-    formLogin.addEventListener("submit", function (event) {
-        event.preventDefault();
-
-        const correo = document.getElementById("email").value.trim();
-        const password = document.getElementById("password").value;
-
-        // Obtener usuarios registrados
-        let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
-
-        // Buscar usuario por correo y contraseña
-        const usuario = usuarios.find(function (usuario) {
-            return usuario.email === correo &&
-                   usuario.password === password;
-        });
-
-        // Si no existe el usuario
-        if (!usuario) {
-            alert("Correo o contraseña incorrectos.");
-            return;
+    // Lista de cuentas administrativas iniciales
+    const usuariosSemilla = [
+        {
+            id: "USR-0001",
+            nombre: "Administrador",
+            nombreCompleto: "Administrador Sistema",
+            email: "admin@ejemplo.com",
+            correo: "admin@ejemplo.com",
+            password: "123",
+            rol: "administrador",
+            fechaRegistro: new Date().toISOString()
+        },
+        {
+            id: "USR-0002",
+            nombre: "SuperAdmin",
+            nombreCompleto: "Super Administrador",
+            email: "super@ejemplo.com",
+            correo: "super@ejemplo.com",
+            password: "123",
+            rol: "superadministrador",
+            fechaRegistro: new Date().toISOString()
         }
+    ];
 
-        // Guardar el usuario que inició sesión
-        localStorage.setItem("usuarioActual", JSON.stringify(usuario));
+    // Verificar e insertar solo los administradores que aún no existan en localStorage
+    let seAñadieronNuevos = false;
 
-        // Comprobar el rol del usuario
-        if (usuario.rol === "superadministrador") {
+    usuariosSemilla.forEach(admin => {
+        const existe = usuarios.some(u => 
+            (u.email || u.correo || "").toLowerCase() === admin.email.toLowerCase()
+        );
 
-            window.location.href = "dashboard.html";
-
-        } else if (usuario.rol === "administrador") {
-
-            window.location.href = "dashboard.html";
-
-        } else {
-
-            window.location.href = "portal-aspirante.html";
+        if (!existe) {
+            usuarios.push(admin);
+            seAñadieronNuevos = true;
         }
     });
 
+    // Guardar si hubo cambios sin sobrescribir los usuarios registrados
+    if (seAñadieronNuevos) {
+        localStorage.setItem("usuarios", JSON.stringify(usuarios));
+    }
+}
+
+// Ejecutar la verificación de administradores
+crearUsuariosIniciales();
+
+//Control de Inicio de Sesión y Redirección por Rol
+document.addEventListener("DOMContentLoaded", () => {
+    const formLogin = document.getElementById("formLogin");
+
+    if (formLogin) {
+        formLogin.addEventListener("submit", function(e) {
+            e.preventDefault();
+
+            const inputEmail = document.getElementById("email");
+            const inputPass = document.getElementById("password");
+
+            if (!inputEmail || !inputPass) {
+                alert("Error: No se encontraron los campos de inicio de sesión.");
+                return;
+            }
+
+            const emailIngresado = inputEmail.value.trim().toLowerCase();
+            const passIngresada = inputPass.value.trim();
+
+            const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+
+            // Buscar coincidencia exacta
+            const usuarioValido = usuarios.find(u => {
+                const correoGuardado = String(u.email || u.correo || "").trim().toLowerCase();
+                const passGuardada = String(u.password || "").trim();
+
+                return correoGuardado === emailIngresado && passGuardada === passIngresada;
+            });
+
+            if (!usuarioValido) {
+                alert("Correo o contraseña incorrectos.");
+                return;
+            }
+
+            // Crear datos de sesión activa
+            const nombreUsuario = usuarioValido.nombre || usuarioValido.nombreCompleto || "Usuario";
+            
+            localStorage.setItem("sesion", JSON.stringify({
+                id: usuarioValido.id || "USR-" + Date.now().toString().slice(-4),
+                nombre: nombreUsuario,
+                nombreCompleto: nombreUsuario,
+                email: usuarioValido.email || usuarioValido.correo,
+                rol: usuarioValido.rol
+            }));
+
+            // Redirección en función del Rol del usuario
+            if (usuarioValido.rol === "usuario") {
+                window.location.href = "portal-aspirante.html";
+            } else if (usuarioValido.rol === "administrador" || usuarioValido.rol === "superadministrador") {
+                window.location.href = "panel-control.html";
+            }
+        });
+    }
 });
 
-
-// Función global para cerrar sesión
+//Función para cerrar sesión globalmente
 function cerrarSesion() {
-
-    // Eliminar únicamente la sesión activa
-    localStorage.removeItem("usuarioActual");
-
-    // Redirigir al login
+    localStorage.removeItem("sesion");
     window.location.href = "login.html";
+}
+
+//Función para proteger vistas según roles permitidos
+function protegerVista(rolesPermitidos = []) {
+    let sesion;
+
+    try {
+        sesion = JSON.parse(localStorage.getItem("sesion"));
+    } catch (error) {
+        sesion = null;
+    }
+
+    // Si no hay una sesión válida, enviar al inicio de sesión.
+    if (!sesion || !sesion.rol) {
+        localStorage.removeItem("sesion");
+        window.location.replace("login.html");
+        return false;
+    }
+
+    // Si el rol no está autorizado, redirigir según su tipo.
+    if (!rolesPermitidos.includes(sesion.rol)) {
+        if (sesion.rol === "usuario") {
+            window.location.replace("portal-aspirante.html");
+        } else if (
+            sesion.rol === "administrador" ||
+            sesion.rol === "superadministrador"
+        ) {
+            window.location.replace("panel-control.html");
+        } else {
+            cerrarSesion();
+        }
+
+        return false;
+    }
+
+    return true;
 }

@@ -1,0 +1,407 @@
+// Gestión de Convocatorias y Cursos
+
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Proteger la vista: Solo permite el acceso a Administradores
+    if (typeof protegerVista === 'function') {
+        protegerVista(['administrador', 'superadministrador']);
+    }
+
+    // Obtener datos de la sesión activa
+    const sesion = JSON.parse(localStorage.getItem('sesion'));
+    if (!sesion) return;
+
+    // Actualizar el nombre en el encabezado o barra superior (Topbar)
+    const lblAdmin = document.getElementById('lbl-admin-topbar') || document.getElementById('lbl-usuario');
+    
+    if (lblAdmin) {
+        // Muestra el nombre registrado en la sesión
+        lblAdmin.innerText = sesion.nombre; 
+    }
+
+    // Mostrar nombre del usuario en la barra lateral
+    const lblSidebar = document.getElementById('lbl-admin-sidebar');
+
+    if (lblSidebar) {
+        lblSidebar.innerText = sesion.nombre;
+    }
+});
+
+// ESTADO INICIAL
+let convocatorias = JSON.parse(localStorage.getItem('convocatorias')) || [
+    { id: 1, curso: "Análisis de datos con herramientas de IA", fechaInicio: "2026-10-01", fechaCierre: "2026-10-25", plazas: 30, estado: "Activa" },
+    { id: 2, curso: "Lenguajes de programación: JavaScript y C#", fechaInicio: "2026-11-05", fechaCierre: "2026-11-30", plazas: 25, estado: "Próximamente" }
+];
+
+let cursos = JSON.parse(localStorage.getItem('cursos')) || [
+    { id: 1, nombre: "Análisis de datos con herramientas de IA", descripcion: "Capacitación avanzada en modelos predictivos y análisis estadístico enfocado a toma de decisiones." },
+    { id: 2, nombre: "Lenguajes de programación: JavaScript y C#", descripcion: "Fundamentos de lógica, desarrollo frontend interactivo y backend robusto orientado a objetos." }
+];
+
+// Instancias de Modales Bootstrap
+let modalConvocatoriaBS = null;
+let modalCursoBS = null;
+
+// INICIALIZACIÓN
+document.addEventListener('DOMContentLoaded', () => {
+    // Proteger vista para evaluadores/admins si existe la función
+    if (typeof protegerVista === 'function') {
+        protegerVista(['administrador', 'superadministrador']);
+    }
+
+    // Inicializar instancias de los modales de Bootstrap
+    const elemModalConv = document.getElementById('modalConvocatoria');
+    if (elemModalConv) {
+        modalConvocatoriaBS = new bootstrap.Modal(elemModalConv, { backdrop: 'static' });
+    }
+
+    const elemModalCurso = document.getElementById('modalCurso');
+    if (elemModalCurso) {
+        modalCursoBS = new bootstrap.Modal(elemModalCurso, { backdrop: 'static' });
+    }
+
+    // Escuchar eventos de guardado (Submit de formularios)
+    configurarFormularios();
+
+    // Cargar cursos disponibles en el selector
+    cargarCursosEnSelect();
+
+    // Renderizar vistas
+    renderizarTablaConvocatorias();
+    renderizarCursos();
+});
+
+// Cargar cursos guardados en el selector de convocatorias
+function cargarCursosEnSelect() {
+    const select = document.getElementById('cursoSelect');
+
+    if (!select) return;
+
+    select.innerHTML = `
+        <option value="" selected disabled>Seleccione un curso...</option>
+    `;
+
+    cursos.forEach(curso => {
+        const option = document.createElement('option');
+
+        option.value = curso.nombre;
+        option.textContent = curso.nombre;
+
+        select.appendChild(option);
+    });
+}
+
+// LÓGICA DE CONVOCATORIAS
+function renderizarTablaConvocatorias() {
+    const tabla = document.getElementById('tablaConvocatorias');
+    if (!tabla) return;
+    tabla.innerHTML = '';
+
+    if (convocatorias.length === 0) {
+        tabla.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No hay convocatorias registradas</td></tr>`;
+        return;
+    }
+
+    convocatorias.forEach(conv => {
+        let badgeClass = 'badge-activa';
+        if (conv.estado === 'Cerrada') badgeClass = 'badge-cerrada';
+        if (conv.estado === 'Próximamente') badgeClass = 'badge-proximamente';
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="fw-semibold">${conv.curso}</td>
+            <td><small class="text-muted">Del ${conv.fechaInicio} al ${conv.fechaCierre}</small></td>
+            <td>${conv.plazas} plazas</td>
+            <td><span class="${badgeClass}">${conv.estado}</span></td>
+            <td>
+                <button class="btn btn-sm btn-outline-primary me-1" onclick="prepararEdicionConvocatoria(${conv.id})"><i class="bi bi-pencil-square"></i></button>
+                <button class="btn btn-sm btn-outline-danger" onclick="eliminarConvocatoria(${conv.id})"><i class="bi bi-trash"></i></button>
+            </td>
+        `;
+        tabla.appendChild(tr);
+    });
+}
+
+function prepararCreacionConvocatoria() {
+    const form = document.getElementById('formConvocatoria');
+    if (form) form.reset();
+    document.getElementById('convocatoriaId').value = '';
+    document.getElementById('modalTituloConvocatoria').textContent = 'Nueva Convocatoria';
+    
+    if (modalConvocatoriaBS) modalConvocatoriaBS.show();
+}
+
+function prepararEdicionConvocatoria(id) {
+    const conv = convocatorias.find(c => c.id === id);
+    if (!conv) return;
+
+    document.getElementById('convocatoriaId').value = conv.id;
+    document.getElementById('cursoSelect').value = conv.curso;
+    document.getElementById('fechaInicio').value = conv.fechaInicio;
+    document.getElementById('fechaCierre').value = conv.fechaCierre;
+    document.getElementById('numPlazas').value = conv.plazas;
+    document.getElementById('estadoSelect').value = conv.estado;
+
+    document.getElementById('modalTituloConvocatoria').textContent = 'Editar Convocatoria';
+    if (modalConvocatoriaBS) modalConvocatoriaBS.show();
+}
+
+function eliminarConvocatoria(id) {
+    Swal.fire({
+        title: '¿Estás seguro?',
+        text: "¡No podrás revertir esta acción!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            convocatorias = convocatorias.filter(c => c.id !== id);
+            localStorage.setItem('convocatorias', JSON.stringify(convocatorias));
+            renderizarTablaConvocatorias();
+            
+            Swal.fire(
+                '¡Eliminado!',
+                'La convocatoria ha sido borrada exitosamente.',
+                'success'
+            );
+        }
+    });
+}
+
+// LÓGICA DE CURSOS
+function renderizarCursos() {
+    const contenedor = document.getElementById('contenedorCursos');
+    if (!contenedor) return;
+    contenedor.innerHTML = '';
+
+    if (cursos.length === 0) {
+        contenedor.innerHTML = `<div class="col-12 text-center text-muted py-3"><p>No hay cursos registrados en el sistema.</p></div>`;
+        return;
+    }
+
+    cursos.forEach(curso => {
+        const col = document.createElement('div');
+        col.className = 'col-md-4 col-sm-6';
+        col.innerHTML = `
+            <div class="card curso-card h-100 p-3 d-flex flex-column justify-content-between">
+                <div>
+                    <h5 class="card-title mb-2">${curso.nombre}</h5>
+                    <p class="card-text mb-3">${curso.descripcion}</p>
+                </div>
+                <div class="d-flex justify-content-end gap-2 pt-2 border-top">
+                    <button class="btn btn-sm btn-outline-primary" onclick="prepararEdicionCurso(${curso.id})"><i class="bi bi-pencil-square"></i> Editar</button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="eliminarCurso(${curso.id})"><i class="bi bi-trash"></i> Eliminar</button>
+                </div>
+            </div>
+        `;
+        contenedor.appendChild(col);
+    });
+}
+
+function prepararCreacionCurso() {
+    const form = document.getElementById('formCurso');
+    if (form) form.reset();
+    document.getElementById('cursoId').value = '';
+    document.getElementById('modalCursoTitulo').textContent = 'Nuevo Curso';
+
+    if (modalCursoBS) modalCursoBS.show();
+}
+
+function prepararEdicionCurso(id) {
+    const curso = cursos.find(c => c.id === id);
+    if (!curso) return;
+
+    document.getElementById('cursoId').value = curso.id;
+    document.getElementById('nombreCurso').value = curso.nombre;
+    document.getElementById('descCurso').value = curso.descripcion;
+
+    document.getElementById('modalCursoTitulo').textContent = 'Editar Curso';
+    if (modalCursoBS) modalCursoBS.show();
+}
+
+function eliminarCurso(id) {
+    confirmarEliminacion("este curso").then((confirmado) => {
+        if (!confirmado) return;
+
+        cursos = cursos.filter(c => c.id !== id);
+        localStorage.setItem('cursos', JSON.stringify(cursos));
+
+        renderizarCursos();
+        cargarCursosEnSelect();
+
+        mostrarExito(
+            "Curso eliminado",
+            "El curso se eliminó correctamente."
+        );
+    });
+}
+
+// SUBMIT DE FORMULARIOS
+function configurarFormularios() {
+    const formConv = document.getElementById('formConvocatoria');
+    if (formConv) {
+        formConv.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = document.getElementById('convocatoriaId').value;
+            const nuevaData = {
+                id: id ? parseInt(id) : Date.now(),
+                curso: document.getElementById('cursoSelect').value,
+                fechaInicio: document.getElementById('fechaInicio').value,
+                fechaCierre: document.getElementById('fechaCierre').value,
+                plazas: parseInt(document.getElementById('numPlazas').value),
+                estado: document.getElementById('estadoSelect').value
+            };
+
+            if (id) {
+                convocatorias = convocatorias.map(c => c.id === parseInt(id) ? nuevaData : c);
+            } else {
+                convocatorias.push(nuevaData);
+            }
+
+            localStorage.setItem('convocatorias', JSON.stringify(convocatorias));
+            renderizarTablaConvocatorias();
+            if (modalConvocatoriaBS) modalConvocatoriaBS.hide();
+
+            Swal.fire({
+                icon: 'success',
+                title: '¡Guardado!',
+                text: 'La convocatoria se ha registrado correctamente.',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        });
+    }
+
+    const formCur = document.getElementById('formCurso');
+    if (formCur) {
+        formCur.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = document.getElementById('cursoId').value;
+            const nuevoCurso = {
+                id: id ? parseInt(id) : Date.now(),
+                nombre: document.getElementById('nombreCurso').value,
+                descripcion: document.getElementById('descCurso').value
+            };
+
+            if (id) {
+                cursos = cursos.map(c => c.id === parseInt(id) ? nuevoCurso : c);
+            } else {
+                cursos.push(nuevoCurso);
+            }
+
+            localStorage.setItem('cursos', JSON.stringify(cursos));
+            renderizarCursos();
+
+            // Actualizar el selector de convocatorias
+            cargarCursosEnSelect();
+
+            if (modalCursoBS) modalCursoBS.hide();
+
+            Swal.fire({
+                icon: 'success',
+                title: '¡Guardado!',
+                text: 'El curso se ha registrado correctamente.',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        });
+    }
+}
+
+// Exportar convocatorias activas a CSV
+function exportarConvocatoriasCSV() {
+    exportarConvocatorias('csv');
+}
+
+// Exportar convocatorias activas a Excel
+function exportarConvocatoriasExcel() {
+    exportarConvocatorias('excel');
+}
+
+// Función común de exportación
+function exportarConvocatorias(formato) {
+    const tabla = document.getElementById('tablaConvocatorias');
+
+    if (!tabla) {
+        alert('No se encontró la tabla de convocatorias.');
+        return;
+    }
+
+    const filas = Array.from(tabla.querySelectorAll('tr'));
+
+    const datos = filas.map(fila => {
+        const celdas = fila.querySelectorAll('td');
+
+        if (celdas.length < 4) return null;
+
+        return {
+            Curso: celdas[0].innerText.trim(),
+            Fechas: celdas[1].innerText.trim(),
+            Plazas: celdas[2].innerText.trim(),
+            Estado: celdas[3].innerText.trim()
+        };
+    }).filter(convocatoria =>
+        convocatoria &&
+        convocatoria.Estado.toLowerCase().includes('activa')
+    );
+
+    if (datos.length === 0) {
+        alert('No hay convocatorias activas para exportar.');
+        return;
+    }
+
+    if (formato === 'csv') {
+        const columnas = ['Curso', 'Fechas', 'Plazas', 'Estado'];
+
+        const escapar = valor =>
+            '"' + String(valor ?? '').replace(/"/g, '""') + '"';
+
+        const contenido = [
+            columnas.map(escapar).join(';'),
+            ...datos.map(fila =>
+                columnas.map(columna => escapar(fila[columna])).join(';')
+            )
+        ].join('\r\n');
+
+        const blob = new Blob(
+            ['\uFEFF' + contenido],
+            { type: 'text/csv;charset=utf-8;' }
+        );
+
+        descargarArchivo(blob, 'convocatorias_activas.csv');
+    }
+
+    if (formato === 'excel') {
+        if (typeof XLSX === 'undefined') {
+            alert('No se pudo cargar la biblioteca de Excel.');
+            return;
+        }
+
+        const hoja = XLSX.utils.json_to_sheet(datos);
+        const libro = XLSX.utils.book_new();
+
+        XLSX.utils.book_append_sheet(
+            libro,
+            hoja,
+            'Convocatorias activas'
+        );
+
+        XLSX.writeFile(libro, 'convocatorias_activas.xlsx');
+    }
+}
+
+// Descargar archivo generado
+function descargarArchivo(blob, nombre) {
+    const url = URL.createObjectURL(blob);
+    const enlace = document.createElement('a');
+
+    enlace.href = url;
+    enlace.download = nombre;
+    document.body.appendChild(enlace);
+    enlace.click();
+    enlace.remove();
+
+    URL.revokeObjectURL(url);
+}
