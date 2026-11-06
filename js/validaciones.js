@@ -42,14 +42,58 @@ if (selectDepto) {
         selectDist.disabled = true;
 
         if (deptoEncontrado) {
+<<<<<<< HEAD
+
+            selectMuni.disabled = false;
+
+            deptoEncontrado.municipios.forEach(municipio => {
+
+                selectMuni.innerHTML +=
+                    `<option value="${municipio.nombre}">
+                        ${municipio.nombre}
+                    </option>`;
+=======
             selectMuni.disabled = false;
             deptoEncontrado.municipios.forEach(municipio => {
                 selectMuni.innerHTML += `<option value="${municipio.nombre}">${municipio.nombre}</option>`;
+>>>>>>> origin/integracion-fase-2
             });
         }
     });
 }
 
+<<<<<<< HEAD
+
+if (selectMuni) {
+
+    selectMuni.addEventListener("change", () => {
+
+        const deptoEncontrado = datosElSalvador.find(
+            d => d.nombre === selectDepto.value
+        );
+
+        const muniEncontrado = deptoEncontrado
+            ? deptoEncontrado.municipios.find(
+                m => m.nombre === selectMuni.value
+            )
+            : null;
+
+        selectDist.innerHTML =
+            '<option value="">Selecciona tu distrito</option>';
+
+        selectDist.disabled = true;
+
+        if (muniEncontrado) {
+
+            selectDist.disabled = false;
+
+            muniEncontrado.distritos.forEach(distrito => {
+
+                selectDist.innerHTML +=
+                    `<option value="${distrito.nombre}">
+                        ${distrito.nombre}
+                    </option>`;
+=======
 if (selectMuni) {
     selectMuni.addEventListener("change", () => {
         const deptoEncontrado = datosElSalvador.find(d => d.nombre === selectDepto.value);
@@ -62,18 +106,64 @@ if (selectMuni) {
             selectDist.disabled = false;
             muniEncontrado.distritos.forEach(distrito => {
                 selectDist.innerHTML += `<option value="${distrito.nombre}">${distrito.nombre}</option>`;
+>>>>>>> origin/integracion-fase-2
             });
         }
     });
 }
 
+<<<<<<< HEAD
+
+// Validación Mayor y Menor de edad para mostrar DUI o NIT
+=======
 //Validación Mayor y Menor de edad para mostrar DUI o NIT
+>>>>>>> origin/integracion-fase-2
 const inputFecha = document.getElementById("nacimiento");
 const inputDui = document.getElementById("DUI");
 const inputNit = document.getElementById("NIT");
 const grupoDui = document.getElementById("NDUI");
 const grupoNit = document.getElementById("NNIT");
 
+<<<<<<< HEAD
+
+if (inputFecha) {
+
+    inputFecha.addEventListener("change", () => {
+
+        const fechaNac = new Date(inputFecha.value);
+
+        if (isNaN(fechaNac.getTime())) return;
+
+        const hoy = new Date();
+
+        let edad =
+            hoy.getFullYear() - fechaNac.getFullYear();
+
+        const mes =
+            hoy.getMonth() - fechaNac.getMonth();
+
+        if (
+            mes < 0 ||
+            (mes === 0 && hoy.getDate() < fechaNac.getDate())
+        ) {
+            edad--;
+        }
+
+
+        if (edad >= 18) {
+
+            inputDui.required = true;
+            inputNit.required = false;
+
+            grupoDui.classList.remove("d-none");
+            grupoNit.classList.add("d-none");
+
+        } else {
+
+            inputDui.required = false;
+            inputNit.required = true;
+
+=======
 if (inputFecha) {
     inputFecha.addEventListener("change", () => {
         const fechaNac = new Date(inputFecha.value);
@@ -94,30 +184,65 @@ if (inputFecha) {
         } else {
             inputDui.required = false;
             inputNit.required = true;
+>>>>>>> origin/integracion-fase-2
             grupoDui.classList.add("d-none");
             grupoNit.classList.remove("d-none");
         }
     });
 }
 
+<<<<<<< HEAD
+
+// Modal de Consentimiento Informado
+=======
 //Modal de Consentimiento Informado
+>>>>>>> origin/integracion-fase-2
 const modal = document.getElementById("modalConsentimiento");
 const abrir = document.getElementById("abrirConsentimiento");
 const cerrar = document.getElementById("cerrarConsentimiento");
 
+<<<<<<< HEAD
+
+if (abrir && modal) {
+
+    abrir.addEventListener("click", function(evento) {
+
+        evento.preventDefault();
+
+=======
 if (abrir && modal) {
     abrir.addEventListener("click", function(evento) {
         evento.preventDefault();
+>>>>>>> origin/integracion-fase-2
         modal.style.display = "flex";
     });
 }
 
+<<<<<<< HEAD
+
+if (cerrar && modal) {
+
+    cerrar.addEventListener("click", function() {
+
+=======
 if (cerrar && modal) {
     cerrar.addEventListener("click", function() {
+>>>>>>> origin/integracion-fase-2
         modal.style.display = "none";
     });
 }
 
+<<<<<<< HEAD
+
+// Guardado de registros de Aspirantes
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const formRegistro =
+        document.getElementById("formRegistro");
+
+
+=======
 //Guardado de registros de Aspirantes
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -125,10 +250,98 @@ document.addEventListener("DOMContentLoaded", function () {
     const formRegistro = document.getElementById("formRegistro");
 
     // Verificar que el formulario exista
+>>>>>>> origin/integracion-fase-2
     if (!formRegistro) {
         return;
     }
 
+<<<<<<< HEAD
+
+    formRegistro.addEventListener("submit", function (event) {
+
+        event.preventDefault();
+
+
+        const cursoFormacion =
+            document.getElementById("curso").value;
+
+        const nombreCompleto =
+            document.getElementById("nombre").value.trim();
+
+        const sexo =
+            document.getElementById("sexo").value;
+
+        const fechaNacimiento =
+            document.getElementById("nacimiento").value;
+
+        const departamento =
+            document.getElementById("departamento").value;
+
+        const municipio =
+            document.getElementById("municipio").value;
+
+        const distrito =
+            document.getElementById("distrito").value;
+
+        const DUI =
+            document.getElementById("DUI").value.trim();
+
+        const NIT =
+            document.getElementById("NIT").value.trim();
+
+        const discapacidad =
+            document.getElementById("discapacidad").value;
+
+        const nivelEducativo =
+            document.getElementById("nivel-educativo").value;
+
+        const situacionActual =
+            document.getElementById("situacion-actual").value;
+
+        const internet =
+            document.getElementById("internet").value;
+
+        const computadora =
+            document.getElementById("computadora").value;
+
+        const dominioComputadora =
+            document.getElementById("dominio-computadora").value;
+
+        const vinculacionLaboral =
+            document.getElementById("vinculacion").value;
+
+        const medioPreferido =
+            document.getElementById("medio-contacto").value;
+
+        const telefono1 =
+            document.getElementById("telefono").value.trim();
+
+        const telefono2 =
+            document.getElementById("telefono2").value.trim();
+
+        const email =
+            document.getElementById("email").value.trim();
+
+        const password =
+            document.getElementById("password").value;
+
+        const consentimientoInformado =
+            document.getElementById("aceptarConsentimiento").checked;
+
+
+        // Obtener usuarios registrados
+        let usuarios =
+            JSON.parse(localStorage.getItem("usuarios")) || [];
+
+
+        // =====================================================
+        // NORMALIZAR DATOS PARA COMPARARLOS
+        // =====================================================
+
+        // El correo no distingue entre mayúsculas y minúsculas
+        const emailNormalizado =
+            email.toLowerCase();
+=======
     formRegistro.addEventListener("submit", async function (event) {
         event.preventDefault();
 
@@ -163,10 +376,68 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // El correo no distingue entre mayúsculas y minúsculas
         const emailNormalizado = email.toLowerCase();
+>>>>>>> origin/integracion-fase-2
 
         // Se eliminan espacios y guiones para evitar
         // que se pueda registrar el mismo documento
         // usando un formato diferente.
+<<<<<<< HEAD
+        const duiNormalizado =
+            DUI.replace(/[\s-]/g, "");
+
+        const nitNormalizado =
+            NIT.replace(/[\s-]/g, "");
+
+
+        // =====================================================
+        // VERIFICAR CORREO DUPLICADO
+        // =====================================================
+
+        const correoExiste =
+            usuarios.some(function (usuario) {
+
+                return (
+                    (usuario.email || "")
+                        .trim()
+                        .toLowerCase() === emailNormalizado
+                );
+            });
+
+
+        if (correoExiste) {
+
+            alert(
+                "Este correo ya está registrado. Utiliza otro correo."
+            );
+
+            return;
+        }
+
+
+        // =====================================================
+        // VERIFICAR DUI DUPLICADO
+        // =====================================================
+
+        if (duiNormalizado !== "") {
+
+            const duiExiste =
+                usuarios.some(function (usuario) {
+
+                    const duiRegistrado =
+                        (usuario.DUI || "")
+                            .replace(/[\s-]/g, "");
+
+                    return duiRegistrado === duiNormalizado;
+                });
+
+
+            if (duiExiste) {
+
+                alert(
+                    "Este DUI ya está registrado. No puedes realizar otro registro con este DUI."
+                );
+
+=======
         const duiNormalizado = DUI.replace(/[\s-]/g, "");
         const nitNormalizado = NIT.replace(/[\s-]/g, "");
 
@@ -209,10 +480,37 @@ document.addEventListener("DOMContentLoaded", function () {
                 text: "Este DUI ya está registrado. No puedes realizar otro registro con este DUI.",
                 confirmButtonText: "Entendido"
                 });
+>>>>>>> origin/integracion-fase-2
                 return;
             }
         }
 
+<<<<<<< HEAD
+
+        // =====================================================
+        // VERIFICAR NIT DUPLICADO
+        // =====================================================
+
+        if (nitNormalizado !== "") {
+
+            const nitExiste =
+                usuarios.some(function (usuario) {
+
+                    const nitRegistrado =
+                        (usuario.NIT || "")
+                            .replace(/[\s-]/g, "");
+
+                    return nitRegistrado === nitNormalizado;
+                });
+
+
+            if (nitExiste) {
+
+                alert(
+                    "Este NIT ya está registrado. No puedes realizar otro registro con este NIT."
+                );
+
+=======
         // VERIFICAR NIT DUPLICADO
 
         if (nitNormalizado !== "") {
@@ -233,10 +531,93 @@ document.addEventListener("DOMContentLoaded", function () {
                 text: "Este NIT ya está registrado. No puedes realizar otro registro con este NIT.",
                 confirmButtonText: "Entendido"
             });
+>>>>>>> origin/integracion-fase-2
                 return;
             }
         }
 
+<<<<<<< HEAD
+
+        // =====================================================
+        // CREAR NUEVO USUARIO
+        // =====================================================
+
+        const nuevoUsuario = {
+
+            curso: cursoFormacion,
+
+            nombreCompleto: nombreCompleto,
+
+            sexo: sexo,
+
+            fechaNacimiento: fechaNacimiento,
+
+            departamento: departamento,
+
+            municipio: municipio,
+
+            distrito: distrito,
+
+            DUI: DUI,
+
+            NIT: NIT,
+
+            discapacidad: discapacidad,
+
+            nivelEducativo: nivelEducativo,
+
+            situacionActual: situacionActual,
+
+            internet: internet,
+
+            computadora: computadora,
+
+            dominioComputadora: dominioComputadora,
+
+            vinculacionLaboral: vinculacionLaboral,
+
+            medioPreferido: medioPreferido,
+
+            telefono1: telefono1,
+
+            telefono2: telefono2,
+
+            email: email,
+
+            password: password,
+
+            consentimientoInformado:
+                consentimientoInformado,
+
+            rol: "usuario"
+        };
+
+
+        // Agregar usuario al arreglo
+        usuarios.push(nuevoUsuario);
+
+
+        // Guardar usuarios en localStorage
+        localStorage.setItem(
+            "usuarios",
+            JSON.stringify(usuarios)
+        );
+
+
+        // Confirmación
+        alert(
+            "Usuario registrado correctamente."
+        );
+
+
+        // Redirigir al login
+        window.location.href =
+            "login.html";
+
+    });
+
+});
+=======
         const nuevoUsuario = {
         curso: cursoFormacion,
         nombreCompleto: nombreCompleto,
@@ -395,3 +776,4 @@ document.addEventListener('DOMContentLoaded', () => {
         selectorCurso.appendChild(opcion);
     });
 });
+>>>>>>> origin/integracion-fase-2
