@@ -1,8 +1,19 @@
 //AUTENTICACIONES
 
 //Creación de usuarios administradores
-function crearUsuariosIniciales() {
-    let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+export function crearUsuariosIniciales() {
+
+        let usuarios = [];
+
+    try {
+        usuarios = JSON.parse(localStorage.getItem("usuarios") || "[]");
+
+        if (!Array.isArray(usuarios)) {
+            usuarios = [];
+        }
+    } catch {
+        usuarios = [];
+    }
 
     // Lista de cuentas administrativas iniciales
     const usuariosSemilla = [
@@ -48,102 +59,70 @@ function crearUsuariosIniciales() {
     }
 }
 
-// Ejecutar la verificación de administradores
-crearUsuariosIniciales();
-
-//Control de Inicio de Sesión y Redirección por Rol
-document.addEventListener("DOMContentLoaded", () => {
-    const formLogin = document.getElementById("formLogin");
-
-    if (formLogin) {
-        formLogin.addEventListener("submit", function(e) {
-            e.preventDefault();
-
-            const inputEmail = document.getElementById("email");
-            const inputPass = document.getElementById("password");
-
-            if (!inputEmail || !inputPass) {
-                alert("Error: No se encontraron los campos de inicio de sesión.");
-                return;
-            }
-
-            const emailIngresado = inputEmail.value.trim().toLowerCase();
-            const passIngresada = inputPass.value.trim();
-
-            const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
-
-            // Buscar coincidencia exacta
-            const usuarioValido = usuarios.find(u => {
-                const correoGuardado = String(u.email || u.correo || "").trim().toLowerCase();
-                const passGuardada = String(u.password || "").trim();
-
-                return correoGuardado === emailIngresado && passGuardada === passIngresada;
-            });
-
-            if (!usuarioValido) {
-                alert("Correo o contraseña incorrectos.");
-                return;
-            }
-
-            // Crear datos de sesión activa
-            const nombreUsuario = usuarioValido.nombre || usuarioValido.nombreCompleto || "Usuario";
-            
-            localStorage.setItem("sesion", JSON.stringify({
-                id: usuarioValido.id || "USR-" + Date.now().toString().slice(-4),
-                nombre: nombreUsuario,
-                nombreCompleto: nombreUsuario,
-                email: usuarioValido.email || usuarioValido.correo,
-                rol: usuarioValido.rol
-            }));
-
-            // Redirección en función del Rol del usuario
-            if (usuarioValido.rol === "usuario") {
-                window.location.href = "portal-aspirante.html";
-            } else if (usuarioValido.rol === "administrador" || usuarioValido.rol === "superadministrador") {
-                window.location.href = "panel-control.html";
-            }
-        });
-    }
-});
-
-//Función para cerrar sesión globalmente
-function cerrarSesion() {
-    localStorage.removeItem("sesion");
-    window.location.href = "login.html";
-}
-
-//Función para proteger vistas según roles permitidos
-function protegerVista(rolesPermitidos = []) {
-    let sesion;
+// Iniciar sesión
+export function iniciarSesion(emailIngresado, passwordIngresada) {
+    let usuarios = [];
 
     try {
-        sesion = JSON.parse(localStorage.getItem("sesion"));
-    } catch (error) {
-        sesion = null;
-    }
+        usuarios = JSON.parse(localStorage.getItem("usuarios") || "[]");
 
-    // Si no hay una sesión válida, enviar al inicio de sesión.
-    if (!sesion || !sesion.rol) {
-        localStorage.removeItem("sesion");
-        window.location.replace("login.html");
-        return false;
-    }
-
-    // Si el rol no está autorizado, redirigir según su tipo.
-    if (!rolesPermitidos.includes(sesion.rol)) {
-        if (sesion.rol === "usuario") {
-            window.location.replace("portal-aspirante.html");
-        } else if (
-            sesion.rol === "administrador" ||
-            sesion.rol === "superadministrador"
-        ) {
-            window.location.replace("panel-control.html");
-        } else {
-            cerrarSesion();
+        if (!Array.isArray(usuarios)) {
+            usuarios = [];
         }
+    } catch {
+        usuarios = [];
+    }
 
+    const email = emailIngresado.trim().toLowerCase();
+
+    const usuarioValido = usuarios.find(u => {
+        const correoGuardado = String(u.email || u.correo || "").trim().toLowerCase();
+
+        const passGuardada = String(u.password || "");
+        return correoGuardado === email && passGuardada === passwordIngresada;
+    });
+
+    if (!usuarioValido){
+        return {correcto: false, mensaje: "Correo o contraseña incorrectos."};
+    }
+
+    const nombreUsuario = usuarioValido.nombre || usuarioValido.nombreCompleto || "Usuario";
+
+    const sesion = {
+        id: usuarioValido.id || "USR-" + Date.now().toString().slice(-4),
+        nombre: nombreUsuario,
+        nombreCompleto: nombreUsuario,
+        email: usuarioValido.email || usuarioValido.correo,
+        rol: usuarioValido.rol
+    };
+
+    localStorage.setItem("sesion", JSON.stringify(sesion));
+
+    return {correcto: true, usuario: sesion};
+}
+
+// Obtener sesión activa
+export function obtenerSesion() {
+    try {
+        return JSON.parse(localStorage.getItem("sesion"));
+    } catch {
+        return null;
+    }
+}
+
+// Cerrar sesión
+export function cerrarSesion() {
+    localStorage.removeItem("sesion");
+}
+
+// Comprobar si el usuario tiene un rol permitido
+export function protegerVista(rolesPermitidos = []) {
+    const sesion = obtenerSesion();
+    
+    if (!sesion || !sesion.rol) {
+        cerrarSesion();
         return false;
     }
 
-    return true;
+    return rolesPermitidos.includes(sesion.rol);
 }
