@@ -12,8 +12,8 @@ function Index() {
                 <section className="p-5 mb-4 bg-light rounded-3 shadow-sm border">
                     <div className="container-fluid py-3">
                         {/** logo **/}
-                        <Link to="/Index">
-                            <img src="recursos/logo_AIDEL.png" alt="Logo AIDEL" className="logo"/>
+                        <Link to="/">
+                            <img src="/recursos/logo_AIDEL.png" alt="Logo AIDEL" className="logo"/>
                         </Link>
                         <h1 className="display-5 fw-bold text-primary">Bienvenido a ProTalento</h1>
                         <p className="col-md-10 mx-auto fs-5 text-muted">
@@ -45,7 +45,7 @@ function Index() {
             <div className="lateral_index">
                 <p><b>"Formando al talento digital del mañana en El Salvador"</b></p>
                 <p>Proyecto de Formación Técnica | AIDEL El Salvador</p>
-                <img src="recursos/joven_inicio.png" alt="Imagen de joven" className="imagen_inicio"/>
+                <img src="/recursos/joven_inicio.png" alt="Imagen de joven" className="imagen_inicio"/>
             </div>
         </div>
 
