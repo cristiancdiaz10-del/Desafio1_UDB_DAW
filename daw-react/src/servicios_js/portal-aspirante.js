@@ -1,510 +1,475 @@
-//Lógica del Portal del Aspirante
-document.addEventListener('DOMContentLoaded', function () {
+// Lógica del Portal del Aspirante.
+// Los archivos se almacenan en IndexedDB y los datos del expediente
+// se actualizan en localStorage.
 
-    // Protege la vista: solo aspirantes y administradores
-if (typeof protegerVista === 'function') {
-    const accesoPermitido = protegerVista([
-        'usuario',
-        'administrador',
-        'superadministrador'
-    ]);
+import { obtenerSesion } from "./autenticaciones";
 
-    if (!accesoPermitido) return;
-}
-    //Obtener datos de la sesión activa
-    let sesion;
-    try {sesion = JSON.parse(localStorage.getItem('sesion'));} catch (error) {sesion = null;}
-    if (!sesion) return;
+const DB_NOMBRE = "ProTalentoDB";
+const DB_VERSION = 2;
 
-    // Actualizar nombre en el encabezado
-    const lblUsuario = document.getElementById('lbl-usuario');
-    if (lblUsuario) {
-        lblUsuario.innerText = `Bienvenido, ${sesion.nombre}`;
-    }
-
-    //Cargar expediente del aspirante desde localStorage
-    const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
-    const perfil = usuarios.find(u => u.email === sesion.email || u.id === sesion.id);
-
-    if (perfil) {
-        // Mostrar la etapa correspondiente al estado del aspirante
-        if (
-            perfil.resultadoFinal === 'Seleccionado/a' ||
-            perfil.resultadoFinal === 'No seleccionado/a'
-            ) {
-        renderizarProgreso(6);
-        } else {
-        renderizarProgreso(perfil.etapaActual || 2);
-            }
-
-        // Mostrar resultado final del proceso
-        if (perfil.resultadoFinal) {
-            const alerta = document.getElementById('alerta-portal');
-
-            if (alerta) {
-                alerta.innerText = perfil.resultadoFinal === 'Seleccionado/a'
-                    ? '¡Felicidades! Has sido seleccionado/a.'
-                    : 'Tu proceso ha finalizado. No has sido seleccionado/a.';
-
-                alerta.classList.remove('d-none');
-            }
-        }
-    }
-});
-
-
-// Guardar PDF en IndexedDB
-function guardarPDF(email, archivo) {
-
-    return new Promise((resolve, reject) => {
-
-        const solicitud = indexedDB.open('ProTalentoDB', 1);
-
-        solicitud.onupgradeneeded = (evento) => {
-        const db = evento.target.result;
-
-            if (!db.objectStoreNames.contains('curriculums')) {
-                db.createObjectStore('curriculums', {
-                keyPath: 'email'
-            });
-            }
-
-            if (!db.objectStoreNames.contains('videos')) {
-                db.createObjectStore('videos', {
-                keyPath: 'email'
-            });
-        }
-        };
-
-        solicitud.onsuccess = () => {
-
-            const db = solicitud.result;
-
-            const transaccion =
-                db.transaction('curriculums', 'readwrite');
-
-            const store =
-                transaccion.objectStore('curriculums');
-
-            store.put({
-                email: email,
-                nombreArchivo: archivo.name,
-                tipoArchivo: archivo.type,
-                tamano: archivo.size,
-                fecha: new Date().toISOString(),
-                archivo: archivo
-            });
-
-            transaccion.oncomplete = () => {
-                db.close();
-                resolve();
-            };
-
-            transaccion.onerror = () => {
-                db.close();
-                reject(transaccion.error);
-            };
-        };
-
-        solicitud.onerror = () => {
-            reject(solicitud.error);
-        };
-    });
-}
-
-
-function guardarVideo(email, archivo) {
-
-    return new Promise((resolve, reject) => {
-
-        const solicitud = indexedDB.open('ProTalentoDB', 1);
-
-        solicitud.onupgradeneeded = (evento) => {
-    const db = evento.target.result;
-
-    if (!db.objectStoreNames.contains('curriculums')) {
-        db.createObjectStore('curriculums', {
-            keyPath: 'email'
-        });
-    }
-
-    if (!db.objectStoreNames.contains('videos')) {
-        db.createObjectStore('videos', {
-            keyPath: 'email'
-        });
-    }
+const ALMACENES = {
+    cv: "curriculums",
+    video: "videos"
 };
 
-        solicitud.onsuccess = () => {
+const LIMITES = {
+    cv: 5 * 1024 * 1024,
+    video: 50 * 1024 * 1024
+};
 
-            const db = solicitud.result;
+function leerUsuarios() {
+    try {
+        const usuarios = JSON.parse(localStorage.getItem("usuarios") || "[]");
+        return Array.isArray(usuarios) ? usuarios : [];
+    } catch (error) {
+        console.error("Error al leer usuarios:", error);
+        return [];
+    }
+}
 
-            if (!db.objectStoreNames.contains('videos')) {
-                db.close();
-                reject(new Error('No existe el almacén de vídeos.'));
-                return;
-            }
+function guardarUsuarios(usuarios) {
+    try {
+        localStorage.setItem("usuarios", JSON.stringify(usuarios));
+        return true;
+    } catch (error) {
+        console.error("Error al guardar usuarios:", error);
+        return false;
+    }
+}
 
-            const transaccion = db.transaction('videos', 'readwrite');
-            const store = transaccion.objectStore('videos');
+function abrirBaseDatos() {
+    return new Promise((resolve, reject) => {
+        if (!("indexedDB" in window)) {
+            reject(new Error("Este navegador no permite utilizar IndexedDB."));
+            return;
+        }
 
-            store.put({
-                email: email,
+        const solicitud = indexedDB.open(DB_NOMBRE, DB_VERSION);
+
+        solicitud.onupgradeneeded = (evento) => {
+            const db = evento.target.result;
+
+            Object.values(ALMACENES).forEach(nombreAlmacen => {
+                if (!db.objectStoreNames.contains(nombreAlmacen)) {
+                    db.createObjectStore(nombreAlmacen, {
+                        keyPath: "email"
+                    });
+                }
+            });
+        };
+
+        solicitud.onsuccess = () => resolve(solicitud.result);
+
+        solicitud.onerror = () => {
+            reject(solicitud.error || new Error("No se pudo abrir la base de datos."));
+        };
+
+        solicitud.onblocked = () => {
+            reject(new Error(
+                "La actualización de la base de datos está bloqueada. Cierra otras pestañas de la aplicación e inténtalo nuevamente."
+            ));
+        };
+    });
+}
+
+function obtenerAlmacen(tipo) {
+    const almacen = ALMACENES[tipo];
+
+    if (!almacen) {
+        throw new Error("Tipo de archivo no válido.");
+    }
+
+    return almacen;
+}
+
+export function validarArchivo(tipo, archivo) {
+    if (!archivo) {
+        return {
+            correcto: false,
+            mensaje: "Selecciona un archivo antes de continuar."
+        };
+    }
+
+    if (tipo === "cv") {
+        const esPDF =
+            archivo.type === "application/pdf" ||
+            archivo.name.toLowerCase().endsWith(".pdf");
+
+        if (!esPDF) {
+            return {
+                correcto: false,
+                mensaje: "El currículum debe estar en formato PDF."
+            };
+        }
+
+        if (archivo.size > LIMITES.cv) {
+            return {
+                correcto: false,
+                mensaje: "El currículum no puede superar los 5 MB."
+            };
+        }
+
+        return { correcto: true, mensaje: "Archivo PDF válido." };
+    }
+
+    if (tipo === "video") {
+        const nombre = archivo.name.toLowerCase();
+
+        const extensionValida =
+            nombre.endsWith(".mp4") ||
+            nombre.endsWith(".mov");
+
+        if (!extensionValida) {
+            return {
+                correcto: false,
+                mensaje: "El vídeo debe estar en formato MP4 o MOV."
+            };
+        }
+
+        if (archivo.size > LIMITES.video) {
+            return {
+                correcto: false,
+                mensaje: "El vídeo no puede superar los 50 MB."
+            };
+        }
+
+        return { correcto: true, mensaje: "Archivo de vídeo válido." };
+    }
+
+    return {
+        correcto: false,
+        mensaje: "El tipo de archivo no es válido."
+    };
+}
+
+export async function guardarArchivo(email, tipo, archivo) {
+    if (!email) {
+        throw new Error("No se identificó el correo del aspirante.");
+    }
+
+    const validacion = validarArchivo(tipo, archivo);
+
+    if (!validacion.correcto) {
+        throw new Error(validacion.mensaje);
+    }
+
+    const nombreAlmacen = obtenerAlmacen(tipo);
+    const db = await abrirBaseDatos();
+
+    return new Promise((resolve, reject) => {
+        let transaccion;
+
+        try {
+            transaccion = db.transaction(nombreAlmacen, "readwrite");
+
+            const almacen = transaccion.objectStore(nombreAlmacen);
+
+            almacen.put({
+                email,
                 nombreArchivo: archivo.name,
-                tipoArchivo: archivo.type,
+                tipoArchivo: archivo.type || (
+                    tipo === "cv" ? "application/pdf" : "video"
+                ),
                 tamano: archivo.size,
                 fecha: new Date().toISOString(),
-                archivo: archivo
+                archivo
             });
 
             transaccion.oncomplete = () => {
                 db.close();
-                resolve();
+                resolve({
+                    correcto: true,
+                    nombreArchivo: archivo.name
+                });
             };
 
             transaccion.onerror = () => {
+                const error = transaccion.error;
                 db.close();
-                reject(transaccion.error);
+                reject(error || new Error("No se pudo guardar el archivo."));
             };
+
+            transaccion.onabort = () => {
+                const error = transaccion.error;
+                db.close();
+                reject(error || new Error("Se canceló el almacenamiento del archivo."));
+            };
+        } catch (error) {
+            db.close();
+            reject(error);
+        }
+    });
+}
+
+export async function obtenerArchivo(email, tipo) {
+    if (!email) return null;
+
+    const nombreAlmacen = obtenerAlmacen(tipo);
+    const db = await abrirBaseDatos();
+
+    return new Promise((resolve, reject) => {
+        const transaccion = db.transaction(nombreAlmacen, "readonly");
+        const solicitud = transaccion.objectStore(nombreAlmacen).get(email);
+
+        solicitud.onsuccess = () => {
+            const resultado = solicitud.result || null;
+            db.close();
+            resolve(resultado);
         };
 
         solicitud.onerror = () => {
-            reject(solicitud.error);
+            const error = solicitud.error;
+            db.close();
+            reject(error || new Error("No se pudo recuperar el archivo."));
         };
     });
 }
 
-// Mostrar archivo PDF seleccionado
-function mostrarArchivoCV(input) {
-
-    const archivo = input.files[0];
-
-    if (!archivo) return;
-
-    if (archivo.type !== 'application/pdf') {
-
-        alert('El currículum debe estar en formato PDF.');
-
-        input.value = '';
-
-        return;
+export async function eliminarArchivo(email, tipo) {
+    if (!email) {
+        throw new Error("No se identificó al aspirante.");
     }
 
-    if (archivo.size > 5 * 1024 * 1024) {
+    const nombreAlmacen = obtenerAlmacen(tipo);
+    const db = await abrirBaseDatos();
 
-        alert('El currículum no puede superar los 5 MB.');
+    return new Promise((resolve, reject) => {
+        const transaccion = db.transaction(nombreAlmacen, "readwrite");
 
-        input.value = '';
+        transaccion.objectStore(nombreAlmacen).delete(email);
 
-        return;
-    }
+        transaccion.oncomplete = () => {
+            db.close();
+            resolve(true);
+        };
 
-    alert(`Archivo PDF seleccionado correctamente: ${archivo.name}`);
+        transaccion.onerror = () => {
+            const error = transaccion.error;
+            db.close();
+            reject(error || new Error("No se pudo eliminar el archivo."));
+        };
+    });
 }
 
+export function obtenerPerfilAspirante(sesion = obtenerSesion()) {
+    if (!sesion) return null;
 
-// Mostrar archivo de vídeo seleccionado
-function mostrarArchivoVideo(input) {
+    const usuarios = leerUsuarios();
 
-    const archivo = input.files[0];
+    return usuarios.find(usuario =>
+        usuario.rol === "usuario" &&
+        (
+            (sesion.email && usuario.email === sesion.email) ||
+            (sesion.id && usuario.id && usuario.id === sesion.id)
+        )
+    ) || null;
+}
 
-    if (!archivo) return;
+export function obtenerProgreso(aspirante) {
+    if (!aspirante) return 1;
 
-    const nombre = archivo.name.toLowerCase();
+    const resultadoFinal = aspirante.resultadoFinal;
 
     if (
-        !nombre.endsWith('.mp4') &&
-        !nombre.endsWith('.mov')
+        resultadoFinal === "Seleccionado/a" ||
+        resultadoFinal === "No seleccionado/a"
     ) {
-
-        alert('El vídeo debe estar en formato MP4 o MOV.');
-
-        input.value = '';
-
-        return;
+        return 6;
     }
 
-    if (archivo.size > 50 * 1024 * 1024) {
+    const etapa = Number(aspirante.etapaActual || 2);
 
-        alert('El vídeo no puede superar los 50 MB.');
-
-        input.value = '';
-
-        return;
-    }
-
-    alert(`Archivo de vídeo seleccionado correctamente: ${archivo.name}`);
+    return Math.min(6, Math.max(1, etapa));
 }
 
+export function obtenerMensajeResultado(aspirante) {
+    if (!aspirante?.resultadoFinal) return null;
 
-// Guardar archivos (Etapa 2 - CV y Vídeo)
-async function guardarEntregaEtapa2(evento, tipo) {
+    if (aspirante.resultadoFinal === "Seleccionado/a") {
+        return {
+            tipo: "success",
+            mensaje: "¡Felicidades! Has sido seleccionado/a."
+        };
+    }
 
-    if (evento) evento.preventDefault();
+    if (aspirante.resultadoFinal === "No seleccionado/a") {
+        return {
+            tipo: "danger",
+            mensaje: "Tu proceso ha finalizado. No has sido seleccionado/a."
+        };
+    }
 
-    const alerta = document.getElementById('alerta-portal');
+    return null;
+}
 
-    const sesion = JSON.parse(localStorage.getItem('sesion'));
-    if (!sesion) return;
+export function obtenerEstadoEntrega(aspirante) {
+    return {
+        cvAdjuntado: Boolean(aspirante?.cvAdjuntado),
+        videoAdjuntado: Boolean(aspirante?.videoAdjuntado),
+        etapaActual: obtenerProgreso(aspirante),
+        completo: Boolean(
+            aspirante?.cvAdjuntado && aspirante?.videoAdjuntado
+        )
+    };
+}
 
-    let usuarios;
+export function actualizarExpediente(email, cambios) {
+    if (!email) {
+        return {
+            correcto: false,
+            mensaje: "No se identificó al aspirante."
+        };
+    }
+
+    const usuarios = leerUsuarios();
+
+    const indice = usuarios.findIndex(usuario =>
+        usuario.rol === "usuario" && usuario.email === email
+    );
+
+    if (indice === -1) {
+        return {
+            correcto: false,
+            mensaje: "No se encontró el expediente del aspirante."
+        };
+    }
+
+    usuarios[indice] = {
+        ...usuarios[indice],
+        ...cambios
+    };
+
+    if (!guardarUsuarios(usuarios)) {
+        return {
+            correcto: false,
+            mensaje: "No se pudieron actualizar los datos del expediente."
+        };
+    }
+
+    return {
+        correcto: true,
+        aspirante: usuarios[indice]
+    };
+}
+
+export async function guardarEntregaEtapa2(email, tipo, archivo) {
+    if (!email) {
+        return {
+            correcto: false,
+            mensaje: "No se identificó al aspirante."
+        };
+    }
+
+    if (tipo !== "cv" && tipo !== "video") {
+        return {
+            correcto: false,
+            mensaje: "El tipo de entrega no es válido."
+        };
+    }
+
+    const aspirante = leerUsuarios().find(usuario =>
+        usuario.rol === "usuario" && usuario.email === email
+    );
+
+    if (!aspirante) {
+        return {
+            correcto: false,
+            mensaje: "No se encontró el expediente del aspirante."
+        };
+    }
+
+    if (
+        aspirante.resultadoFinal === "Seleccionado/a" ||
+        aspirante.resultadoFinal === "No seleccionado/a"
+    ) {
+        return {
+            correcto: false,
+            mensaje: "El proceso de selección ya ha finalizado."
+        };
+    }
+
+    const validacion = validarArchivo(tipo, archivo);
+
+    if (!validacion.correcto) {
+        return {
+            correcto: false,
+            mensaje: validacion.mensaje
+        };
+    }
 
     try {
-    usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
-    } catch (error) {
-    console.error('Error al cargar los aspirantes:', error);
-    alert('No se pudieron cargar los datos del expediente.');
-    return;
-    }
+        await guardarArchivo(email, tipo, archivo);
 
-    if (!Array.isArray(usuarios)) {
-    alert('Los datos de los aspirantes no tienen un formato válido.');
-    return;
-    }
-
-const index = usuarios.findIndex(
-    u => u.email === sesion.email || u.id === sesion.id
-);
-
-    if (index !== -1) {
-
-        // Guardar CV
-        if (tipo === 'cv') {
-
-            const inputCV =
-                document.getElementById('inputCV');
-
-            const archivo =
-                inputCV ? inputCV.files[0] : null;
-
-            if (!archivo) {
-
-                alert(
-                    'Debes seleccionar tu currículum en PDF antes de enviarlo.'
-                );
-
-                return;
+        const cambios = tipo === "cv"
+            ? {
+                cvAdjuntado: true,
+                cvNombreArchivo: archivo.name,
+                cvFechaEnvio: new Date().toISOString()
             }
+            : {
+                videoAdjuntado: true,
+                videoNombreArchivo: archivo.name,
+                videoFechaEnvio: new Date().toISOString()
+            };
 
-            if (archivo.type !== 'application/pdf') {
+        const usuarios = leerUsuarios();
 
-                alert(
-                    'El currículum debe estar en formato PDF.'
-                );
-
-                return;
-            }
-
-            if (archivo.size > 5 * 1024 * 1024) {
-
-                alert(
-                    'El currículum no puede superar los 5 MB.'
-                );
-
-                return;
-            }
-
-            try {
-
-                await guardarPDF(
-                    sesion.email,
-                    archivo
-                );
-
-            } catch (error) {
-
-                console.error(
-                    'Error al guardar el PDF:',
-                    error
-                );
-
-                alert(
-                    'No se pudo guardar el currículum.'
-                );
-
-                return;
-            }
-
-            usuarios[index].cvAdjuntado = true;
-        }
-
-
-        // Guardar vídeo
-        if (tipo === 'video') {
-
-            const inputVideo =
-                document.getElementById('inputVideo');
-
-            const archivo =
-                inputVideo ? inputVideo.files[0] : null;
-
-            if (!archivo) {
-
-                alert(
-                    'Debes seleccionar un vídeo antes de enviarlo.'
-                );
-
-                return;
-            }
-
-            const nombre =
-                archivo.name.toLowerCase();
-
-            if (
-                !nombre.endsWith('.mp4') &&
-                !nombre.endsWith('.mov')
-            ) {
-
-                alert(
-                    'El vídeo debe estar en formato MP4 o MOV.'
-                );
-
-                return;
-            }
-
-            if (archivo.size > 50 * 1024 * 1024) {
-
-                alert(
-                    'El vídeo no puede superar los 50 MB.'
-                );
-
-                return;
-            }
-
-            try {
-            await guardarVideo(sesion.email, archivo);
-            } catch (error) {
-            console.error('Error al guardar el vídeo:', error);
-
-            alert('No se pudo guardar el vídeo. Inténtalo nuevamente.');
-            return;
-            }
-
-            usuarios[index].videoAdjuntado = true;
-
-        }
-
-        // Si adjuntó ambos, avanza a Etapa 3 (Validación)
-        if (usuarios[index].cvAdjuntado && usuarios[index].videoAdjuntado) {
-            usuarios[index].etapaActual = 3;
-            usuarios[index].estado = 'En revisión';
-            renderizarProgreso(3);
-        }
-
-
-        localStorage.setItem(
-            'usuarios',
-            JSON.stringify(usuarios)
+        const indice = usuarios.findIndex(usuario =>
+            usuario.rol === "usuario" && usuario.email === email
         );
 
-
-        if (alerta) {
-            alerta.innerText = `¡${tipo.toUpperCase()} enviado con éxito! Tu expediente ha sido actualizado.`;
-            alerta.className = "alert alert-success text-center rounded-3 mb-4 d-block";
+        if (indice === -1) {
+            return {
+                correcto: false,
+                mensaje: "El archivo se guardó, pero no se encontró el expediente para actualizarlo."
+            };
         }
-    }
-}
 
+        usuarios[indice] = {
+            ...usuarios[indice],
+            ...cambios
+        };
 
-// Renderizar el progreso en la interfaz
-function renderizarProgreso(etapaActual) {
+        if (
+            usuarios[indice].cvAdjuntado &&
+            usuarios[indice].videoAdjuntado
+        ) {
+            usuarios[indice].etapaActual = Math.max(
+                Number(usuarios[indice].etapaActual || 2),
+                3
+            );
 
-    // Mantener indicador de MAIN
-    const indicador = document.getElementById('indicador-etapa');
-
-    if (indicador) {
-        indicador.innerText = `Etapa ${etapaActual} de 6`;
-    }
-
-
-    // Actualizar los pasos visuales
-    const pasos = document.querySelectorAll('.step-badge');
-
-    pasos.forEach((paso, index) => {
-
-        const numeroEtapa = index + 1;
-        const contenedor = paso.parentElement;
-        const etiqueta = contenedor.querySelector('.badge');
-
-        // Etapas completadas
-        if (numeroEtapa < etapaActual) {
-
-            paso.className =
-                'step-badge bg-primary text-white mx-auto shadow-sm';
-
-            paso.innerText = '✓';
-
-            if (etiqueta) {
-                etiqueta.className =
-                    'badge bg-primary mt-2 rounded-pill px-3 py-1';
-
-                etiqueta.innerText =
-                    obtenerNombreEtapa(numeroEtapa);
+            // No sobrescribir estados de etapas posteriores.
+            if (
+                !usuarios[indice].estado ||
+                usuarios[indice].estado === "Postulado"
+            ) {
+                usuarios[indice].estado = "En revisión";
             }
+        } else if (!usuarios[indice].etapaActual) {
+            usuarios[indice].etapaActual = 2;
         }
 
-        // Etapa actual
-        else if (numeroEtapa === etapaActual) {
-
-            paso.className =
-                'step-badge bg-white border border-primary text-primary mx-auto shadow-sm';
-
-            paso.innerText = numeroEtapa;
-
-            if (etiqueta) {
-                etiqueta.className =
-                    'badge bg-primary mt-2 rounded-pill px-3 py-1';
-
-                etiqueta.innerText =
-                    obtenerNombreEtapa(numeroEtapa);
-            }
+        if (!guardarUsuarios(usuarios)) {
+            return {
+                correcto: false,
+                mensaje: "El archivo se guardó, pero no se pudieron actualizar los datos del expediente."
+            };
         }
 
-        // Etapas pendientes
-        else {
+        return {
+            correcto: true,
+            mensaje: tipo === "cv"
+                ? "Tu currículum se envió correctamente."
+                : "Tu vídeo de presentación se envió correctamente.",
+            aspirante: usuarios[indice]
+        };
+    } catch (error) {
+        console.error("Error al guardar la entrega:", error);
 
-            paso.className =
-                'step-badge bg-secondary-subtle text-secondary mx-auto';
-
-            paso.innerText = numeroEtapa;
-
-            if (etiqueta) {
-                etiqueta.className =
-                    'badge bg-secondary-subtle text-secondary mt-2 rounded-pill px-3 py-1';
-
-                etiqueta.innerText =
-                    obtenerNombreEtapa(numeroEtapa);
-            }
-        }
-    });
-
-
-    // Actualizar línea de progreso
-    const lineaProgreso =
-        document.getElementById('linea-progreso');
-
-    if (lineaProgreso) {
-
-        const porcentaje =
-            ((etapaActual - 1) / 5) * 100;
-
-        lineaProgreso.style.width =
-            `${porcentaje}%`;
+        return {
+            correcto: false,
+            mensaje: error.message || "No se pudo guardar el archivo."
+        };
     }
-}
-
-
-// Obtener nombre de cada etapa
-function obtenerNombreEtapa(numeroEtapa) {
-
-    const etapas = [
-        'Registro',
-        'Envío CV y Vídeo',
-        'Validación',
-        'Entrevista Virtual',
-        'Pruebas Psicométricas',
-        'Prueba Técnica'
-    ];
-
-    return etapas[numeroEtapa - 1];
 }

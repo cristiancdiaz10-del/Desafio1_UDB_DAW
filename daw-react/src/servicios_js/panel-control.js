@@ -1,394 +1,352 @@
- // Referencias a instancias globales de Chart.js para permitir su actualización
-let chartFlujoInstance = null;
-let chartEstadosInstance = null;
+// ==========================================
+// SERVICIO DE GESTIÓN DEL PANEL DE CONTROL
+// ==========================================
 
-// Variables globales para los filtros activos
-let filtroEstadoActual = 'todos';
-let filtroCursoActual = 'todos';
+import * as XLSX from "xlsx";
 
-document.addEventListener('DOMContentLoaded', () => {
-    // Proteger la vista: Solo permite el acceso a Administradores o Evaluadores
-    if (typeof protegerVista === 'function') {
-        protegerVista(['administrador', 'superadministrador', 'evaluador']);
-    }
+// ==========================================
+// 1. LECTURA DE DATOS
+// ==========================================
 
-    // Obtener datos de la sesión activa
-    const sesion = JSON.parse(localStorage.getItem('sesion'));
-    if (!sesion) return;
-
-    // Actualizar el nombre en la barra superior (Topbar) y lateral
-    const lblAdmin = document.getElementById('lbl-admin-topbar') || document.getElementById('lbl-usuario');
-    if (lblAdmin) lblAdmin.innerText = sesion.nombre; 
-
-    const lblSidebar = document.getElementById('lbl-admin-sidebar');
-    if (lblSidebar) lblSidebar.innerText = sesion.nombre;
-
-    // Cargar los cursos reales del localStorage en el selector desplegable
-    poblarSelectorCursosDinamico();
-
-    // Cargar dashboard inicial
-    cargarDashboardReal();
-
-    // 1. Buscador de aspirantes en tiempo real
-    const buscador = document.getElementById('inputBuscarAspirante');
-    if (buscador) {
-        buscador.addEventListener('input', () => {
-            cargarDashboardReal(buscador.value, filtroEstadoActual, filtroCursoActual);
-        });
-    }
-
-    // 2. Filtro avanzado por Curso Técnico
-    const selectCurso = document.getElementById('filtroCurso');
-    if (selectCurso) {
-        selectCurso.addEventListener('change', (e) => {
-            filtroCursoActual = e.target.value;
-            const textoBusqueda = buscador ? buscador.value : '';
-            cargarDashboardReal(textoBusqueda, filtroEstadoActual, filtroCursoActual);
-        });
-    }
-
-   
-});
-
-// Extraer automáticamente los cursos únicos de los aspirantes en localStorage
-function poblarSelectorCursosDinamico() {
-    const selectCurso = document.getElementById('filtroCurso');
-    if (!selectCurso) return;
-
-    const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
-    const aspirantes = usuarios.filter(u => u.rol === 'usuario');
-
-    // Obtener cursos sin duplicados
-    const cursosUnicos = new Set();
-    aspirantes.forEach(asp => {
-        const curso = asp.cursoInteres || asp.curso;
-        if (curso && typeof curso === 'string' && curso.trim() !== '') {
-            cursosUnicos.add(curso.trim());
-        }
-    });
-
-    // Resetear manteniendo únicamente la opción por defecto
-    selectCurso.innerHTML = '<option value="todos">Todos los cursos</option>';
-
-    // Agregar dinámicamente cada curso detectado
-    cursosUnicos.forEach(curso => {
-        const option = document.createElement('option');
-        option.value = curso;
-        option.textContent = curso;
-        selectCurso.appendChild(option);
-    });
-}
-
-function cargarDashboardReal(busqueda = '', filtroEstado = 'todos', filtroCurso = 'todos') {
-    const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
-    const aspirantes = usuarios.filter(u => u.rol === 'usuario');
-
-    // CÁLCULO DE KPIs REALES
-    const total = aspirantes.length;
-    const revision = aspirantes.filter(a => a.estado === 'En revisión').length;
-    const entrevistados = aspirantes.filter(a => a.estado === 'Entrevistado').length;
-    const seleccionados = aspirantes.filter(a =>
-    ['Aprobado', 'Seleccionado', 'Seleccionado/a'].includes(a.estado)).length;
-    const rechazados = aspirantes.filter(a =>
-    ['Rechazado', 'No seleccionado/a'].includes(a.estado)).length;
-
-    if (document.getElementById('kpi-total')) document.getElementById('kpi-total').innerText = total;
-    if (document.getElementById('kpi-revision')) document.getElementById('kpi-revision').innerText = revision;
-    if (document.getElementById('kpi-entrevistados')) document.getElementById('kpi-entrevistados').innerText = entrevistados;
-    if (document.getElementById('kpi-seleccionados')) document.getElementById('kpi-seleccionados').innerText = seleccionados;
-    if (document.getElementById('kpi-rechazados')) document.getElementById('kpi-rechazados').innerText = rechazados;
-
-    // TABLA DE SOLICITUDES (Triple Filtrado)
-    const tbody = document.getElementById('tablaSolicitudesBody');
-
-    if (tbody) {
-        tbody.innerHTML = '';
-        const texto = busqueda.toLowerCase().trim();
-
-        const aspirantesFiltrados = aspirantes.filter(asp => {
-            const cumpleTexto = (
-                (asp.nombreCompleto || asp.nombre || '').toLowerCase().includes(texto) ||
-                (asp.email || '').toLowerCase().includes(texto)
-            );
-
-            const estadoAsp = asp.estado || 'Postulado';
-            let cumpleEstado = true;
-
-            if (filtroEstado !== 'todos') {
-            if (filtroEstado === 'Seleccionados') {
-            cumpleEstado = [
-            'Aprobado',
-            'Seleccionado',
-            'Seleccionado/a'
-        ].includes(estadoAsp);
-            } else if (filtroEstado === 'Entrevistados') {
-            cumpleEstado = [
-            'Entrevistado',
-            'En entrevista'
-        ].includes(estadoAsp);
-    } else {
-        cumpleEstado = estadoAsp === filtroEstado;
-    }
-        }
-            const cursoAsp = (asp.cursoInteres || asp.curso || 'General').trim();
-            let cumpleCurso = true;
-            if (filtroCurso !== 'todos') {
-                cumpleCurso = (cursoAsp.toLowerCase() === filtroCurso.toLowerCase());
-            }
-
-            return cumpleTexto && cumpleEstado && cumpleCurso;
-        });
-
-        if (aspirantesFiltrados.length === 0) {
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="5" class="text-center text-muted py-4">
-                        No se encontraron aspirantes con los filtros aplicados.
-                    </td>
-                </tr>`;
-        } else {
-            aspirantesFiltrados.forEach(asp => {
-                const tr = document.createElement('tr');
-                const cursoFinal = asp.cursoInteres || asp.curso || 'General';
-
-                tr.innerHTML = `
-                    <td class="fw-semibold">${asp.nombre || asp.nombreCompleto || 'Sin nombre'}</td>
-                    <td>${cursoFinal}</td>
-                    <td><span class="status status-${(asp.estado || 'postulado').toLowerCase().replace(' ', '')}">${asp.estado || 'Postulado'}</span></td>
-                    <td>
-                        <small class="text-muted">
-                            CV: ${asp.cvAdjuntado ? 'Adjunto' : 'Pendiente'} | 
-                            Vídeo: ${asp.videoAdjuntado ? 'Adjunto' : 'Pendiente'}
-                        </small>
-                    </td>
-                    <td>
-                        <div class="d-flex align-items-center gap-2">
-                            <button class="btn btn-sm btn-outline-primary" onclick="evaluarAspirante('${asp.email}')">
-                                Evaluar
-                            </button>
-                            <!-- Botón integrado de PDF que conecta con el módulo jsPDF de tu compañero -->
-                            <button class="btn btn-sm btn-outline-success d-flex align-items-center gap-1" onclick="descargarPerfilPDF('${asp.email}')" title="Descargar PDF">
-                                <i class="bi bi-file-earmark-pdf"></i> PDF
-                            </button>
-                        </div>
-                    </td>
-                `;
-
-                tbody.appendChild(tr);
-            });
-        }
-    }
-
-    renderizarGraficasReales(aspirantes, total, revision, entrevistados, seleccionados, rechazados);
-}
-
-function renderizarGraficasReales(aspirantes, total, revision, entrevistados, seleccionados, rechazados) {
-    // 1. Gráfica de Flujo por Mes
-    const ctxFlujo = document.getElementById('flujoSolicitudes');
-
-    if (ctxFlujo) {
-        const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-        const conteoPorMes = new Array(12).fill(0);
-
-        aspirantes.forEach(asp => {
-            if (asp.fechaRegistro) {
-                const fecha = new Date(asp.fechaRegistro);
-                const mesIndex = fecha.getMonth();
-
-                if (mesIndex >= 0 && mesIndex < 12) {
-                    conteoPorMes[mesIndex]++;
-                }
-            } else {
-                const mesActual = new Date().getMonth();
-                conteoPorMes[mesActual]++;
-            }
-        });
-
-        if (chartFlujoInstance) chartFlujoInstance.destroy();
-
-        chartFlujoInstance = new Chart(ctxFlujo, {
-            type: 'line',
-            data: {
-                labels: meses,
-                datasets: [{
-                    label: 'Postulaciones',
-                    data: conteoPorMes,
-                    borderColor: '#0d5cab',
-                    backgroundColor: 'rgba(13, 92, 171, 0.1)',
-                    borderWidth: 2.5,
-                    tension: 0.35,
-                    fill: true,
-                    pointBackgroundColor: '#0d5cab',
-                    pointRadius: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                animation: { duration: 1000 },
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                        titleFont: { size: 13, weight: 'bold' },
-                        bodyFont: { size: 12 },
-                        padding: 10,
-                        cornerRadius: 6,
-                        callbacks: {
-                            label: function(context) {
-                                return ` ${context.parsed.y} aspirantes registrados`;
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: { stepSize: 1 }
-                    }
-                }
-            }
-        });
-    }
-
-    // 2. Gráfica de Estados (Dona Interactiva)
-    const ctxEstados = document.getElementById('estadosAspirantes');
-
-    if (ctxEstados) {
-        if (chartEstadosInstance) chartEstadosInstance.destroy();
-
-        chartEstadosInstance = new Chart(ctxEstados, {
-            type: 'doughnut',
-            data: {
-                labels: ['En revisión', 'Entrevistados', 'Seleccionados', 'No seleccionados'],
-                datasets: [{
-                    data: [revision, entrevistados, seleccionados, rechazados],
-                    backgroundColor: ['#6b7280', '#f59e0b', '#3b82f6', '#10b981'],
-                    borderWidth: 2,
-                    hoverOffset: 6
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                animation: { duration: 1000 },
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            boxWidth: 14,
-                            font: { size: 12, weight: '500' }
-                        },
-                        onClick: function(e, legendItem, legend) {
-                            const index = legendItem.index;
-                            const labelClicked = legend.chart.data.labels[index];
-                            
-                            if (filtroEstadoActual === labelClicked) {
-                                filtroEstadoActual = 'todos';
-                            } else {
-                                filtroEstadoActual = labelClicked;
-                            }
-
-                            const buscador = document.getElementById('inputBuscarAspirante');
-                            const textoBusqueda = buscador ? buscador.value : '';
-                            
-                            cargarDashboardReal(textoBusqueda, filtroEstadoActual, filtroCursoActual);
-                        }
-                    },
-                    tooltip: {
-                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                        titleFont: { size: 13, weight: 'bold' },
-                        bodyFont: { size: 12 },
-                        padding: 10,
-                        cornerRadius: 6,
-                        callbacks: {
-                            label: function(context) {
-                                const valor = context.parsed;
-                                const totalDataset = context.dataset.data.reduce((a, b) => a + b, 0);
-                                const porcentaje = totalDataset > 0 ? ((valor / totalDataset) * 100).toFixed(1) : 0;
-                                return ` ${context.label}: ${valor} aspirantes (${porcentaje}%)`;
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    }
-}
-
-// Función auxiliar para exportar CSV por si se requiere externamente
-function exportarCSVParticipantes() {
-    const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
-    const aspirantes = usuarios.filter(u => u.rol === 'usuario');
-
-    if (aspirantes.length === 0) {
-        if (typeof Swal !== 'undefined') {
-            Swal.fire('Aviso', 'No hay aspirantes registrados para exportar.', 'warning');
-        } else {
-            alert('No hay aspirantes registrados para exportar.');
-        }
-        return;
-    }
-
-    let csvContent = "Nombre,Correo,Curso,Estado\n";
-    aspirantes.forEach(asp => {
-        const nombre = `"${asp.nombre || asp.nombreCompleto || 'Sin nombre'}"`;
-        const correo = `"${asp.email || ''}"`;
-        const curso = `"${asp.cursoInteres || asp.curso || 'General'}"`;
-        const estado = `"${asp.estado || 'Postulado'}"`;
-        csvContent += `${nombre},${correo},${curso},${estado}\n`;
-    });
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", "reporte_participantes_protalento.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-}
-
-// Función auxiliar para exportar XLSX por si se requiere externamente.
-    function exportarExcelParticipantes() {
-    const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
-    const aspirantes = usuarios.filter(u => u.rol === 'usuario');
-
-    if (aspirantes.length === 0) {
-        alert('No hay aspirantes registrados para exportar.');
-        return;
-    }
-
-    const datos = aspirantes.map(asp => ({
-        Nombre: asp.nombreCompleto || asp.nombre || 'Sin nombre',
-        Correo: asp.email || '',
-        Curso: asp.cursoInteres || asp.curso || 'General',
-        Estado: asp.estado || 'Postulado',
-        CV: asp.cvAdjuntado ? 'Adjunto' : 'Pendiente',
-        Video: asp.videoAdjuntado ? 'Adjunto' : 'Pendiente'
-    }));
-
-    const hoja = XLSX.utils.json_to_sheet(datos);
-    const libro = XLSX.utils.book_new();
-
-    XLSX.utils.book_append_sheet(libro, hoja, 'Aspirantes');
-
-    XLSX.writeFile(libro, 'reporte_aspirantes_protalento.xlsx');
-}
-
-function evaluarAspirante(email) {
-    const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
-    const aspirante = usuarios.find(u => u.email === email);
-
-    if (!aspirante) {
-        alert('No se encontró el aspirante.');
-        return;
-    }
-
-    localStorage.setItem(
-        'aspiranteEvaluar',
-        JSON.stringify(aspirante)
+export function obtenerAspirantes() {
+  try {
+    const datos = JSON.parse(
+      localStorage.getItem("usuarios") || "[]"
     );
 
-    window.location.href = "perfil-candidato.html";
+    if (!Array.isArray(datos)) {
+      return [];
+    }
+
+    return datos.filter(
+      (usuario) => usuario && usuario.rol === "usuario"
+    );
+  } catch (error) {
+    console.error("Error al obtener aspirantes:", error);
+    return [];
+  }
+}
+
+export function obtenerSesion() {
+  try {
+    return JSON.parse(
+      localStorage.getItem("sesion") || "null"
+    );
+  } catch (error) {
+    console.error("Error al obtener la sesión:", error);
+    return null;
+  }
+}
+
+// ==========================================
+// 2. NORMALIZACIÓN DE DATOS
+// ==========================================
+
+function obtenerNombre(aspirante) {
+  return (
+    aspirante.nombreCompleto ||
+    aspirante.nombre ||
+    "Sin nombre"
+  );
+}
+
+function obtenerCurso(aspirante) {
+  const curso =
+    aspirante.cursoInteres ||
+    aspirante.curso ||
+    "General";
+
+  return String(curso).trim();
+}
+
+function obtenerEstado(aspirante) {
+  return String(
+    aspirante.estado || "Postulado"
+  )
+    .trim()
+    .toLowerCase();
+}
+
+// ==========================================
+// 3. FILTRADO DE ASPIRANTES
+// ==========================================
+
+export function coincideEstado(aspirante, filtro) {
+  if (filtro === "todos") {
+    return true;
+  }
+
+  const estado = obtenerEstado(aspirante);
+
+  const grupos = {
+    "En revisión": [
+      "en revisión",
+      "en revision"
+    ],
+
+    Entrevistados: [
+      "entrevistado",
+      "entrevistados",
+      "en entrevista"
+    ],
+
+    Seleccionados: [
+      "aprobado",
+      "seleccionado",
+      "seleccionado/a"
+    ],
+
+    "No seleccionados": [
+      "rechazado",
+      "no seleccionado",
+      "no seleccionado/a"
+    ],
+
+    Postulado: [
+      "postulado",
+      "postulados"
+    ]
+  };
+
+  const estadosPermitidos =
+    grupos[filtro] || [filtro.toLowerCase()];
+
+  return estadosPermitidos.includes(estado);
+}
+
+export function filtrarAspirantes(
+  aspirantes,
+  busqueda = "",
+  filtroCurso = "todos",
+  filtroEstado = "todos"
+) {
+  const texto = String(busqueda)
+    .trim()
+    .toLowerCase();
+
+  return aspirantes.filter((aspirante) => {
+    const nombre = obtenerNombre(aspirante)
+      .toLowerCase();
+
+    const correo = String(
+      aspirante.email || ""
+    ).toLowerCase();
+
+    const curso = obtenerCurso(aspirante);
+
+    const cumpleBusqueda =
+      nombre.includes(texto) ||
+      correo.includes(texto);
+
+    const cumpleCurso =
+      filtroCurso === "todos" ||
+      curso.toLowerCase() ===
+        filtroCurso.toLowerCase();
+
+    const cumpleEstado = coincideEstado(
+      aspirante,
+      filtroEstado
+    );
+
+    return (
+      cumpleBusqueda &&
+      cumpleCurso &&
+      cumpleEstado
+    );
+  });
+}
+
+// ==========================================
+// 4. OBTENER CURSOS DISPONIBLES
+// ==========================================
+
+export function obtenerCursosDisponibles(aspirantes) {
+  const cursos = aspirantes
+    .map((aspirante) => obtenerCurso(aspirante))
+    .filter((curso) => curso && curso !== "General");
+
+  return [...new Set(cursos)].sort((a, b) =>
+    a.localeCompare(b, "es")
+  );
+}
+
+// ==========================================
+// 5. INDICADORES DEL DASHBOARD
+// ==========================================
+
+export function obtenerIndicadores(aspirantes) {
+  return {
+    total: aspirantes.length,
+
+    revision: aspirantes.filter((a) =>
+      coincideEstado(a, "En revisión")
+    ).length,
+
+    entrevistados: aspirantes.filter((a) =>
+      coincideEstado(a, "Entrevistados")
+    ).length,
+
+    seleccionados: aspirantes.filter((a) =>
+      coincideEstado(a, "Seleccionados")
+    ).length,
+
+    rechazados: aspirantes.filter((a) =>
+      coincideEstado(a, "No seleccionados")
+    ).length,
+
+    postulados: aspirantes.filter((a) =>
+      coincideEstado(a, "Postulado")
+    ).length
+  };
+}
+
+// ==========================================
+// 6. DATOS PARA GRÁFICA MENSUAL
+// ==========================================
+
+export function obtenerPostulacionesPorMes(aspirantes) {
+  const conteoPorMes = new Array(12).fill(0);
+
+  aspirantes.forEach((aspirante) => {
+    if (aspirante.fechaRegistro) {
+      const fecha = new Date(aspirante.fechaRegistro);
+
+      if (!Number.isNaN(fecha.getTime())) {
+        conteoPorMes[fecha.getMonth()]++;
+      }
+    } else {
+      // Si no existe fecha de registro,
+      // se contabiliza en el mes actual.
+      conteoPorMes[new Date().getMonth()]++;
+    }
+  });
+
+  return conteoPorMes;
+}
+
+// ==========================================
+// 7. PREPARAR DATOS PARA EXPORTACIÓN
+// ==========================================
+
+export function obtenerDatosExportacion(aspirantes) {
+  return aspirantes.map((aspirante) => ({
+    Nombre: obtenerNombre(aspirante),
+    Correo: aspirante.email || "",
+    Curso: obtenerCurso(aspirante),
+    Estado: aspirante.estado || "Postulado",
+    CV: aspirante.cvAdjuntado
+      ? "Adjunto"
+      : "Pendiente",
+    Video: aspirante.videoAdjuntado
+      ? "Adjunto"
+      : "Pendiente"
+  }));
+}
+
+// ==========================================
+// 8. DESCARGA DE ARCHIVOS
+// ==========================================
+
+function descargarArchivo(blob, nombreArchivo) {
+  const url = URL.createObjectURL(blob);
+  const enlace = document.createElement("a");
+
+  enlace.href = url;
+  enlace.download = nombreArchivo;
+
+  document.body.appendChild(enlace);
+  enlace.click();
+  enlace.remove();
+
+  // Se libera la URL después de iniciar la descarga.
+  setTimeout(() => {
+    URL.revokeObjectURL(url);
+  }, 1000);
+}
+
+// ==========================================
+// 9. EXPORTAR ASPIRANTES A CSV
+// ==========================================
+
+export function exportarAspirantesCSV(aspirantes) {
+  const datos = obtenerDatosExportacion(aspirantes);
+
+  if (datos.length === 0) {
+    return false;
+  }
+
+  const hoja = XLSX.utils.json_to_sheet(datos);
+
+  const contenido = XLSX.utils.sheet_to_csv(
+    hoja,
+    { FS: ";" }
+  );
+
+  const blob = new Blob(
+    ["\uFEFF" + contenido],
+    {
+      type: "text/csv;charset=utf-8;"
+    }
+  );
+
+  descargarArchivo(
+    blob,
+    "reporte_participantes_protalento.csv"
+  );
+
+  return true;
+}
+
+// ==========================================
+// 10. EXPORTAR ASPIRANTES A EXCEL
+// ==========================================
+
+export function exportarAspirantesExcel(aspirantes) {
+  const datos = obtenerDatosExportacion(aspirantes);
+
+  if (datos.length === 0) {
+    return false;
+  }
+
+  const hoja = XLSX.utils.json_to_sheet(datos);
+  const libro = XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(
+    libro,
+    hoja,
+    "Aspirantes"
+  );
+
+  XLSX.writeFile(
+    libro,
+    "reporte_aspirantes_protalento.xlsx"
+  );
+
+  return true;
+}
+
+// ==========================================
+// 11. SELECCIONAR ASPIRANTE PARA EVALUACIÓN
+// ==========================================
+
+export function guardarAspiranteParaEvaluar(aspirante) {
+  if (!aspirante) {
+    return false;
+  }
+
+  try {
+    localStorage.setItem(
+      "aspiranteEvaluar",
+      JSON.stringify(aspirante)
+    );
+
+    return true;
+  } catch (error) {
+    console.error(
+      "Error al guardar el aspirante para evaluación:",
+      error
+    );
+
+    return false;
+  }
 }
