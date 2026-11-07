@@ -1,21 +1,36 @@
-//AUTENTICACIONES
+// ============================================
+// AUTENTICACIONES Y GESTIÓN DE SESIONES
+// ============================================
 
-//Creación de usuarios administradores
-export function crearUsuariosIniciales() {
+// Roles reconocidos por el sistema
+const ROLES_VALIDOS = [
+    "administrador",
+    "superadministrador",
+    "usuario"
+];
 
-        let usuarios = [];
-
+// ============================================
+// Obtener usuarios almacenados
+// ============================================
+function obtenerUsuarios() {
     try {
-        usuarios = JSON.parse(localStorage.getItem("usuarios") || "[]");
+        const usuarios = JSON.parse(
+            localStorage.getItem("usuarios") || "[]"
+        );
 
-        if (!Array.isArray(usuarios)) {
-            usuarios = [];
-        }
-    } catch {
-        usuarios = [];
+        return Array.isArray(usuarios) ? usuarios : [];
+    } catch (error) {
+        console.error("Error al obtener usuarios:", error);
+        return [];
     }
+}
 
-    // Lista de cuentas administrativas iniciales
+// ============================================
+// Crear usuarios administrativos iniciales
+// ============================================
+export function crearUsuariosIniciales() {
+    const usuarios = obtenerUsuarios();
+
     const usuariosSemilla = [
         {
             id: "USR-0001",
@@ -39,13 +54,22 @@ export function crearUsuariosIniciales() {
         }
     ];
 
-    // Verificar e insertar solo los administradores que aún no existan en localStorage
     let seAñadieronNuevos = false;
 
     usuariosSemilla.forEach(admin => {
-        const existe = usuarios.some(u => 
-            (u.email || u.correo || "").toLowerCase() === admin.email.toLowerCase()
-        );
+        const correoAdmin = admin.email.toLowerCase();
+
+        const existe = usuarios.some(usuario => {
+            if (!usuario || typeof usuario !== "object") {
+                return false;
+            }
+
+            const correoGuardado = String(
+                usuario.email || usuario.correo || ""
+            ).trim().toLowerCase();
+
+            return correoGuardado === correoAdmin;
+        });
 
         if (!existe) {
             usuarios.push(admin);
@@ -53,73 +77,158 @@ export function crearUsuariosIniciales() {
         }
     });
 
-    // Guardar si hubo cambios sin sobrescribir los usuarios registrados
     if (seAñadieronNuevos) {
-        localStorage.setItem("usuarios", JSON.stringify(usuarios));
+        try {
+            localStorage.setItem("usuarios", JSON.stringify(usuarios));
+        } catch (error) {
+            console.error(
+                "No fue posible crear los usuarios iniciales:",
+                error
+            );
+        }
     }
 }
 
+// ============================================
 // Iniciar sesión
+// ============================================
 export function iniciarSesion(emailIngresado, passwordIngresada) {
-    let usuarios = [];
 
-    try {
-        usuarios = JSON.parse(localStorage.getItem("usuarios") || "[]");
-
-        if (!Array.isArray(usuarios)) {
-            usuarios = [];
-        }
-    } catch {
-        usuarios = [];
+    // Validar datos recibidos
+    if (
+        typeof emailIngresado !== "string" ||
+        typeof passwordIngresada !== "string" ||
+        !emailIngresado.trim() ||
+        !passwordIngresada
+    ) {
+        return {
+            correcto: false,
+            mensaje: "Debes ingresar tu correo electrónico y contraseña."
+        };
     }
 
     const email = emailIngresado.trim().toLowerCase();
 
-    const usuarioValido = usuarios.find(u => {
-        const correoGuardado = String(u.email || u.correo || "").trim().toLowerCase();
+    const usuarios = obtenerUsuarios();
 
-        const passGuardada = String(u.password || "");
-        return correoGuardado === email && passGuardada === passwordIngresada;
+    // Buscar usuario por correo y contraseña
+    const usuarioValido = usuarios.find(usuario => {
+
+        if (!usuario || typeof usuario !== "object") {
+            return false;
+        }
+
+        const correoGuardado = String(
+            usuario.email || usuario.correo || ""
+        ).trim().toLowerCase();
+
+        const passGuardada = String(usuario.password || "");
+
+        return (
+            correoGuardado === email &&
+            passGuardada === passwordIngresada
+        );
     });
 
-    if (!usuarioValido){
-        return {correcto: false, mensaje: "Correo o contraseña incorrectos."};
+    // Credenciales incorrectas
+    if (!usuarioValido) {
+        return {
+            correcto: false,
+            mensaje: "Correo o contraseña incorrectos."
+        };
     }
 
-    const nombreUsuario = usuarioValido.nombre || usuarioValido.nombreCompleto || "Usuario";
+    // Validar rol
+    if (!ROLES_VALIDOS.includes(usuarioValido.rol)) {
+        return {
+            correcto: false,
+            mensaje: "La cuenta no tiene un rol válido. Contacta al administrador."
+        };
+    }
+
+    // Construir información de sesión
+    const nombre = usuarioValido.nombre ||
+        usuarioValido.nombreCompleto ||
+        "Usuario";
 
     const sesion = {
-        id: usuarioValido.id || "USR-" + Date.now().toString().slice(-4),
-        nombre: nombreUsuario,
-        nombreCompleto: nombreUsuario,
-        email: usuarioValido.email || usuarioValido.correo,
+        id: usuarioValido.id || `USR-${Date.now()}`,
+        nombre: nombre,
+        nombreCompleto: usuarioValido.nombreCompleto || nombre,
+        email: String(
+            usuarioValido.email || usuarioValido.correo
+        ).trim().toLowerCase(),
         rol: usuarioValido.rol
     };
 
-    localStorage.setItem("sesion", JSON.stringify(sesion));
+    // Guardar sesión
+    try {
+        localStorage.setItem("sesion", JSON.stringify(sesion));
+    } catch (error) {
+        console.error("Error al guardar la sesión:", error);
 
-    return {correcto: true, usuario: sesion};
+        return {
+            correcto: false,
+            mensaje: "No fue posible iniciar la sesión. Intenta nuevamente."
+        };
+    }
+
+    return {
+        correcto: true,
+        usuario: sesion
+    };
 }
 
+// ============================================
 // Obtener sesión activa
+// ============================================
 export function obtenerSesion() {
     try {
-        return JSON.parse(localStorage.getItem("sesion"));
-    } catch {
+        const sesion = JSON.parse(
+            localStorage.getItem("sesion")
+        );
+
+        if (
+            !sesion ||
+            typeof sesion !== "object" ||
+            !sesion.id ||
+            !sesion.rol ||
+            !ROLES_VALIDOS.includes(sesion.rol)
+        ) {
+            return null;
+        }
+
+        return sesion;
+
+    } catch (error) {
+        console.error("Error al recuperar la sesión:", error);
         return null;
     }
 }
 
+// ============================================
 // Cerrar sesión
+// ============================================
 export function cerrarSesion() {
-    localStorage.removeItem("sesion");
+    try {
+        localStorage.removeItem("sesion");
+    } catch (error) {
+        console.error("Error al cerrar la sesión:", error);
+    }
 }
 
-// Comprobar si el usuario tiene un rol permitido
+// ============================================
+// Comprobar si el usuario tiene acceso
+// ============================================
 export function protegerVista(rolesPermitidos = []) {
+
+    if (!Array.isArray(rolesPermitidos)) {
+        return false;
+    }
+
     const sesion = obtenerSesion();
-    
-    if (!sesion || !sesion.rol) {
+
+    if (!sesion) {
         cerrarSesion();
         return false;
     }

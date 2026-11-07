@@ -1,50 +1,35 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import * as XLSX from "xlsx";
+
+import {
+  obtenerConvocatorias,
+  obtenerCursos,
+  guardarConvocatorias,
+  guardarCursos,
+  validarFechasConvocatoria,
+  validarCursoDuplicado,
+  cursoEstaEnUso,
+  guardarConvocatoria,
+  eliminarConvocatoria,
+  guardarCurso,
+  eliminarCurso,
+  exportarConvocatoriasCSV,
+  exportarConvocatoriasExcel
+} from "../servicios_js/scriptConvocatorias.js";
 
 function Convocatorias() {
   // ==========================================
   // 1. ESTADOS Y DATOS INICIALES
   // ==========================================
 
-  const [convocatorias, setConvocatorias] = useState(() => {
-    return JSON.parse(localStorage.getItem("convocatorias")) || [
-      {
-        id: 1,
-        curso: "Análisis de datos con herramientas de IA",
-        fechaInicio: "2026-10-01",
-        fechaCierre: "2026-10-25",
-        plazas: 30,
-        estado: "Activa"
-      },
-      {
-        id: 2,
-        curso: "Lenguajes de programación: JavaScript y C#",
-        fechaInicio: "2026-11-05",
-        fechaCierre: "2026-11-30",
-        plazas: 25,
-        estado: "Próximamente"
-      }
-    ];
-  });
+  const [convocatorias, setConvocatorias] = useState(
+  () => obtenerConvocatorias()
+);
 
-  const [cursos, setCursos] = useState(() => {
-    return JSON.parse(localStorage.getItem("cursos")) || [
-      {
-        id: 1,
-        nombre: "Análisis de datos con herramientas de IA",
-        descripcion:
-          "Capacitación avanzada en modelos predictivos y análisis estadístico enfocado a toma de decisiones."
-      },
-      {
-        id: 2,
-        nombre: "Lenguajes de programación: JavaScript y C#",
-        descripcion:
-          "Fundamentos de lógica, desarrollo frontend interactivo y backend robusto orientado a objetos."
-      }
-    ];
-  });
+const [cursos, setCursos] = useState(
+  () => obtenerCursos()
+);
 
   const [mostrarModalConvocatoria, setMostrarModalConvocatoria] =
     useState(false);
@@ -73,17 +58,14 @@ function Convocatorias() {
   // 2. PERSISTENCIA EN LOCALSTORAGE
   // ==========================================
 
-  const guardarConvocatorias = (nuevasConvocatorias) => {
-    setConvocatorias(nuevasConvocatorias);
-    localStorage.setItem(
-      "convocatorias",
-      JSON.stringify(nuevasConvocatorias)
-    );
+  const actualizarConvocatorias = (datos) => {
+  guardarConvocatorias(datos);
+  setConvocatorias(datos);
   };
 
-  const guardarCursos = (nuevosCursos) => {
-    setCursos(nuevosCursos);
-    localStorage.setItem("cursos", JSON.stringify(nuevosCursos));
+const actualizarCursos = (datos) => {
+  guardarCursos(datos);
+  setCursos(datos);
   };
 
   // ==========================================
@@ -123,80 +105,74 @@ function Convocatorias() {
   };
 
   const guardarFormularioConvocatoria = (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (formFechaInvalida()) {
-      Swal.fire({
-        icon: "warning",
-        title: "Fechas incorrectas",
-        text: "La fecha de cierre no puede ser anterior a la fecha de inicio."
-      });
-      return;
-    }
+  if (!formConvocatoria.curso) {
+  Swal.fire({
+    icon: "warning",
+    title: "Curso requerido",
+    text: "Debes seleccionar un curso."
+  });
+  return;
+}
 
-    const nuevaData = {
-      id: idConvocatoriaEditar || Date.now(),
-      curso: formConvocatoria.curso,
-      fechaInicio: formConvocatoria.fechaInicio,
-      fechaCierre: formConvocatoria.fechaCierre,
-      plazas: parseInt(formConvocatoria.plazas, 10),
-      estado: formConvocatoria.estado
-    };
+  if (!validarFechasConvocatoria(formConvocatoria)) {
+    Swal.fire({
+      icon: "warning",
+      title: "Fechas incorrectas",
+      text: "La fecha de cierre no puede ser anterior a la fecha de inicio."
+    });
+    return;
+  }
 
-    let nuevasConvocatorias;
+  const resultado = guardarConvocatoria(
+    convocatorias,
+    formConvocatoria,
+    idConvocatoriaEditar
+  );
 
-    if (idConvocatoriaEditar !== null) {
-      nuevasConvocatorias = convocatorias.map((c) =>
-        c.id === idConvocatoriaEditar ? nuevaData : c
-      );
-    } else {
-      nuevasConvocatorias = [...convocatorias, nuevaData];
-    }
+  actualizarConvocatorias(resultado);
 
-    guardarConvocatorias(nuevasConvocatorias);
-    setMostrarModalConvocatoria(false);
+  setMostrarModalConvocatoria(false);
+
+  Swal.fire({
+    icon: "success",
+    title: "¡Guardado!",
+    text: "La convocatoria se ha guardado correctamente.",
+    timer: 2000,
+    showConfirmButton: false
+  });
+};
+
+  const eliminarConvocatoriaUI = async (id) => {
+  const resultado = await Swal.fire({
+    title: "¿Estás seguro?",
+    text: "¡No podrás revertir esta acción!",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#3085d6",
+    confirmButtonText: "Sí, eliminar",
+    cancelButtonText: "Cancelar"
+  });
+
+  if (resultado.isConfirmed) {
+    const nuevasConvocatorias = eliminarConvocatoria(
+      convocatorias,
+      id
+    );
+
+    actualizarConvocatorias(nuevasConvocatorias);
 
     Swal.fire({
       icon: "success",
-      title: "¡Guardado!",
-      text: "La convocatoria se ha guardado correctamente.",
+      title: "¡Eliminada!",
+      text: "La convocatoria se eliminó correctamente.",
       timer: 2000,
       showConfirmButton: false
     });
-  };
-
-  const formFechaInvalida = () => {
-    return formConvocatoria.fechaCierre < formConvocatoria.fechaInicio;
-  };
-
-  const eliminarConvocatoria = async (id) => {
-    const resultado = await Swal.fire({
-      title: "¿Estás seguro?",
-      text: "¡No podrás revertir esta acción!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Sí, eliminar",
-      cancelButtonText: "Cancelar"
-    });
-
-    if (resultado.isConfirmed) {
-      const nuevasConvocatorias = convocatorias.filter(
-        (c) => c.id !== id
-      );
-
-      guardarConvocatorias(nuevasConvocatorias);
-
-      Swal.fire({
-        icon: "success",
-        title: "¡Eliminada!",
-        text: "La convocatoria se eliminó correctamente.",
-        timer: 2000,
-        showConfirmButton: false
-      });
-    }
-  };
+  }
+};
 
   // ==========================================
   // 4. FORMULARIO DE CURSOS
@@ -229,194 +205,102 @@ function Convocatorias() {
   };
 
   const guardarFormularioCurso = (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    const nombreNormalizado = formCurso.nombre.trim().toLowerCase();
+  if (validarCursoDuplicado(cursos, formCurso, idCursoEditar)) {
+    Swal.fire({
+      icon: "warning",
+      title: "Curso existente",
+      text: "Ya existe un curso con ese nombre."
+    });
+    return;
+  }
 
-    const cursoDuplicado = cursos.some(
-      (c) =>
-        c.nombre.trim().toLowerCase() === nombreNormalizado &&
-        c.id !== idCursoEditar
-    );
+  const resultado = guardarCurso(
+    cursos,
+    convocatorias,
+    formCurso,
+    idCursoEditar
+  );
 
-    if (cursoDuplicado) {
-      Swal.fire({
-        icon: "warning",
-        title: "Curso existente",
-        text: "Ya existe un curso con ese nombre."
-      });
-      return;
-    }
+  actualizarCursos(resultado.cursos);
+  actualizarConvocatorias(resultado.convocatorias);
 
-    const cursoAnterior = cursos.find(
-      (c) => c.id === idCursoEditar
-    );
+  setMostrarModalCurso(false);
 
-    const nuevoCurso = {
-      id: idCursoEditar || Date.now(),
-      nombre: formCurso.nombre.trim(),
-      descripcion: formCurso.descripcion.trim()
-    };
+  Swal.fire({
+    icon: "success",
+    title: "¡Guardado!",
+    text: "El curso se ha guardado correctamente.",
+    timer: 2000,
+    showConfirmButton: false
+  });
+  };  
+const eliminarCursoUI = async (id) => {
+  const curso = cursos.find((c) => c.id === id);
 
-    let nuevosCursos;
+  if (!curso) return;
 
-    if (idCursoEditar !== null) {
-      nuevosCursos = cursos.map((c) =>
-        c.id === idCursoEditar ? nuevoCurso : c
-      );
+  if (cursoEstaEnUso(convocatorias, curso)) {
+    Swal.fire({
+      icon: "warning",
+      title: "Curso en uso",
+      text: "No puedes eliminar este curso porque está asociado a una o más convocatorias."
+    });
+    return;
+  }
 
-      // Actualizar el nombre en las convocatorias relacionadas
-      if (cursoAnterior && cursoAnterior.nombre !== nuevoCurso.nombre) {
-        const nuevasConvocatorias = convocatorias.map((conv) =>
-          conv.curso === cursoAnterior.nombre
-            ? { ...conv, curso: nuevoCurso.nombre }
-            : conv
-        );
+  const confirmacion = await Swal.fire({
+    title: "¿Eliminar curso?",
+    text: "Esta acción no se puede deshacer.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Sí, eliminar",
+    cancelButtonText: "Cancelar",
+    confirmButtonColor: "#dc3545"
+  });
 
-        guardarConvocatorias(nuevasConvocatorias);
-      }
-    } else {
-      nuevosCursos = [...cursos, nuevoCurso];
-    }
+  if (confirmacion.isConfirmed) {
+    const nuevosCursos = eliminarCurso(cursos, id);
 
-    guardarCursos(nuevosCursos);
-    setMostrarModalCurso(false);
+    actualizarCursos(nuevosCursos);
 
     Swal.fire({
       icon: "success",
-      title: "¡Guardado!",
-      text: "El curso se ha guardado correctamente.",
-      timer: 2000,
-      showConfirmButton: false
+      title: "Curso eliminado",
+      text: "El curso se eliminó correctamente."
     });
-  };
-
-  const eliminarCurso = async (id) => {
-    const curso = cursos.find((c) => c.id === id);
-
-    if (!curso) return;
-
-    const cursoEnUso = convocatorias.some(
-      (conv) => conv.curso === curso.nombre
-    );
-
-    if (cursoEnUso) {
-      Swal.fire({
-        icon: "warning",
-        title: "Curso en uso",
-        text: "No puedes eliminar este curso porque está asociado a una o más convocatorias."
-      });
-      return;
-    }
-
-    const resultado = await Swal.fire({
-      title: "¿Eliminar curso?",
-      text: "Esta acción no se puede deshacer.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Sí, eliminar",
-      cancelButtonText: "Cancelar",
-      confirmButtonColor: "#dc3545"
-    });
-
-    if (resultado.isConfirmed) {
-      const nuevosCursos = cursos.filter((c) => c.id !== id);
-
-      guardarCursos(nuevosCursos);
-
-      Swal.fire({
-        icon: "success",
-        title: "Curso eliminado",
-        text: "El curso se eliminó correctamente.",
-        timer: 2000,
-        showConfirmButton: false
-      });
-    }
-  };
+  }
+};
 
   // ==========================================
   // 5. EXPORTACIONES CSV Y EXCEL
   // ==========================================
+  
+  const manejarExportacionCSV = () => {
+    const exportado = exportarConvocatoriasCSV(convocatorias);
 
-  const obtenerConvocatoriasActivas = () => {
-    return convocatorias
-      .filter((c) => c.estado === "Activa")
-      .map((c) => ({
-        Curso: c.curso,
-        Fechas: `Del ${c.fechaInicio} al ${c.fechaCierre}`,
-        Plazas: `${c.plazas} plazas`,
-        Estado: c.estado
-      }));
-  };
-
-  const exportarConvocatoriasCSV = () => {
-    const datos = obtenerConvocatoriasActivas();
-
-    if (datos.length === 0) {
+    if (!exportado) {
       Swal.fire({
         icon: "info",
         title: "Sin datos",
         text: "No hay convocatorias activas para exportar."
       });
-      return;
     }
-
-    const columnas = ["Curso", "Fechas", "Plazas", "Estado"];
-
-    const escapar = (valor) =>
-      '"' + String(valor ?? "").replace(/"/g, '""') + '"';
-
-    const contenido = [
-      columnas.map(escapar).join(";"),
-      ...datos.map((fila) =>
-        columnas.map((columna) => escapar(fila[columna])).join(";")
-      )
-    ].join("\r\n");
-
-    const blob = new Blob(["\uFEFF" + contenido], {
-      type: "text/csv;charset=utf-8;"
-    });
-
-    descargarArchivo(blob, "convocatorias_activas.csv");
   };
 
-  const exportarConvocatoriasExcel = () => {
-    const datos = obtenerConvocatoriasActivas();
+  const manejarExportacionExcel = () => {
+    const exportado = exportarConvocatoriasExcel(convocatorias);
 
-    if (datos.length === 0) {
+    if (!exportado) {
       Swal.fire({
         icon: "info",
         title: "Sin datos",
         text: "No hay convocatorias activas para exportar."
       });
-      return;
     }
-
-    const hoja = XLSX.utils.json_to_sheet(datos);
-    const libro = XLSX.utils.book_new();
-
-    XLSX.utils.book_append_sheet(
-      libro,
-      hoja,
-      "Convocatorias activas"
-    );
-
-    XLSX.writeFile(libro, "convocatorias_activas.xlsx");
   };
 
-  const descargarArchivo = (blob, nombre) => {
-    const url = URL.createObjectURL(blob);
-    const enlace = document.createElement("a");
-
-    enlace.href = url;
-    enlace.download = nombre;
-
-    document.body.appendChild(enlace);
-    enlace.click();
-    enlace.remove();
-
-    URL.revokeObjectURL(url);
-  };
 
   // ==========================================
   // 6. CERRAR SESIÓN
@@ -559,7 +443,7 @@ function Convocatorias() {
                 <button
                   type="button"
                   className="btn btn-outline-primary"
-                  onClick={exportarConvocatoriasCSV}
+                  onClick={manejarExportacionCSV}
                 >
                   <i className="bi bi-filetype-csv"></i>
                   Descargar CSV
@@ -568,7 +452,7 @@ function Convocatorias() {
                 <button
                   type="button"
                   className="btn btn-outline-success"
-                  onClick={exportarConvocatoriasExcel}
+                  onClick={manejarExportacionExcel}
                 >
                   <i className="bi bi-file-earmark-excel"></i>
                   Descargar Excel
@@ -650,7 +534,7 @@ function Convocatorias() {
   <button
     type="button"
     className="btn btn-sm btn-outline-danger"
-    onClick={() => eliminarConvocatoria(conv.id)}
+    onClick={() => eliminarConvocatoriaUI(conv.id)}
     title="Eliminar"
   >
     Eliminar
@@ -720,7 +604,7 @@ function Convocatorias() {
 
                         <button
                           className="btn btn-sm btn-outline-danger"
-                          onClick={() => eliminarCurso(curso.id)}
+                          onClick={() => eliminarCursoUI(curso.id)}
                         >
                           <i className="bi bi-trash"></i>
                           Eliminar
@@ -763,9 +647,9 @@ function Convocatorias() {
               <div className="modal-header border-0">
 
                 <h5 className="modal-title fw-bold">
-                  {idConvocatoriaEditar
-                    ? "Editar Convocatoria"
-                    : "Nueva Convocatoria"}
+                 {idConvocatoriaEditar !== null
+                  ? "Editar Convocatoria"
+                  : "Nueva Convocatoria"}
                 </h5>
 
                 <button
@@ -882,6 +766,7 @@ function Convocatorias() {
                       className="form-control"
                       id="numPlazas"
                       min="1"
+                      step="1"
                       value={formConvocatoria.plazas}
                       onChange={(e) =>
                         setFormConvocatoria({
@@ -964,7 +849,7 @@ function Convocatorias() {
               <div className="modal-header border-0 pb-0">
 
                 <h5 className="modal-title fw-bold fs-6">
-                  {idCursoEditar
+                  {idCursoEditar !== null
                     ? "Editar Curso"
                     : "Nuevo Curso"}
                 </h5>
@@ -1055,6 +940,6 @@ function Convocatorias() {
 
     </>
   );
-}
+};
 
 export default Convocatorias;

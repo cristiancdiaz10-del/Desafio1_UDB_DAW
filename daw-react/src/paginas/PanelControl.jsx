@@ -1,69 +1,72 @@
- import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import * as XLSX from "xlsx";
-import { jsPDF } from "jspdf";
+// ==========================================
+// PANEL DE CONTROL - PROTALENTO
+// ==========================================
 
+import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
+
+// Componentes reutilizables
 import Indicadores from "../componentes/panel/Indicadores";
 import FiltrosAspirantes from "../componentes/panel/FiltrosAspirantes";
 import TablaAspirantes from "../componentes/panel/TablaAspirantes";
 import Graficas from "../componentes/panel/Graficas";
 
-function leerUsuarios() {
-  try {
-    const datos = JSON.parse(localStorage.getItem("usuarios") || "[]");
-    return Array.isArray(datos)
-      ? datos.filter((usuario) => usuario.rol === "usuario")
-      : [];
-  } catch (error) {
-    console.error("Error leyendo aspirantes:", error);
-    return [];
-  }
-}
+// Servicios
+import {
+  obtenerAspirantes,
+  obtenerSesion,
+  filtrarAspirantes,
+  exportarAspirantesCSV,
+  exportarAspirantesExcel,
+  guardarAspiranteParaEvaluar
+} from "../servicios_js/panel-control.js";
 
-function coincideEstado(aspirante, filtro) {
-  if (filtro === "todos") return true;
+import { descargarPerfilPDF } from "../servicios_js/descargas-aspirantes";
 
-  const estado = (aspirante.estado || "Postulado")
-    .trim()
-    .toLowerCase();
 
-  const grupos = {
-    "En revisión": ["en revisión", "en revision"],
-    Entrevistados: ["entrevistado", "en entrevista"],
-    Seleccionados: ["aprobado", "seleccionado", "seleccionado/a"],
-    "No seleccionados": [
-      "rechazado",
-      "no seleccionado",
-      "no seleccionado/a",
-    ],
-    Postulado: ["postulado"],
-  };
-
-  return (grupos[filtro] || [filtro.toLowerCase()]).includes(estado);
-}
+// ==========================================
+// COMPONENTE PRINCIPAL
+// ==========================================
 
 function PanelControl() {
   const navigate = useNavigate();
 
-  const [aspirantes, setAspirantes] = useState(leerUsuarios);
+  // ==========================================
+  // 1. ESTADOS
+  // ==========================================
+
+  const [aspirantes, setAspirantes] = useState(
+    () => obtenerAspirantes()
+  );
+
   const [busqueda, setBusqueda] = useState("");
+
   const [filtroCurso, setFiltroCurso] = useState("todos");
+
   const [filtroEstado, setFiltroEstado] = useState("todos");
-  const [nombreUsuario, setNombreUsuario] = useState("Usuario");
+
+  const [nombreUsuario, setNombreUsuario] = useState(
+    "Administrador"
+  );
+
+  // ==========================================
+  // 2. CARGA INICIAL Y ACTUALIZACIÓN
+  // ==========================================
 
   useEffect(() => {
-    try {
-      const sesion = JSON.parse(localStorage.getItem("sesion") || "null");
-      if (sesion?.nombre) {
-        setNombreUsuario(sesion.nombre);
-      }
-    } catch (error) {
-      console.error("Error leyendo sesión:", error);
+    const sesion = obtenerSesion();
+
+    if (sesion?.nombre) {
+      setNombreUsuario(sesion.nombre);
     }
 
-    const actualizarDatos = () => setAspirantes(leerUsuarios());
+    const actualizarDatos = () => {
+      setAspirantes(obtenerAspirantes());
+    };
 
-    // Detecta cambios de almacenamiento realizados desde otras pestañas.
+    // Escuchar cambios de localStorage
+    // realizados desde otras pestañas.
     window.addEventListener("storage", actualizarDatos);
 
     return () => {
@@ -71,34 +74,27 @@ function PanelControl() {
     };
   }, []);
 
-  const aspirantesFiltrados = aspirantes.filter((aspirante) => {
-    const texto = busqueda.trim().toLowerCase();
+  // ==========================================
+  // 3. FILTRADO DE ASPIRANTES
+  // ==========================================
 
-    const nombre = (
-      aspirante.nombreCompleto ||
-      aspirante.nombre ||
-      ""
-    ).toLowerCase();
+  const aspirantesFiltrados = useMemo(() => {
+    return filtrarAspirantes(
+      aspirantes,
+      busqueda,
+      filtroCurso,
+      filtroEstado
+    );
+  }, [
+    aspirantes,
+    busqueda,
+    filtroCurso,
+    filtroEstado
+  ]);
 
-    const correo = (aspirante.email || "").toLowerCase();
-
-    const curso = (
-      aspirante.cursoInteres ||
-      aspirante.curso ||
-      "General"
-    ).trim();
-
-    const cumpleBusqueda =
-      nombre.includes(texto) || correo.includes(texto);
-
-    const cumpleCurso =
-      filtroCurso === "todos" ||
-      curso.toLowerCase() === filtroCurso.toLowerCase();
-
-    const cumpleEstado = coincideEstado(aspirante, filtroEstado);
-
-    return cumpleBusqueda && cumpleCurso && cumpleEstado;
-  });
+  // ==========================================
+  // 4. FILTRO DESDE LAS GRÁFICAS
+  // ==========================================
 
   const cambiarFiltroGrafica = (estado) => {
     setFiltroEstado((actual) =>
@@ -106,106 +102,132 @@ function PanelControl() {
     );
   };
 
+  // ==========================================
+  // 5. EVALUAR ASPIRANTE
+  // ==========================================
+
   const evaluarAspirante = (aspirante) => {
-    localStorage.setItem(
-      "aspiranteEvaluar",
-      JSON.stringify(aspirante)
+    const guardado = guardarAspiranteParaEvaluar(
+      aspirante
     );
+
+    if (!guardado) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "No fue posible preparar la información del aspirante."
+      });
+
+      return;
+    }
 
     navigate("/PerfilCandidato");
   };
 
+  // ==========================================
+  // 6. DESCARGAR PERFIL EN PDF
+  // ==========================================
+
   const descargarPDF = (aspirante) => {
-    const pdf = new jsPDF();
+    descargarPerfilPDF(aspirante);
+};
 
-    const nombre =
-      aspirante.nombreCompleto ||
-      aspirante.nombre ||
-      "Sin nombre";
+  // ==========================================
+  // 7. EXPORTAR CSV
+  // ==========================================
 
-    const datos = [
-      `Nombre: ${nombre}`,
-      `Correo: ${aspirante.email || "No registrado"}`,
-      `Curso: ${aspirante.cursoInteres || aspirante.curso || "General"}`,
-      `Estado: ${aspirante.estado || "Postulado"}`,
-      `CV: ${aspirante.cvAdjuntado ? "Adjunto" : "Pendiente"}`,
-      `Video: ${aspirante.videoAdjuntado ? "Adjunto" : "Pendiente"}`,
-    ];
+  const manejarExportacionCSV = () => {
+    const exportado = exportarAspirantesCSV(
+      aspirantesFiltrados
+    );
 
-    pdf.setFontSize(17);
-    pdf.text("Perfil del aspirante - ProTalento", 15, 20);
-
-    pdf.setFontSize(11);
-    datos.forEach((linea, index) => {
-      const texto = pdf.splitTextToSize(linea, 175);
-      pdf.text(texto, 15, 38 + index * 17);
-    });
-
-    pdf.save("perfil_aspirante.pdf");
-  };
-
-  const obtenerDatosExportacion = () =>
-    aspirantesFiltrados.map((aspirante) => ({
-      Nombre:
-        aspirante.nombreCompleto ||
-        aspirante.nombre ||
-        "Sin nombre",
-      Correo: aspirante.email || "",
-      Curso: aspirante.cursoInteres || aspirante.curso || "General",
-      Estado: aspirante.estado || "Postulado",
-      CV: aspirante.cvAdjuntado ? "Adjunto" : "Pendiente",
-      Video: aspirante.videoAdjuntado ? "Adjunto" : "Pendiente",
-    }));
-
-  const exportarCSV = () => {
-    const datos = obtenerDatosExportacion();
-
-    if (datos.length === 0) {
-      alert("No hay aspirantes para exportar.");
-      return;
+    if (!exportado) {
+      Swal.fire({
+        icon: "info",
+        title: "Sin datos",
+        text: "No hay aspirantes para exportar."
+      });
     }
-
-    const hoja = XLSX.utils.json_to_sheet(datos);
-    const csv = XLSX.utils.sheet_to_csv(hoja);
-
-    const blob = new Blob(["\uFEFF", csv], {
-      type: "text/csv;charset=utf-8;",
-    });
-
-    const url = URL.createObjectURL(blob);
-    const enlace = document.createElement("a");
-
-    enlace.href = url;
-    enlace.download = "reporte_participantes_protalento.csv";
-    enlace.click();
-
-    URL.revokeObjectURL(url);
   };
 
-  const exportarExcel = () => {
-    const datos = obtenerDatosExportacion();
+  // ==========================================
+  // 8. EXPORTAR EXCEL
+  // ==========================================
 
-    if (datos.length === 0) {
-      alert("No hay aspirantes para exportar.");
-      return;
+  const manejarExportacionExcel = () => {
+    const exportado = exportarAspirantesExcel(
+      aspirantesFiltrados
+    );
+
+    if (!exportado) {
+      Swal.fire({
+        icon: "info",
+        title: "Sin datos",
+        text: "No hay aspirantes para exportar."
+      });
     }
-
-    const hoja = XLSX.utils.json_to_sheet(datos);
-    const libro = XLSX.utils.book_new();
-
-    XLSX.utils.book_append_sheet(libro, hoja, "Aspirantes");
-    XLSX.writeFile(libro, "reporte_aspirantes_protalento.xlsx");
   };
+
+  // ==========================================
+  // 9. LIMPIAR FILTROS
+  // ==========================================
+
+  const limpiarFiltros = () => {
+    setBusqueda("");
+    setFiltroCurso("todos");
+    setFiltroEstado("todos");
+  };
+
+  // ==========================================
+  // 10. ACTUALIZAR DATOS
+  // ==========================================
+
+  const actualizarDatos = () => {
+    setAspirantes(obtenerAspirantes());
+
+    Swal.fire({
+      icon: "success",
+      title: "Datos actualizados",
+      text: "La información del panel se ha actualizado.",
+      timer: 1500,
+      showConfirmButton: false
+    });
+  };
+
+  // ==========================================
+  // 11. CERRAR SESIÓN
+  // ==========================================
 
   const cerrarSesion = () => {
-    // Conservamos los usuarios registrados.
-    localStorage.removeItem("sesion");
-    navigate("/Login");
+    Swal.fire({
+      title: "¿Cerrar sesión?",
+      text: "¿Deseas salir del sistema?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Sí, cerrar sesión",
+      cancelButtonText: "Cancelar",
+      confirmButtonColor: "#dc3545"
+    }).then((resultado) => {
+      if (resultado.isConfirmed) {
+        localStorage.removeItem("sesion");
+        navigate("/Login");
+      }
+    });
   };
+
+  // ==========================================
+  // 12. INTERFAZ VISUAL
+  // ==========================================
 
   return (
     <div className="portal">
+
+      {/* ======================================
+          MENÚ LATERAL
+      ====================================== */}
+
       <aside className="sidebar">
+
         <div>
           <img
             src="/recursos/logo_AIDEL.png"
@@ -214,53 +236,87 @@ function PanelControl() {
           />
         </div>
 
-        <div className="sidebar-title">Favoritos</div>
+        <div className="sidebar-title">
+          Favoritos
+        </div>
 
         <ul className="sidebar-menu">
+
           <li>
-            <Link to="/PanelControl" className="active">
-              <i className="bi bi-house"></i> Inicio
+            <Link
+              to="/PanelControl"
+              className="active"
+            >
+              <i className="bi bi-house"></i>
+              Inicio
             </Link>
           </li>
 
           <li>
             <Link to="/Aspirantes">
-              <i className="bi bi-people"></i> Aspirantes
+              <i className="bi bi-people"></i>
+              Aspirantes
             </Link>
           </li>
+
         </ul>
 
-        <div className="sidebar-title">Dashboards</div>
+        <div className="sidebar-title">
+          Dashboards
+        </div>
 
         <ul className="sidebar-menu">
+
           <li>
-            <Link to="/PanelControl" className="active">
-              <i className="bi bi-pie-chart-fill"></i> Métricas y reportes
+            <Link
+              to="/PanelControl"
+              className="active"
+            >
+              <i className="bi bi-pie-chart-fill"></i>
+              Métricas y reportes
             </Link>
           </li>
+
         </ul>
 
         <ul className="sidebar-menu">
+
           <li>
             <Link to="/Aspirantes">
-              <i className="bi bi-folder"></i> Aspirantes
+              <i className="bi bi-folder"></i>
+              Aspirantes
             </Link>
           </li>
 
           <li>
             <Link to="/Convocatorias">
-              <i className="bi bi-folder"></i> Convocatorias y Cursos
+              <i className="bi bi-folder"></i>
+              Convocatorias y Cursos
             </Link>
           </li>
+
         </ul>
+
       </aside>
 
+      {/* ======================================
+          CONTENIDO PRINCIPAL
+      ====================================== */}
+
       <div className="main-content">
+
+        {/* BARRA SUPERIOR */}
+
         <header className="topbar">
-          <h1 className="topbar-title">Portal del evaluador</h1>
+
+          <h1 className="topbar-title">
+            Portal del evaluador
+          </h1>
 
           <div className="topbar-user d-flex align-items-center gap-3 ms-auto">
+
             <div className="search-box">
+
               <i className="bi bi-search"></i>
 
               <input
@@ -270,9 +326,12 @@ function PanelControl() {
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
               />
+
             </div>
 
-            <span id="lbl-admin-topbar">{nombreUsuario}</span>
+            <span id="lbl-admin-topbar">
+              {nombreUsuario}
+            </span>
 
             <i className="bi bi-person-circle"></i>
 
@@ -283,28 +342,50 @@ function PanelControl() {
             >
               Cerrar sesión
             </button>
+
           </div>
+
         </header>
 
-        <main className="dashboard-container">
-          <h2 className="dashboard-title">Métricas (KPIs)</h2>
+        {/* DASHBOARD */}
 
-          <Indicadores aspirantes={aspirantes} />
+        <main className="dashboard-container">
+
+          <h2 className="dashboard-title">
+            Métricas (KPIs)
+          </h2>
+
+          {/* INDICADORES */}
+
+          <Indicadores
+            aspirantes={aspirantes}
+          />
+
+          {/* GRÁFICAS */}
 
           <Graficas
             aspirantes={aspirantes}
             onFiltrarEstado={cambiarFiltroGrafica}
           />
 
+          {/* ==================================
+              TABLA DE SOLICITUDES
+          ================================== */}
+
           <section className="requests-card">
+
             <div className="requests-header d-flex flex-wrap align-items-center gap-3">
-              <h3 className="mb-0">Solicitudes</h3>
+
+              <h3 className="mb-0">
+                Solicitudes
+              </h3>
 
               <span className="text-muted small">
                 Mostrando {aspirantesFiltrados.length} de {aspirantes.length}
               </span>
 
               <div className="ms-auto">
+
                 <FiltrosAspirantes
                   aspirantes={aspirantes}
                   filtroCurso={filtroCurso}
@@ -312,34 +393,37 @@ function PanelControl() {
                   filtroEstado={filtroEstado}
                   setFiltroEstado={setFiltroEstado}
                 />
+
               </div>
+
             </div>
 
+            {/* BOTONES DE ACCIÓN */}
+
             <div className="d-flex gap-2 flex-wrap my-3">
+
               <button
                 type="button"
                 className="btn btn-outline-primary"
-                onClick={exportarCSV}
+                onClick={manejarExportacionCSV}
               >
-                <i className="bi bi-filetype-csv"></i> Descargar CSV
+                <i className="bi bi-filetype-csv"></i>
+                Descargar CSV
               </button>
 
               <button
                 type="button"
                 className="btn btn-outline-success"
-                onClick={exportarExcel}
+                onClick={manejarExportacionExcel}
               >
-                <i className="bi bi-file-earmark-excel"></i> Descargar Excel
+                <i className="bi bi-file-earmark-excel"></i>
+                Descargar Excel
               </button>
 
               <button
                 type="button"
                 className="btn btn-outline-secondary"
-                onClick={() => {
-                  setBusqueda("");
-                  setFiltroCurso("todos");
-                  setFiltroEstado("todos");
-                }}
+                onClick={limpiarFiltros}
               >
                 Limpiar filtros
               </button>
@@ -347,20 +431,28 @@ function PanelControl() {
               <button
                 type="button"
                 className="btn btn-outline-secondary"
-                onClick={() => setAspirantes(leerUsuarios())}
+                onClick={actualizarDatos}
               >
+                <i className="bi bi-arrow-clockwise"></i>
                 Actualizar datos
               </button>
+
             </div>
+
+            {/* TABLA */}
 
             <TablaAspirantes
               aspirantes={aspirantesFiltrados}
               onEvaluar={evaluarAspirante}
               onDescargarPDF={descargarPDF}
             />
+
           </section>
+
         </main>
+
       </div>
+
     </div>
   );
 }
