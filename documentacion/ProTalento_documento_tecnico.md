@@ -1,14 +1,14 @@
 # ProTalento Integración de React y consumo de datos externos
 
-Universidad Don Bosco  
-Desarrollo de Aplicaciones Web  
-Avance 2 Foro de Discusión 2  
-Equipo A  
-Cristian Alexander Campos Díaz — CD261570  
-Luis Alberto Chávez Mendoza — CM250419  
-Manuel de Jesus Mejía Rivera — MR260122  
-César Eliseo Ramírez Romero — RR261314  
-Crystel Daniela Tino Anaya — TA261223  
+Universidad Don Bosco
+Desarrollo de Aplicaciones Web
+Avance 2 Foro de Discusión 2
+Equipo A
+Cristian Alexander Campos Díaz — CD261570
+Luis Alberto Chávez Mendoza — CM250419
+Manuel de Jesus Mejía Rivera — MR260122
+César Eliseo Ramírez Romero — RR261314
+Crystel Daniela Tino Anaya — TA261223
 Fecha de entrega: 8 de noviembre de 2026
 
 ## Alcance de la revisión
@@ -146,4 +146,3 @@ React. (s. f.-a). *Quick start*. https://react.dev/learn
 React. (s. f.-b). *Sharing state between components*. https://react.dev/learn/sharing-state-between-components
 
 React. (s. f.-c). *useEffect*. https://react.dev/reference/react/useEffect
-
