@@ -1,3 +1,13 @@
+## Avance 2 React API y documentación
+
+La aplicación React se encuentra en `daw-react`.
+
+- [Documento técnico del segundo avance](documentacion/ProTalento_documento_tecnico.pdf)
+- [Pruebas, evidencias y guion del video](documentacion/README.md)
+- [Incidencias pendientes para la siguiente fase](documentacion/Incidencias_pendientes.md)
+
+Video de la segunda entrega: pendiente de grabación y publicación. El enlace anterior de Avance 1 corresponde a la primera entrega.
+
 Miércoles 21 de octubre 2026
 # Avance 1 Foro de discusión 1 
 ## PROTALENTO - PLATAFORMA PARA LA EVALUACIÓN Y SELECCIÓN DE ASPIRANTES A FORMACIÓN TÉCNICA DE LA AGENCIA INTERNACIONAL DE DESARROLLO LOCAL
