@@ -8,7 +8,6 @@ Aporte de César Ramírez: investigación técnica, pruebas, evidencias y prepar
 - [Fuente editable del documento](ProTalento_documento_tecnico.md).
 - [Matriz de pruebas y evidencias](Pruebas_y_evidencias.md).
 - [Resultados de doce pruebas de servicios](Resultados_servicios.md).
-- [Guion del video de 13 minutos y 30 segundos](Guion_video.md).
 - [Capturas de las pruebas](evidencias/).
 - [Incidencias pendientes para la siguiente fase](Incidencias_pendientes.md).
 
