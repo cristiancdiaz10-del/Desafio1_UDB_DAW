@@ -10,9 +10,9 @@ Domingo 8 de noviembre 2026
 
 La aplicación React se encuentra en `daw-react`.
 
-- [Documento técnico del segundo avance](Documentacion/ProTalento_documento_tecnico.pdf)
-- [Pruebas, evidencias y guion del video](Documentacion/README.md)
-- [Incidencias pendientes para la siguiente fase](Documentacion/Incidencias_pendientes.md)
+- [Documento técnico del segundo avance](Documentacion_React/ProTalento_documento_tecnico.pdf)
+- [Pruebas, evidencias y guion del video](Documentacion_React/README.md)
+- [Incidencias pendientes para la siguiente fase](Documentacion_React/Incidencias_pendientes.md)
 
 ## Vídeo demostrativo de la app + investigación de Framework React utilizado en ProTalento
 [Carpeta con los archivos](https://udbedu-my.sharepoint.com/:f:/g/personal/cm250419_alumno_udb_edu_sv/IgDEUuBRHciFRZmCJl85J6mKAQXpgdG_RW1MSGBhZyllZBk?e=rIoWsp)
