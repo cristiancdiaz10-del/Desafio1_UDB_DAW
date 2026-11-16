@@ -1,4 +1,6 @@
- import {
+import { useMemo } from "react";
+
+import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
@@ -13,6 +15,11 @@
 
 import { Line, Doughnut } from "react-chartjs-2";
 
+import {
+  obtenerIndicadores,
+  obtenerPostulacionesPorMes,
+} from "../../servicios_js/panel-control.js";
+
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -25,58 +32,31 @@ ChartJS.register(
   Filler
 );
 
-function Graficas({ aspirantes, onFiltrarEstado }) {
-  const meses = [
-    "Ene", "Feb", "Mar", "Abr", "May", "Jun",
-    "Jul", "Ago", "Sep", "Oct", "Nov", "Dic",
-  ];
+const estados = [
+  "Postulado",
+  "En revisión",
+  "Entrevistados",
+  "Seleccionados",
+  "No seleccionados",
+];
 
-  const conteoPorMes = Array(12).fill(0);
+function Graficas({ aspirantes = [], onFiltrarEstado }) {
+  const indicadores = useMemo(
+    () => obtenerIndicadores(aspirantes),
+    [aspirantes]
+  );
 
-  aspirantes.forEach((aspirante) => {
-    const fecha = aspirante.fechaRegistro
-      ? new Date(aspirante.fechaRegistro)
-      : new Date();
-
-    if (!Number.isNaN(fecha.getTime())) {
-      conteoPorMes[fecha.getMonth()]++;
-    }
-  });
-
-  const contar = (opciones) =>
-    aspirantes.filter((aspirante) =>
-      opciones.includes(
-        (aspirante.estado || "Postulado").trim().toLowerCase()
-      )
-    ).length;
-
-  const revision = contar(["en revisión", "en revision"]);
-  const entrevistados = contar(["entrevistado", "en entrevista"]);
-  const seleccionados = contar([
-    "aprobado",
-    "seleccionado",
-    "seleccionado/a",
-  ]);
-  const rechazados = contar([
-    "rechazado",
-    "no seleccionado",
-    "no seleccionado/a",
-  ]);
-
-  const postulados = aspirantes.filter((aspirante) => {
-  const estado = (aspirante.estado || "Postulado")
-    .trim()
-    .toLowerCase();
-
-  return estado === "postulado";
-}).length;
+  const flujo = useMemo(
+    () => obtenerPostulacionesPorMes(aspirantes),
+    [aspirantes]
+  );
 
   const datosFlujo = {
-    labels: meses,
+    labels: flujo.etiquetas,
     datasets: [
       {
         label: "Postulaciones",
-        data: conteoPorMes,
+        data: flujo.cantidades,
         borderColor: "#0d5cab",
         backgroundColor: "rgba(13, 92, 171, 0.1)",
         tension: 0.35,
@@ -86,37 +66,29 @@ function Graficas({ aspirantes, onFiltrarEstado }) {
     ],
   };
 
-  const estados = [
-  "Postulado",
-  "En revisión",
-  "Entrevistados",
-  "Seleccionados",
-  "No seleccionados",
- ];
-
   const datosEstados = {
-  labels: estados,
-  datasets: [
-    {
-      data: [
-        postulados,
-        revision,
-        entrevistados,
-        seleccionados,
-        rechazados,
-      ],
-      backgroundColor: [
-        "#8b5cf6",
-        "#6b7280",
-        "#f59e0b",
-        "#3b82f6",
-        "#10b981",
-      ],
-      borderWidth: 2,
-    },
-  ],
- };
- 
+    labels: estados,
+    datasets: [
+      {
+        data: [
+          indicadores.postulados,
+          indicadores.revision,
+          indicadores.entrevistados,
+          indicadores.seleccionados,
+          indicadores.rechazados,
+        ],
+        backgroundColor: [
+          "#8b5cf6",
+          "#6b7280",
+          "#f59e0b",
+          "#3b82f6",
+          "#10b981",
+        ],
+        borderWidth: 2,
+      },
+    ],
+  };
+
   const opcionesFlujo = {
     responsive: true,
     maintainAspectRatio: false,
@@ -126,7 +98,10 @@ function Graficas({ aspirantes, onFiltrarEstado }) {
     scales: {
       y: {
         beginAtZero: true,
-        ticks: { stepSize: 1 },
+        ticks: {
+          stepSize: 1,
+          precision: 0,
+        },
       },
     },
   };
@@ -136,14 +111,14 @@ function Graficas({ aspirantes, onFiltrarEstado }) {
     maintainAspectRatio: false,
     onClick: (_evento, elementos) => {
       if (elementos.length > 0) {
-        onFiltrarEstado(estados[elementos[0].index]);
+        onFiltrarEstado?.(estados[elementos[0].index]);
       }
     },
     plugins: {
       legend: {
         position: "bottom",
         onClick: (_evento, item) => {
-          onFiltrarEstado(estados[item.index]);
+          onFiltrarEstado?.(estados[item.index]);
         },
       },
     },
@@ -155,15 +130,21 @@ function Graficas({ aspirantes, onFiltrarEstado }) {
         <h3>Flujo de solicitudes</h3>
 
         <div className="chart-container">
-          <Line data={datosFlujo} options={opcionesFlujo} />
+          <Line
+            data={datosFlujo}
+            options={opcionesFlujo}
+          />
         </div>
       </article>
 
       <article className="chart-card">
-        <h3>Estados</h3>
+        <h3>Distribución por estados</h3>
 
         <div className="chart-container">
-          <Doughnut data={datosEstados} options={opcionesEstados} />
+          <Doughnut
+            data={datosEstados}
+            options={opcionesEstados}
+          />
         </div>
       </article>
     </section>
