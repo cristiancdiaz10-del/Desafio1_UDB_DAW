@@ -204,25 +204,32 @@ export function obtenerIndicadores(aspirantes) {
 // 6. DATOS PARA GRÁFICA MENSUAL
 // ==========================================
 
+
 export function obtenerPostulacionesPorMes(aspirantes) {
-  const conteoPorMes = new Array(12).fill(0);
+  const conteo = new Map();
 
   aspirantes.forEach((aspirante) => {
-    if (aspirante.fechaRegistro) {
-      const fecha = new Date(aspirante.fechaRegistro);
+    if (!aspirante.fechaRegistro) return;
 
-      if (!Number.isNaN(fecha.getTime())) {
-        conteoPorMes[fecha.getMonth()]++;
-      }
-    } else {
-      // Si no existe fecha de registro,
-      // se contabiliza en el mes actual.
-      conteoPorMes[new Date().getMonth()]++;
-    }
+    const fecha = new Date(aspirante.fechaRegistro);
+
+    if (Number.isNaN(fecha.getTime())) return;
+
+    const anio = fecha.getFullYear();
+    const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+    const periodo = `${anio}-${mes}`;
+
+    conteo.set(periodo, (conteo.get(periodo) || 0) + 1);
   });
 
-  return conteoPorMes;
+  const periodos = [...conteo.keys()].sort();
+
+  return {
+    etiquetas: periodos,
+    cantidades: periodos.map((periodo) => conteo.get(periodo)),
+  };
 }
+
 
 // ==========================================
 // 7. PREPARAR DATOS PARA EXPORTACIÓN

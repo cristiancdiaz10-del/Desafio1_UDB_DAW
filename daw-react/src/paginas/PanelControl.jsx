@@ -42,6 +42,9 @@ function PanelControl() {
 
   const [busqueda, setBusqueda] = useState("");
 
+  // Control del menú lateral en pantallas pequeñas
+  const [menuAbierto, setMenuAbierto] = useState(false);
+
   const [filtroCurso, setFiltroCurso] = useState("todos");
 
   const [filtroEstado, setFiltroEstado] = useState("todos");
@@ -91,6 +94,18 @@ function PanelControl() {
     filtroCurso,
     filtroEstado
   ]);
+
+  // Las gráficas responden a la búsqueda y al curso seleccionado.
+  // El estado se excluye para conservar todos los segmentos
+  // de la gráfica circular y permitir cambiar de estado.
+  const aspirantesParaGraficas = useMemo(() => {
+    return filtrarAspirantes(
+      aspirantes,
+      busqueda,
+      filtroCurso,
+      "todos"
+    );
+  }, [aspirantes, busqueda, filtroCurso]);
 
   // ==========================================
   // 4. FILTRO DESDE LAS GRÁFICAS
@@ -226,7 +241,25 @@ function PanelControl() {
           MENÚ LATERAL
       ====================================== */}
 
-      <aside className="sidebar">
+      {menuAbierto && (
+        <button
+          type="button"
+          className="panel-menu-overlay"
+          aria-label="Cerrar menú lateral"
+          onClick={() => setMenuAbierto(false)}
+        />
+      )}
+
+      <aside className={`sidebar ${menuAbierto ? "sidebar-abierta" : ""}`} id="panel-menu-lateral">
+
+        <button
+          type="button"
+          className="panel-menu-cerrar"
+          aria-label="Cerrar menú"
+          onClick={() => setMenuAbierto(false)}
+        >
+          <i className="bi bi-x-lg" aria-hidden="true"></i>
+        </button>
 
         <div>
           <img
@@ -313,6 +346,17 @@ function PanelControl() {
             Portal del evaluador
           </h1>
 
+          <button
+            type="button"
+            className="btn-menu-movil"
+            aria-label={menuAbierto ? "Cerrar menú" : "Abrir menú"}
+            aria-controls="panel-menu-lateral"
+            aria-expanded={menuAbierto}
+            onClick={() => setMenuAbierto((abierto) => !abierto)}
+          >
+            <i className={`bi ${menuAbierto ? "bi-x-lg" : "bi-list"}`} aria-hidden="true"></i>
+          </button>
+
           <div className="topbar-user d-flex align-items-center gap-3 ms-auto">
 
             <div className="search-box">
@@ -364,7 +408,7 @@ function PanelControl() {
           {/* GRÁFICAS */}
 
           <Graficas
-            aspirantes={aspirantes}
+            aspirantes={aspirantesParaGraficas}
             onFiltrarEstado={cambiarFiltroGrafica}
           />
 
@@ -385,14 +429,16 @@ function PanelControl() {
               </span>
 
               <div className="ms-auto">
-
-                <FiltrosAspirantes
-                  aspirantes={aspirantes}
-                  filtroCurso={filtroCurso}
-                  setFiltroCurso={setFiltroCurso}
-                  filtroEstado={filtroEstado}
-                  setFiltroEstado={setFiltroEstado}
-                />
+               <FiltrosAspirantes
+               aspirantes={aspirantes}
+               filtroCurso={filtroCurso}
+               setFiltroCurso={(curso) => {
+                 setFiltroCurso(curso);
+                 setFiltroEstado("todos");
+               }}
+              filtroEstado={filtroEstado}
+              setFiltroEstado={setFiltroEstado}
+              />
 
               </div>
 
