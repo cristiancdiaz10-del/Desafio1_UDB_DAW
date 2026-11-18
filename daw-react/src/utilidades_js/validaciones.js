@@ -77,23 +77,15 @@ export function validarNIT(nit) {
 // Normalizar documentos de identidad
 // ============================================
 export function normalizarDocumento(documento) {
-    if (typeof documento !== "string") {
-        return "";
-    }
+    return String(documento ?? "").replace(/[\s-]/g, "");
+} // Elimina guiones y espacios
 
-    // Eliminar espacios y guiones
-    return documento.replace(/[\s-]/g, "");
-}
 
 // ============================================
 // Normalizar correo electrónico
 // ============================================
 export function normalizarCorreo(email) {
-    if (typeof email !== "string") {
-        return "";
-    }
-
-    return email.trim().toLowerCase();
+    return String(email ?? "").trim().toLowerCase();
 }
 
 // ============================================
