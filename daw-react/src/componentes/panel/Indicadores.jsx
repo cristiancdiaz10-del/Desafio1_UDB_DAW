@@ -1,35 +1,36 @@
- function Indicadores({ aspirantes }) {
-  const estados = aspirantes.map((a) =>
-    (a.estado || "Postulado").trim().toLowerCase()
-  );
+import { useMemo } from "react";
+import { obtenerIndicadores } from "../../servicios_js/panel-control.js";
 
-  const contar = (opciones) =>
-    estados.filter((estado) => opciones.includes(estado)).length;
+function Indicadores({ aspirantes = [] }) {
+  const datos = useMemo(
+    () => obtenerIndicadores(aspirantes),
+    [aspirantes]
+  );
 
   const indicadores = [
     {
       titulo: "Total Postulados",
-      valor: aspirantes.length,
+      valor: datos.total,
       id: "kpi-total",
     },
     {
       titulo: "En Revisión",
-      valor: contar(["en revisión", "en revision"]),
+      valor: datos.revision,
       id: "kpi-revision",
     },
     {
       titulo: "Entrevistados",
-      valor: contar(["entrevistado", "en entrevista"]),
+      valor: datos.entrevistados,
       id: "kpi-entrevistados",
     },
     {
       titulo: "Seleccionados",
-      valor: contar(["aprobado", "seleccionado", "seleccionado/a"]),
+      valor: datos.seleccionados,
       id: "kpi-seleccionados",
     },
     {
       titulo: "No seleccionados",
-      valor: contar(["rechazado", "no seleccionado", "no seleccionado/a"]),
+      valor: datos.rechazados,
       id: "kpi-rechazados",
     },
   ];

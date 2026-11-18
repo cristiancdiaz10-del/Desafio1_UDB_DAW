@@ -51,7 +51,6 @@ function PerfilCandidato() {
                                 Cerrar sesión
                             </button>
                         </div>
-
                     </div>
                 </div>
             </header>
@@ -60,6 +59,11 @@ function PerfilCandidato() {
             <main className="container-fluid contenido-principal">
 
                 <div className="row g-4">
+                    {/* COLUMNA IZQUIERDA */}
+                    <section className="col-lg-7">
+                        <h2 className="titulo-seccion">
+                            Información general del candidato
+                        </h2>
 
                     {/* COLUMNA IZQUIERDA */}
                     <section className="col-lg-7">

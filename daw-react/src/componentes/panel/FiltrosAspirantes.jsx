@@ -1,3 +1,6 @@
+import { useMemo } from "react";
+import { obtenerCursosDisponibles } from "../../servicios_js/panel-control.js";
+
 function FiltrosAspirantes({
   aspirantes,
   filtroCurso,
@@ -5,14 +8,10 @@ function FiltrosAspirantes({
   filtroEstado,
   setFiltroEstado,
 }) {
-  const cursos = [
-    ...new Set(
-      aspirantes
-        .map((a) => a.cursoInteres || a.curso)
-        .filter((curso) => typeof curso === "string" && curso.trim())
-        .map((curso) => curso.trim())
-    ),
-  ].sort();
+  const cursos = useMemo(
+    () => obtenerCursosDisponibles(aspirantes),
+    [aspirantes]
+  );
 
   return (
     <div className="d-flex flex-wrap align-items-center gap-3">
@@ -24,7 +23,7 @@ function FiltrosAspirantes({
         <select
           id="filtroCurso"
           className="form-select form-select-sm"
-          style={{ width: "190px" }}
+          style={{ width: "190px", maxWidth: "100%" }}
           value={filtroCurso}
           onChange={(e) => setFiltroCurso(e.target.value)}
         >
@@ -46,7 +45,7 @@ function FiltrosAspirantes({
         <select
           id="filtroEstado"
           className="form-select form-select-sm"
-          style={{ width: "190px" }}
+          style={{ width: "190px", maxWidth: "100%" }}
           value={filtroEstado}
           onChange={(e) => setFiltroEstado(e.target.value)}
         >

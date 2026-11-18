@@ -1036,3 +1036,143 @@ body {
     }
 
 }
+
+
+/* ==========================================
+   RESPONSIVE - PANEL DE CONTROL
+   ========================================== */
+
+/* Botón oculto en computadoras */
+.portal .btn-menu-movil {
+  display: none;
+}
+
+@media (max-width: 768px) {
+
+  .portal {
+    flex-direction: column;
+  }
+
+  .portal .main-content {
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* Menú lateral desplegable */
+  .portal .sidebar {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: min(285px, 85vw);
+    height: 100dvh;
+    min-height: 0;
+    overflow-y: auto;
+    background-color: #eef3f8;
+    z-index: 1201;
+    transform: translateX(-105%);
+    transition: transform 0.25s ease;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+  }
+
+  .portal .sidebar.sidebar-abierta {
+    transform: translateX(0);
+  }
+
+  /* Encabezado principal */
+  .portal .topbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    height: auto;
+    min-height: 65px;
+    padding: 12px 15px;
+  }
+
+  .portal .topbar-title {
+    font-size: 1.25rem;
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* Botón hamburguesa */
+  .portal .btn-menu-movil {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 8px 12px;
+    border: 1px solid #9ca3af;
+    border-radius: 8px;
+    background-color: #ffffff;
+    color: #0d5cab;
+    cursor: pointer;
+  }
+
+  .portal .btn-menu-movil .bi {
+    font-size: 1.2rem;
+  }
+
+  /* Buscador y usuario */
+  .portal .topbar-user {
+    display: flex !important;
+    flex-wrap: wrap;
+    width: 100%;
+    gap: 10px !important;
+    margin-left: 0 !important;
+  }
+
+  .portal .search-box {
+    order: -1;
+    flex: 0 0 100%;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+  }
+
+  .portal .search-box input {
+    min-width: 0;
+  }
+
+  /* Contenido del dashboard */
+  .portal .dashboard-container {
+    padding: 18px 15px 30px;
+  }
+
+  /* Dos indicadores por fila */
+  .portal .kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  /* Gráficas una debajo de otra */
+  .portal .charts-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 15px;
+  }
+
+  .portal .chart-card {
+    min-width: 0;
+    padding: 15px;
+  }
+
+  /* Tabla con desplazamiento horizontal */
+  .portal .requests-card {
+    min-width: 0;
+    padding: 15px;
+    overflow-x: auto;
+  }
+}
+
+/* Celulares especialmente estrechos */
+@media (max-width: 360px) {
+  .portal .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .portal .topbar-title {
+    font-size: 1.1rem;
+  }
+}

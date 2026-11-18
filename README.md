@@ -1,3 +1,22 @@
+Domingo 8 de noviembre 2026
+# Avance 2 Foro de discusión 2: Migración de ProTalento a React
+## PROTALENTO - PLATAFORMA PARA LA EVALUACIÓN Y SELECCIÓN DE ASPIRANTES A FORMACIÓN TÉCNICA DE LA AGENCIA INTERNACIONAL DE DESARROLLO LOCAL
+**Integrantes del Equipo A**
+- CRISTIAN ALEXANDER CAMPOS DÍAZ CD261570
+- LUIS ALBERTO CHÁVEZ MENDOZA CM250419
+- MANUEL DE JESÚS MEJÍA RIVERA MR260122
+- CÉSAR ELISEO RAMÍREZ ROMERO RR261314
+- CRYSTEL DANIELA TINO ANAYA TA261223
+
+La aplicación React se encuentra en `daw-react`.
+
+- [Documento técnico del segundo avance](Documentacion_React/ProTalento_documento_tecnico.pdf)
+- [Pruebas, evidencias y guion del video](Documentacion_React/README.md)
+- [Incidencias pendientes para la siguiente fase](Documentacion_React/Incidencias_pendientes.md)
+
+## Vídeo demostrativo de la app + investigación de Framework React utilizado en ProTalento
+[Carpeta con los archivos](https://udbedu-my.sharepoint.com/:f:/g/personal/cm250419_alumno_udb_edu_sv/IgDEUuBRHciFRZmCJl85J6mKAQXpgdG_RW1MSGBhZyllZBk?e=rIoWsp)
+
 Miércoles 21 de octubre 2026
 # Avance 1 Foro de discusión 1 
 ## PROTALENTO - PLATAFORMA PARA LA EVALUACIÓN Y SELECCIÓN DE ASPIRANTES A FORMACIÓN TÉCNICA DE LA AGENCIA INTERNACIONAL DE DESARROLLO LOCAL

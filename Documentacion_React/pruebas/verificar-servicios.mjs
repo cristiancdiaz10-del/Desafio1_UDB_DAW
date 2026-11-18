@@ -1,0 +1,24 @@
+import assert from 'node:assert/strict';
+import {writeFileSync} from 'node:fs';
+import * as v from '../../daw-react/src/utilidades_js/validaciones.js';
+import * as a from '../../daw-react/src/servicios_js/autenticaciones.js';
+const memoria=new Map();
+globalThis.localStorage={getItem:k=>memoria.get(k)??null,setItem:(k,x)=>memoria.set(k,String(x)),removeItem:k=>memoria.delete(k)};
+const resultados=[];
+async function caso(id,descripcion,fn){try{await fn();resultados.push({id,descripcion,estado:'Aprobado'});}catch(e){resultados.push({id,descripcion,estado:'Fallido',detalle:e.message});}}
+await caso('S01','Rechazar fecha inexistente y fecha futura',()=>{assert.equal(v.calcularEdad('2026-02-30'),null);assert.equal(v.calcularEdad('2999-01-01'),null);});
+await caso('S02','Validar estructura de DUI y NIT',()=>{assert.equal(v.validarDUI('01234567-8'),true);assert.equal(v.validarDUI('123'),false);assert.equal(v.validarNIT('0123-456789-123-4'),true);});
+await caso('S03','Exigir complejidad de contraseña',()=>{assert.equal(v.validarPassword('Prueba123'),true);assert.equal(v.validarPassword('123'),false);});
+await caso('S04','Normalizar correo y documento',()=>{assert.equal(v.normalizarCorreo(' A@Ejemplo.com '),'a@ejemplo.com');assert.equal(v.normalizarDocumento(' 01234567-8 '),'012345678');});
+await caso('S05','Crear cuentas iniciales sin duplicarlas',()=>{a.crearUsuariosIniciales();a.crearUsuariosIniciales();assert.equal(JSON.parse(localStorage.getItem('usuarios')).length,2);});
+await caso('S06','Rechazar contraseña incorrecta',()=>{assert.equal(a.iniciarSesion('admin@ejemplo.com','incorrecta').correcto,false);assert.equal(a.obtenerSesion(),null);});
+await caso('S07','Crear sesión administrativa y comprobar rol',()=>{assert.equal(a.iniciarSesion('admin@ejemplo.com','123').correcto,true);assert.equal(a.protegerVista(['administrador']),true);assert.equal(a.protegerVista(['usuario']),false);});
+await caso('S08','Cerrar sesión',()=>{a.cerrarSesion();assert.equal(a.obtenerSesion(),null);});
+await caso('S09','Aceptar respuesta geográfica válida simulada',async()=>{globalThis.fetch=async()=>({ok:true,json:async()=>({departamentos:[{nombre:'Prueba',municipios:[]}]})});assert.equal((await v.obtenerDomicilio())[0].nombre,'Prueba');});
+await caso('S10','Rechazar error HTTP simulado',async()=>{globalThis.fetch=async()=>({ok:false});await assert.rejects(v.obtenerDomicilio());});
+await caso('S11','Rechazar formato geográfico inválido simulado',async()=>{globalThis.fetch=async()=>({ok:true,json:async()=>({otro:[]})});await assert.rejects(v.obtenerDomicilio());});
+await caso('S12','Propagar fallo de red simulado',async()=>{globalThis.fetch=async()=>{throw new Error('red simulada')};await assert.rejects(v.obtenerDomicilio());});
+const salida='# ProTalento Resultados de pruebas de servicios\n\nBase: commit `6d8fc88`. Ejecución en Node.js con almacenamiento en memoria y respuestas de red simuladas. Estas pruebas no validan la interfaz, IndexedDB ni la disponibilidad real del servicio externo.\n\n| ID | Comprobación | Resultado |\n|---|---|---|\n'+resultados.map(r=>`| ${r.id} | ${r.descripcion} | ${r.estado}${r.detalle?' '+r.detalle:''} |`).join('\n')+'\n\nEste archivo solo informa pruebas de servicios. Consultar Pruebas_y_evidencias.md para la compilación y las pruebas manuales del navegador.\n';
+writeFileSync(new URL('../Resultados_servicios.md',import.meta.url),salida);
+console.log(JSON.stringify(resultados));
+if(resultados.some(r=>r.estado==='Fallido'))process.exitCode=1;

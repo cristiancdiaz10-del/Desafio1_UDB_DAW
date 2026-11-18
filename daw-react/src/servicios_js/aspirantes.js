@@ -1,208 +1,252 @@
-// Lógica de Aspirantes
+// ==========================================
+// SERVICIO DE GESTIÓN DE ASPIRANTES
+// ==========================================
 
-document.addEventListener('DOMContentLoaded', () => {
+import * as XLSX from "xlsx";
 
-    // Proteger la vista para los roles autorizados.
-    if (typeof protegerVista === 'function') {
-        const accesoPermitido = protegerVista([
-            'administrador',
-            'superadministrador',
-            'evaluador'
-        ]);
+// ==========================================
+// 1. OBTENER ASPIRANTES
+// ==========================================
 
-        if (!accesoPermitido) return;
-    }
-
-    // Obtener los datos de la sesión activa.
-    let sesion;
-
-    try {
-        sesion = JSON.parse(localStorage.getItem('sesion'));
-    } catch (error) {
-        sesion = null;
-    }
-
-    if (!sesion) return;
-
-    // Mostrar el nombre del usuario en los encabezados.
-    const nombreUsuario =
-        sesion.nombreCompleto || sesion.nombre || 'Usuario';
-
-    const lblAdminSidebar =
-        document.getElementById('lbl-admin-sidebar');
-
-    const lblAdminTopbar =
-        document.getElementById('lbl-admin-topbar');
-
-    const lblUsuario =
-        document.getElementById('lbl-usuario');
-
-    if (lblAdminSidebar) {
-        lblAdminSidebar.innerText = nombreUsuario;
-    }
-
-    if (lblAdminTopbar || lblUsuario) {
-        (lblAdminTopbar || lblUsuario).innerText = nombreUsuario;
-    }
-
-    // Cargar la tabla y activar el buscador.
-    cargarAspirantes();
-
-    const inputBuscar =
-        document.getElementById('inputBuscarAspirante');
-
-    if (inputBuscar) {
-        inputBuscar.addEventListener('input', cargarAspirantes);
-    }
-});
-
-function cargarAspirantes() {
-
-    const usuarios =
-        JSON.parse(localStorage.getItem('usuarios')) || [];
-
-    const texto =
-        document.getElementById('inputBuscarAspirante').value
-        .toLowerCase()
-        .trim();
-
-    const aspirantes = usuarios.filter(asp =>
-        asp.rol === 'usuario' &&
-        (
-            (asp.nombreCompleto || '').toLowerCase().includes(texto) ||
-            (asp.email || '').toLowerCase().includes(texto)
-        )
+export function obtenerAspirantes() {
+  try {
+    const usuarios = JSON.parse(
+      localStorage.getItem("usuarios") || "[]"
     );
 
-    const tbody =
-        document.getElementById('tablaAspirantesBody');
-
-    tbody.innerHTML = '';
-
-    if (aspirantes.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="5" class="text-center text-muted py-4">
-                    No hay aspirantes registrados.
-                </td>
-            </tr>`;
-        return;
+    if (!Array.isArray(usuarios)) {
+      return [];
     }
 
-    aspirantes.forEach(asp => {
+    return usuarios.filter(
+      (usuario) =>
+        usuario &&
+        usuario.rol === "usuario"
+    );
 
-        const fila = document.createElement('tr');
-
-        fila.innerHTML = `
-            <td class="fw-semibold">
-                ${asp.nombreCompleto || 'Sin nombre'}
-            </td>
-
-            <td>
-                ${asp.curso || 'Sin curso'}
-            </td>
-
-            <td>
-                ${asp.estado || 'Postulado'}
-            </td>
-
-            <td>
-                <small class="text-muted">
-                    CV: ${asp.cvAdjuntado ? 'Adjunto' : 'Pendiente'} |
-                    Vídeo: ${asp.videoAdjuntado ? 'Adjunto' : 'Pendiente'}
-                </small>
-            </td>
-
-            <td>
-                <button
-                    class="btn btn-sm btn-outline-primary"
-                    onclick="evaluarAspirante('${asp.email}')">
-                    Evaluar
-                </button>
-            </td>
-        `;
-
-        tbody.appendChild(fila);
-    });
+  } catch (error) {
+    console.error("Error al obtener aspirantes:", error);
+    return [];
+  }
 }
 
+// ==========================================
+// 2. NORMALIZAR INFORMACIÓN
+// ==========================================
 
-function evaluarAspirante(email) {
+function obtenerNombre(aspirante) {
+  return (
+    aspirante.nombreCompleto ||
+    aspirante.nombre ||
+    "Sin nombre"
+  );
+}
 
-    const usuarios =
-        JSON.parse(localStorage.getItem('usuarios')) || [];
+function obtenerCorreo(aspirante) {
+  return (
+    aspirante.email ||
+    aspirante.correo ||
+    ""
+  );
+}
 
-    const aspirante =
-        usuarios.find(u => u.email === email);
+function obtenerCurso(aspirante) {
+  return (
+    aspirante.cursoInteres ||
+    aspirante.curso ||
+    aspirante.cursoFormacion ||
+    "Sin curso"
+  );
+}
 
-    if (!aspirante) {
-        alert('No se encontró el aspirante.');
-        return;
-    }
+function obtenerEstado(aspirante) {
+  return aspirante.estado || "Postulado";
+}
 
+// ==========================================
+// 3. BUSCAR ASPIRANTES
+// ==========================================
+
+export function buscarAspirantes(
+  aspirantes,
+  textoBusqueda = ""
+) {
+  const texto = String(textoBusqueda)
+    .trim()
+    .toLowerCase();
+
+  if (!texto) {
+    return aspirantes;
+  }
+
+  return aspirantes.filter((aspirante) => {
+    const nombre = obtenerNombre(aspirante)
+      .toLowerCase();
+
+    const correo = obtenerCorreo(aspirante)
+      .toLowerCase();
+
+    const curso = String(obtenerCurso(aspirante))
+      .toLowerCase();
+
+    return (
+      nombre.includes(texto) ||
+      correo.includes(texto) ||
+      curso.includes(texto)
+    );
+  });
+}
+
+// ==========================================
+// 4. PREPARAR ASPIRANTE PARA EVALUACIÓN
+// ==========================================
+
+export function guardarAspiranteParaEvaluar(aspirante) {
+  if (!aspirante || aspirante.rol !== "usuario") {
+    return false;
+  }
+
+  try {
     localStorage.setItem(
-        'aspiranteEvaluar',
-        JSON.stringify(aspirante)
+      "aspiranteEvaluar",
+      JSON.stringify(aspirante)
     );
-    
-    // 2. Redirigir a la vista de evaluaciones
-    window.location.href = "perfil-candidato.html";
+
+    return true;
+
+  } catch (error) {
+    console.error(
+      "Error al guardar el aspirante para evaluación:",
+      error
+    );
+
+    return false;
+  }
 }
 
-// Función auxiliar para exportar CSV por si se requiere externamente
-function exportarCSVParticipantes() {
-    const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
-    const aspirantes = usuarios.filter(u => u.rol === 'usuario');
+// ==========================================
+// 5. PREPARAR DATOS PARA EXPORTACIÓN
+// ==========================================
 
-    if (aspirantes.length === 0) {
-        if (typeof Swal !== 'undefined') {
-            Swal.fire('Aviso', 'No hay aspirantes registrados para exportar.', 'warning');
-        } else {
-            alert('No hay aspirantes registrados para exportar.');
-        }
-        return;
-    }
-    let csvContent = "Nombre,Correo,Curso,Estado\n";
-    aspirantes.forEach(asp => {
-        const nombre = `"${asp.nombre || asp.nombreCompleto || 'Sin nombre'}"`;
-        const correo = `"${asp.email || ''}"`;
-        const curso = `"${asp.cursoInteres || asp.curso || 'General'}"`;
-        const estado = `"${asp.estado || 'Postulado'}"`;
-        csvContent += `${nombre},${correo},${curso},${estado}\n`;
-    });
+export function obtenerDatosExportacion(aspirantes) {
+  return aspirantes.map((aspirante) => ({
+    Nombre: obtenerNombre(aspirante),
+    Correo: obtenerCorreo(aspirante),
+    Curso: obtenerCurso(aspirante),
+    Estado: obtenerEstado(aspirante),
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", "reporte_participantes_protalento.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    CV: aspirante.cvAdjuntado
+      ? "Adjunto"
+      : "Pendiente",
+
+    Video: aspirante.videoAdjuntado
+      ? "Adjunto"
+      : "Pendiente"
+  }));
 }
-// Función auxiliar para exportar XLSX por si se requiere externamente.
-    function exportarExcelParticipantes() {
-    const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
-    const aspirantes = usuarios.filter(u => u.rol === 'usuario');
 
-    if (aspirantes.length === 0) {
-        alert('No hay aspirantes registrados para exportar.');
-        return;
+// ==========================================
+// 6. EXPORTAR A CSV
+// ==========================================
+
+export function exportarCSVParticipantes(aspirantes) {
+  const datos = obtenerDatosExportacion(aspirantes);
+
+  if (datos.length === 0) {
+    return false;
+  }
+
+  const columnas = Object.keys(datos[0]);
+
+  const escapar = (valor) => {
+    return (
+      '"' +
+      String(valor ?? "").replace(/"/g, '""') +
+      '"'
+    );
+  };
+
+  const contenido = [
+    columnas.map(escapar).join(";"),
+
+    ...datos.map((fila) =>
+      columnas
+        .map((columna) => escapar(fila[columna]))
+        .join(";")
+    )
+  ].join("\r\n");
+
+  const blob = new Blob(
+    ["\uFEFF" + contenido],
+    {
+      type: "text/csv;charset=utf-8;"
     }
+  );
 
-    const datos = aspirantes.map(asp => ({
-        Nombre: asp.nombreCompleto || asp.nombre || 'Sin nombre',
-        Correo: asp.email || '',
-        Curso: asp.cursoInteres || asp.curso || 'General',
-        Estado: asp.estado || 'Postulado',
-        CV: asp.cvAdjuntado ? 'Adjunto' : 'Pendiente',
-        Video: asp.videoAdjuntado ? 'Adjunto' : 'Pendiente'
-    }));
+  descargarArchivo(
+    blob,
+    "reporte_participantes_protalento.csv"
+  );
 
-    const hoja = XLSX.utils.json_to_sheet(datos);
-    const libro = XLSX.utils.book_new();
+  return true;
+}
 
-    XLSX.utils.book_append_sheet(libro, hoja, 'Aspirantes');
+// ==========================================
+// 7. EXPORTAR A EXCEL
+// ==========================================
 
-    XLSX.writeFile(libro, 'reporte_aspirantes_protalento.xlsx');
+export function exportarExcelParticipantes(aspirantes) {
+  const datos = obtenerDatosExportacion(aspirantes);
+
+  if (datos.length === 0) {
+    return false;
+  }
+
+  const hoja = XLSX.utils.json_to_sheet(datos);
+
+  // Ajustar ancho de las columnas.
+  hoja["!cols"] = [
+    { wch: 30 },
+    { wch: 32 },
+    { wch: 38 },
+    { wch: 20 },
+    { wch: 15 },
+    { wch: 15 }
+  ];
+
+  const libro = XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(
+    libro,
+    hoja,
+    "Aspirantes"
+  );
+
+  XLSX.writeFile(
+    libro,
+    "reporte_aspirantes_protalento.xlsx"
+  );
+
+  return true;
+}
+
+// ==========================================
+// 8. DESCARGAR ARCHIVO
+// ==========================================
+
+function descargarArchivo(blob, nombreArchivo) {
+  const url = URL.createObjectURL(blob);
+
+  const enlace = document.createElement("a");
+
+  enlace.href = url;
+  enlace.download = nombreArchivo;
+
+  document.body.appendChild(enlace);
+  enlace.click();
+  enlace.remove();
+
+  setTimeout(() => {
+    URL.revokeObjectURL(url);
+  }, 1000);
 }

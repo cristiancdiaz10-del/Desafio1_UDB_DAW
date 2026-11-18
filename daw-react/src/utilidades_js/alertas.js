@@ -1,6 +1,13 @@
-// Utilidades globales de SweetAlert2 para ProTalento
 
-function mostrarExito(titulo = "Operación realizada", texto = "") {
+import Swal from "sweetalert2";
+
+/**
+ * Muestra una notificación de operación exitosa.
+ */
+export function mostrarExito(
+  titulo = "Operación realizada",
+  texto = ""
+) {
   return Swal.fire({
     icon: "success",
     title: titulo,
@@ -10,7 +17,13 @@ function mostrarExito(titulo = "Operación realizada", texto = "") {
   });
 }
 
-function mostrarError(titulo = "Ocurrió un error", texto = "") {
+/**
+ * Muestra una notificación de error.
+ */
+export function mostrarError(
+  titulo = "Ocurrió un error",
+  texto = ""
+) {
   return Swal.fire({
     icon: "error",
     title: titulo,
@@ -20,8 +33,14 @@ function mostrarError(titulo = "Ocurrió un error", texto = "") {
   });
 }
 
-function confirmarEliminacion(elemento = "este registro") {
-  return Swal.fire({
+/**
+ * Solicita confirmación antes de eliminar un registro.
+ * Retorna true si el usuario confirma; false en caso contrario.
+ */
+export async function confirmarEliminacion(
+  elemento = "este registro"
+) {
+  const resultado = await Swal.fire({
     title: "¿Eliminar registro?",
     text: `Se eliminará ${elemento}. Esta acción no se puede deshacer.`,
     icon: "warning",
@@ -30,11 +49,18 @@ function confirmarEliminacion(elemento = "este registro") {
     cancelButtonText: "Cancelar",
     confirmButtonColor: "#dc3545",
     cancelButtonColor: "#6c757d"
-  }).then((resultado) => resultado.isConfirmed);
+  });
+
+  return resultado.isConfirmed;
 }
 
-function confirmarAprobacion(aspirante = "este aspirante") {
-  return Swal.fire({
+/**
+ * Solicita confirmación para aprobar un aspirante.
+ */
+export async function confirmarAprobacion(
+  aspirante = "este aspirante"
+) {
+  const resultado = await Swal.fire({
     title: "¿Aprobar aspirante?",
     text: `Se aprobará a ${aspirante}.`,
     icon: "question",
@@ -43,11 +69,18 @@ function confirmarAprobacion(aspirante = "este aspirante") {
     cancelButtonText: "Cancelar",
     confirmButtonColor: "#198754",
     cancelButtonColor: "#6c757d"
-  }).then((resultado) => resultado.isConfirmed);
+  });
+
+  return resultado.isConfirmed;
 }
 
-function confirmarRechazo(aspirante = "este aspirante") {
-  return Swal.fire({
+/**
+ * Solicita confirmación para rechazar un aspirante.
+ */
+export async function confirmarRechazo(
+  aspirante = "este aspirante"
+) {
+  const resultado = await Swal.fire({
     title: "¿Rechazar aspirante?",
     text: `Se rechazará a ${aspirante}.`,
     icon: "warning",
@@ -56,11 +89,7 @@ function confirmarRechazo(aspirante = "este aspirante") {
     cancelButtonText: "Cancelar",
     confirmButtonColor: "#dc3545",
     cancelButtonColor: "#6c757d"
-  }).then((resultado) => resultado.isConfirmed);
-}
+  });
 
-window.mostrarExito = mostrarExito;
-window.mostrarError = mostrarError;
-window.confirmarEliminacion = confirmarEliminacion;
-window.confirmarAprobacion = confirmarAprobacion;
-window.confirmarRechazo = confirmarRechazo;
+  return resultado.isConfirmed;
+}
