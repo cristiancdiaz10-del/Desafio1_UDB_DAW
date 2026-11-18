@@ -1,4 +1,3 @@
-
 // ============================================
 // VALIDACIONES Y UTILIDADES DEL SISTEMA
 // ============================================
@@ -77,15 +76,23 @@ export function validarNIT(nit) {
 // Normalizar documentos de identidad
 // ============================================
 export function normalizarDocumento(documento) {
-    return String(documento ?? "").replace(/[\s-]/g, "");
-} // Elimina guiones y espacios
+    if (typeof documento !== "string") {
+        return "";
+    }
 
+    // Eliminar espacios y guiones
+    return documento.replace(/[\s-]/g, "");
+}
 
 // ============================================
 // Normalizar correo electrónico
 // ============================================
 export function normalizarCorreo(email) {
-    return String(email ?? "").trim().toLowerCase();
+    if (typeof email !== "string") {
+        return "";
+    }
+
+    return email.trim().toLowerCase();
 }
 
 // ============================================

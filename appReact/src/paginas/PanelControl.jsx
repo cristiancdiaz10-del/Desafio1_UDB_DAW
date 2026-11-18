@@ -1,6 +1,6 @@
-// ==========================================
-// PANEL DE CONTROL - PROTALENTO
-// ==========================================
+ // ==========================================
+ // PANEL DE CONTROL - PROTALENTO
+ // ==========================================
 
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -145,7 +145,7 @@ function PanelControl() {
 
   const descargarPDF = (aspirante) => {
     descargarPerfilPDF(aspirante);
-};
+  };
 
   // ==========================================
   // 7. EXPORTAR CSV
@@ -250,7 +250,10 @@ function PanelControl() {
         />
       )}
 
-      <aside className={`sidebar ${menuAbierto ? "sidebar-abierta" : ""}`} id="panel-menu-lateral">
+      <aside
+        className={`sidebar ${menuAbierto ? "sidebar-abierta" : ""}`}
+        id="panel-menu-lateral"
+      >
 
         <button
           type="button"
@@ -263,7 +266,7 @@ function PanelControl() {
 
         <div>
           <img
-            src="./recursos/logo_AIDEL.png"
+            src="/recursos/logo_AIDEL.png"
             alt="Logo del portal"
             className="logo_convocatorias"
           />
@@ -354,7 +357,10 @@ function PanelControl() {
             aria-expanded={menuAbierto}
             onClick={() => setMenuAbierto((abierto) => !abierto)}
           >
-            <i className={`bi ${menuAbierto ? "bi-x-lg" : "bi-list"}`} aria-hidden="true"></i>
+            <i
+              className={`bi ${menuAbierto ? "bi-x-lg" : "bi-list"}`}
+              aria-hidden="true"
+            ></i>
           </button>
 
           <div className="topbar-user d-flex align-items-center gap-3 ms-auto">
@@ -429,16 +435,17 @@ function PanelControl() {
               </span>
 
               <div className="ms-auto">
-               <FiltrosAspirantes
-               aspirantes={aspirantes}
-               filtroCurso={filtroCurso}
-               setFiltroCurso={(curso) => {
-                 setFiltroCurso(curso);
-                 setFiltroEstado("todos");
-               }}
-              filtroEstado={filtroEstado}
-              setFiltroEstado={setFiltroEstado}
-              />
+
+                <FiltrosAspirantes
+                  aspirantes={aspirantes}
+                  filtroCurso={filtroCurso}
+                  setFiltroCurso={(curso) => {
+                    setFiltroCurso(curso);
+                    setFiltroEstado("todos");
+                  }}
+                  filtroEstado={filtroEstado}
+                  setFiltroEstado={setFiltroEstado}
+                />
 
               </div>
 
