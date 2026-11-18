@@ -19,8 +19,8 @@ function PerfilCandidato() {
                         <div className="col-8 d-flex align-items-center">
                             <div>
                                 <img
-                                    src="recursos/logo_AIDEL.png"
-                                    alt="logo_evaluaciones"
+                                    src="./recursos/logo_AIDEL.png"
+                                    alt="Logo ProTalento"
                                     className="logo_evaluaciones"
                                 />
 

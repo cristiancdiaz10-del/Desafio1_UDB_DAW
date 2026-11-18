@@ -15,7 +15,7 @@ function Index() {
               {/* Logo institucional */}
               <Link to="/" aria-label="Ir al inicio de ProTalento">
                 <img
-                  src="/recursos/logo_AIDEL.png"
+                  src="./recursos/logo_AIDEL.png"
                   alt="Logo de AIDEL"
                   className="logo"
                 />
@@ -76,7 +76,7 @@ function Index() {
           </p>
 
           <img
-            src="/recursos/joven_inicio.png"
+            src="./recursos/joven_inicio.png"
             alt="Joven participante del programa de formación técnica"
             className="imagen_inicio"
           />

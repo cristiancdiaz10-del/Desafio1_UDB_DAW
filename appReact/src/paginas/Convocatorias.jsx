@@ -319,11 +319,11 @@ const eliminarCursoUI = async (id) => {
       <div className="portal">
 
         {/* MENÚ LATERAL */}
-        <aside className="sidebar">
+        <aside className="sidebar sidebar-convocatorias">
 
           <div>
             <img
-              src="recursos/logo_AIDEL.png"
+              src="./recursos/logo_AIDEL.png"
               alt="Logo AIDEL"
               className="logo_convocatorias"
             />
@@ -385,7 +385,7 @@ const eliminarCursoUI = async (id) => {
         {/* CONTENIDO PRINCIPAL */}
         <div className="main-content">
 
-          <header className="topbar">
+          <header className="topbar topbar-convocatorias">
 
             <h1 className="topbar-title">
               Portal del Evaluador
@@ -421,7 +421,7 @@ const eliminarCursoUI = async (id) => {
           <main className="dashboard-container">
 
             {/* GESTIÓN DE CONVOCATORIAS */}
-            <div className="d-flex justify-content-between align-items-center mb-4">
+            <div className="encabezado-gestion d-flex justify-content-between align-items-center mb-4">
 
               <h2 className="dashboard-title mb-0">
                 Gestión de Convocatorias
@@ -460,7 +460,7 @@ const eliminarCursoUI = async (id) => {
 
               </div>
 
-              <div className="table-responsive">
+              <div className="table-responsive tabla-convocatorias-responsive">
 
                 <table className="table align-middle">
 
@@ -555,7 +555,7 @@ const eliminarCursoUI = async (id) => {
             </div>
 
             {/* GESTIÓN DE CURSOS */}
-            <div className="d-flex justify-content-between align-items-center mb-4">
+            <div className="encabezado-gestion d-flex justify-content-between align-items-center mb-4">
 
               <h2 className="dashboard-title mb-0">
                 Gestión de Cursos

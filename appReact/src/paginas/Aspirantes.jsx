@@ -97,13 +97,13 @@ function Aspirantes() {
             {/* MENÚ LATERAL */}
             <aside className="sidebar">
 
-                <div>
-                    <img
-                        src="recursos/logo_AIDEL.png"
-                        alt="Logo dashboard"
-                        className="logo_convocatorias"
-                    />
-                </div>
+        <div>
+          <img
+            src="./recursos/logo_AIDEL.png"
+            alt="Logo AIDEL"
+            className="logo_convocatorias"
+          />
+        </div>
 
                 <div className="sidebar-title">
                     Favoritos

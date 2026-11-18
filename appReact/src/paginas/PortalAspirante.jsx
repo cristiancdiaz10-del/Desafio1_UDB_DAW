@@ -384,19 +384,17 @@ function PortalAspirante() {
     setAlerta(null);
   };
 
-  return (
-    <>
-      {/* NAVBAR / ENCABEZADO */}
-      <header className="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm px-4 py-3">
-        <div className="container-fluid">
-          <div className="d-flex align-items-center gap-2">
-            <div>
-              <img
-                src="recursos/logo_AIDEL.png"
-                alt="logo-portalAspirante"
-                className="logo_portalAspirante"
-              />
-            </div>
+    return (
+        <div className="d-flex flex-column min-vh-100">
+            {/* ENCABEZADO */}
+            <header className="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm px-4 py-3">
+                <div className="container-fluid">
+                    <div className="d-flex align-items-center gap-2">
+                        <img
+                            src="./recursos/logo_AIDEL.png"
+                            alt="Logo ProTalento"
+                            className="logo_portalAspirante"
+                        />
 
             <span className="fs-4 fw-bold text-dark mb-0">
               ProTalento

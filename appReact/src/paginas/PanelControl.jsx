@@ -263,7 +263,7 @@ function PanelControl() {
 
         <div>
           <img
-            src="/recursos/logo_AIDEL.png"
+            src="./recursos/logo_AIDEL.png"
             alt="Logo del portal"
             className="logo_convocatorias"
           />
