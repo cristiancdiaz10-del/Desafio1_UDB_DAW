@@ -83,7 +83,7 @@ function Login() {
               {/* Logo institucional */}
               <Link to="/Index" aria-label="Volver al inicio">
                 <img
-                  src="/recursos/logo_AIDEL.png"
+                  src="./recursos/logo_AIDEL.png"
                   alt="Logo de AIDEL"
                   className="logo"
                 />
@@ -176,7 +176,7 @@ function Login() {
           </p>
 
           <img
-            src="/recursos/joven_inicio.png"
+            src="./recursos/joven_inicio.png"
             alt="Joven participante del programa de formación técnica"
             className="imagen_login"
           />

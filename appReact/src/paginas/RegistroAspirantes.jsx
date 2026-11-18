@@ -274,7 +274,7 @@ function RegistroAspirantes() {
           <div className="encabezado_registro">
             <Link to="/Index" aria-label="Volver al inicio">
               <img
-                src="/recursos/logo_AIDEL.png"
+                src="./recursos/logo_AIDEL.png"
                 alt="Logo AIDEL"
                 className="logo_registro"
               />
@@ -991,7 +991,7 @@ function RegistroAspirantes() {
           </p>
 
           <img
-            src="/recursos/joven_inicio.png"
+            src="./recursos/joven_inicio.png"
             alt="Imagen de joven"
             className="imagen_registro"
           />
