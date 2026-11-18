@@ -35,12 +35,13 @@ export function validarNIT(nit) {
 
 // Normalizacion de DUI o NIT para duplicados
 export function normalizarDocumento(documento) {
-    return documento.replace(/[\s-]/g, ""); // Elimina guiones y espacios
-}
+    return String(documento ?? "").replace(/[\s-]/g, "");
+} // Elimina guiones y espacios
+
 
 // Normalizar correo electrónico
 export function normalizarCorreo(email) {
-    return email.trim().toLowerCase();
+    return String(email ?? "").trim().toLowerCase();
 }
 
 // Validar password

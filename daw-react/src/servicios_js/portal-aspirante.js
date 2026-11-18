@@ -54,8 +54,7 @@ if (typeof protegerVista === 'function') {
 
 
 // Guardar PDF en IndexedDB
-function guardarPDF(email, archivo) {
-
+export function guardarPDF(email, archivo) {
     return new Promise((resolve, reject) => {
 
         const solicitud = indexedDB.open('ProTalentoDB', 1);
@@ -113,8 +112,7 @@ function guardarPDF(email, archivo) {
 }
 
 
-function guardarVideo(email, archivo) {
-
+export function guardarVideo(email, archivo) {
     return new Promise((resolve, reject) => {
 
         const solicitud = indexedDB.open('ProTalentoDB', 1);

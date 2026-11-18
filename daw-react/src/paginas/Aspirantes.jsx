@@ -1,196 +1,335 @@
-import {Link} from "react-router-dom";
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { cerrarSesion, obtenerSesion } from '../servicios_js/autenticaciones';
 
 function Aspirantes() {
-  return (
-    <>
- <div className="portal">
+    const [aspirantes, setAspirantes] = useState([]);
+    const [busqueda, setBusqueda] = useState('');
+    const [usuarioSesion, setUsuarioSesion] = useState(null);
 
-        {/*MENÚ LATERAL**/}
-        <aside className="sidebar">
+    const navigate = useNavigate();
 
-            {/** LOGO **/}
-            <div>
-                <img src="recursos/logo_AIDEL.png"
-                    alt="logo dashboard"
-                    className="logo_convocatorias"/>
-            </div>
- 
-            {/* FAVORITOS */}
-            <div className="sidebar-title">
-                Favoritos
-            </div>
+    // Cargar aspirantes y usuario de la sesión
+    useEffect(() => {
+        try {
+            const usuariosGuardados = JSON.parse(
+                localStorage.getItem('usuarios') || '[]'
+            );
 
-            <ul className="sidebar-menu">
+            const sesion = obtenerSesion();
+            setUsuarioSesion(sesion);
 
-                <li>
-                    <Link to="/PanelControl">
-                        <i className="bi bi-house"></i>
-                        Inicio
-                    </Link>
-                </li>
+            // Filtrar únicamente los aspirantes registrados
+            const listaAspirantes = usuariosGuardados.filter(
+                usuario => usuario.rol === 'usuario'
+            );
 
-                <li>
-                    <Link to="/Aspirantes" className="active">
-                        <i className="bi bi-people"></i>
-                        Aspirantes
-                    </Link>
-                </li>
+            setAspirantes(listaAspirantes);
+        } catch (error) {
+            console.error('Error al cargar aspirantes:', error);
+            setAspirantes([]);
+        }
+    }, []);
 
-            </ul>
+    // Cerrar sesión
+    function handleCerrarSesion() {
+        cerrarSesion();
+        navigate('/Login');
+    }
 
-            {/* DASHBOARDS */}
-            <div className="sidebar-title">
-                Dashboards
-            </div>
+    // Filtrar por nombre o correo
+    const aspirantesFiltrados = aspirantes.filter(aspirante => {
+        const nombre = (
+            aspirante.nombreCompleto ||
+            aspirante.nombre ||
+            ''
+        ).toLowerCase();
 
-            <ul className="sidebar-menu">
+        const correo = (
+            aspirante.email ||
+            aspirante.correo ||
+            ''
+        ).toLowerCase();
 
-                <li>
-                    <Link to="/PanelControl">
-                        <i className="bi bi-pie-chart-fill"></i>
-                        Métricas y reportes
-                    </Link>
-                </li>
+        const textoBusqueda = busqueda.toLowerCase();
 
-            </ul>
+        return (
+            nombre.includes(textoBusqueda) ||
+            correo.includes(textoBusqueda)
+        );
+    });
 
-            {/* MÓDULOS */}
-            <ul className="sidebar-menu">
+    // Obtener el nombre del curso
+    function obtenerNombreCurso(aspirante) {
+        return (
+            aspirante.nombreCurso ||
+            aspirante.curso ||
+            aspirante.cursoSeleccionado ||
+            aspirante.nombreConvocatoria ||
+            'No asignado'
+        );
+    }
 
-                <li>
-                    <Link to="/Aspirantes" className="active">
-                        <i className="bi bi-folder"></i>
-                        Aspirantes
-                        <i className="bi bi-chevron-right ms-auto"></i>
-                    </Link>
-                </li>
+    // Obtener estado del aspirante
+    function obtenerEstado(aspirante) {
+        if (aspirante.estado) {
+            return aspirante.estado;
+        }
 
-                <li>
-                    <Link to="/Convocatorias">
-                        <i className="bi bi-folder"></i>
-                        Convocatorias y Cursos
-                        <i className="bi bi-chevron-right ms-auto"></i>
-                    </Link>
-                </li>
+        if (aspirante.cvAdjuntado && aspirante.videoAdjuntado) {
+            return 'En revisión';
+        }
 
-            </ul>
+        return 'Pendiente';
+    }
 
-        </aside>
+    // Estado de documentos
+    function obtenerDocumentos(aspirante) {
+        const cv = aspirante.cvAdjuntado ? 'CV ✓' : 'CV pendiente';
+        const video = aspirante.videoAdjuntado ? 'Video ✓' : 'Video pendiente';
 
+        return `${cv} | ${video}`;
+    }
 
-        {/* CONTENIDO PRINCIPAL */}
-        <div className="main-content">
+    return (
+        <div className="portal">
 
-            {/* BARRA SUPERIOR */}
-            <header className="topbar">
+            {/* MENÚ LATERAL */}
+            <aside className="sidebar">
 
-                <h1 className="topbar-title">
-                    Portal del evaluador
-                </h1>
-
-                <div className="topbar-user d-flex align-items-center gap-3 ms-auto">
-
-                    {/* BUSCADOR */}
-                    <div className="search-box">
-                        <i className="bi bi-search"></i>
-
-                        <input
-                            type="text"
-                            id="inputBuscarAspirante"
-                            placeholder="Buscar aspirante"/>
-                    </div>
-
-                    {/* USUARIO */}
-                    <span id="lbl-admin-topbar">
-                        Cargando...
-                    </span>
-
-                    <i className="bi bi-person-circle"></i>
-
-                    <button
-                        onclick={cerrarSesion}
-                        className="btn btn-outline-danger btn-sm font-weight-bold">
-                        Cerrar sesión
-                    </button>
-
+                <div>
+                    <img
+                        src="recursos/logo_AIDEL.png"
+                        alt="Logo dashboard"
+                        className="logo_convocatorias"
+                    />
                 </div>
 
-            </header>
+                <div className="sidebar-title">
+                    Favoritos
+                </div>
 
+                <ul className="sidebar-menu">
+                    <li>
+                        <Link to="/PanelControl">
+                            <i className="bi bi-house"></i>
+                            Inicio
+                        </Link>
+                    </li>
 
-            {/* CONTENIDO */}
-            <main className="dashboard-container">
+                    <li>
+                        <Link to="/Aspirantes" className="active">
+                            <i className="bi bi-people"></i>
+                            Aspirantes
+                        </Link>
+                    </li>
+                </ul>
 
-                {/* TABLA DE ASPIRANTES */}
-                <section className="requests-card">
+                <div className="sidebar-title">
+                    Dashboards
+                </div>
 
-                    <div className="requests-header">
+                <ul className="sidebar-menu">
+                    <li>
+                        <Link to="/PanelControl">
+                            <i className="bi bi-pie-chart-fill"></i>
+                            Métricas y reportes
+                        </Link>
+                    </li>
+                </ul>
 
-                        <h3>
-                            Solicitudes
-                        </h3>
+                <ul className="sidebar-menu">
+                    <li>
+                        <Link to="/Aspirantes" className="active">
+                            <i className="bi bi-folder"></i>
+                            Aspirantes
+                            <i className="bi bi-chevron-right ms-auto"></i>
+                        </Link>
+                    </li>
+
+                    <li>
+                        <Link to="/Convocatorias">
+                            <i className="bi bi-folder"></i>
+                            Convocatorias y Cursos
+                            <i className="bi bi-chevron-right ms-auto"></i>
+                        </Link>
+                    </li>
+                </ul>
+
+            </aside>
+
+            {/* CONTENIDO PRINCIPAL */}
+            <div className="main-content">
+
+                {/* BARRA SUPERIOR */}
+                <header className="topbar">
+
+                    <h1 className="topbar-title">
+                        Portal del evaluador
+                    </h1>
+
+                    <div className="topbar-user d-flex align-items-center gap-3 ms-auto">
+
+                        {/* BUSCADOR */}
+                        <div className="search-box">
+                            <i className="bi bi-search"></i>
+
+                            <input
+                                type="text"
+                                placeholder="Buscar aspirante"
+                                value={busqueda}
+                                onChange={(e) => setBusqueda(e.target.value)}
+                            />
+                        </div>
+
+                        {/* USUARIO */}
+                        <span>
+                            {usuarioSesion?.nombre || 'Usuario'}
+                        </span>
+
+                        <i className="bi bi-person-circle"></i>
 
                         <button
-                            className="options-button"
-                            type="button"
-                            aria-label="Más opciones">
-
-                            <i className="bi bi-three-dots"></i>
-
+                            onClick={handleCerrarSesion}
+                            className="btn btn-outline-danger btn-sm font-weight-bold"
+                        >
+                            Cerrar sesión
                         </button>
 
                     </div>
 
-                {/*botones para exportar archivos*/}
-                <div className="d-flex gap-2 flex-wrap">
-                    <button
-                        type="button"
-                        className="btn btn-outline-primary"
-                        onclick="exportarCSVParticipantes()">
-                        <i className="bi bi-filetype-csv"></i>
-                        Descargar CSV
-                    </button>
+                </header>
 
-                    <button
-                        type="button"
-                        className="btn btn-outline-success"
-                        onclick="exportarExcelParticipantes()">
-                        <i className="bi bi-file-earmark-excel"></i>
-                        Descargar Excel
-                    </button>
-                </div>
+                {/* CONTENIDO */}
+                <main className="dashboard-container">
 
-                    <table className="requests-table">
+                    <section className="requests-card">
 
-                        <thead>
+                        <div className="requests-header">
+                            <h3>
+                                Solicitudes
+                            </h3>
 
-                            <tr>
-                                <th>Nombre</th>
-                                <th>Curso</th>
-                                <th>Estado</th>
-                                <th>Documentos</th>
-                                <th>Acciones</th>
-                            </tr>
+                            <button
+                                className="options-button"
+                                type="button"
+                                aria-label="Más opciones"
+                            >
+                                <i className="bi bi-three-dots"></i>
+                            </button>
+                        </div>
 
-                        </thead>
+                        {/* EXPORTACIÓN */}
+                        <div className="d-flex gap-2 flex-wrap mb-3">
 
-                        <tbody id="tablaAspirantesBody">
+                            <button
+                                type="button"
+                                className="btn btn-outline-primary"
+                                disabled
+                                title="Exportación pendiente de migrar a React"
+                            >
+                                <i className="bi bi-filetype-csv"></i>
+                                Descargar CSV
+                            </button>
 
-                            {/*Los aspirantes se cargarán con JavaScript**/}
+                            <button
+                                type="button"
+                                className="btn btn-outline-success"
+                                disabled
+                                title="Exportación pendiente de migrar a React"
+                            >
+                                <i className="bi bi-file-earmark-excel"></i>
+                                Descargar Excel
+                            </button>
 
-                        </tbody>
+                        </div>
 
-                    </table>
+                        {/* TABLA */}
+                        <table className="requests-table">
 
-                </section>
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Curso</th>
+                                    <th>Estado</th>
+                                    <th>Documentos</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
 
-            </main>
+                            <tbody>
+
+                                {aspirantesFiltrados.length > 0 ? (
+
+                                    aspirantesFiltrados.map((aspirante, index) => (
+
+                                        <tr key={aspirante.id || aspirante.email || index}>
+
+                                            <td>
+                                                {aspirante.nombreCompleto ||
+                                                    aspirante.nombre ||
+                                                    'Sin nombre'}
+
+                                                <br />
+
+                                                <small>
+                                                    {aspirante.email ||
+                                                        aspirante.correo ||
+                                                        ''}
+                                                </small>
+                                            </td>
+
+                                            <td>
+                                                {obtenerNombreCurso(aspirante)}
+                                            </td>
+
+                                            <td>
+                                                {obtenerEstado(aspirante)}
+                                            </td>
+
+                                            <td>
+                                                {obtenerDocumentos(aspirante)}
+                                            </td>
+
+                                            <td>
+                                                —
+                                            </td>
+
+                                        </tr>
+
+                                    ))
+
+                                ) : (
+
+                                    <tr>
+                                        <td colSpan="5" className="text-center">
+                                            {busqueda
+                                                ? 'No se encontraron aspirantes con esa búsqueda.'
+                                                : 'No hay aspirantes registrados.'}
+                                        </td>
+                                    </tr>
+
+                                )}
+
+                            </tbody>
+
+                        </table>
+
+                        {/* TOTAL */}
+                        <div className="mt-3">
+                            <strong>
+                                Total de aspirantes: {aspirantesFiltrados.length}
+                            </strong>
+                        </div>
+
+                    </section>
+
+                </main>
+
+            </div>
 
         </div>
-
-    </div>
-    </>
-  )
+    );
 }
 
-export default Aspirantes
+export default Aspirantes;
