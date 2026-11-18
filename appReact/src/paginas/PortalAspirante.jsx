@@ -1,388 +1,321 @@
-import { useState, useEffect, useRef } from "react";
-import { cerrarSesion } from "../servicios_js/autenticaciones.js";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
+
+import {
+    obtenerPerfilAspirante,
+    obtenerProgreso,
+    obtenerMensajeResultado,
+    obtenerEstadoEntrega,
+    validarArchivo,
+    guardarEntregaEtapa2
+} from "../servicios_js/portal-aspirante";
+
+import {
+    obtenerSesion,
+    cerrarSesion,
+    protegerVista
+} from "../servicios_js/autenticaciones";
+
+const ETAPAS = [
+    "Registro",
+    "Envío de CV y Vídeo",
+    "Validación",
+    "Entrevista virtual",
+    "Pruebas Psicométricas",
+    "Prueba Técnica"
+];
 
 function PortalAspirante() {
-  const [sesion, setSesion] = useState(null);
-  const [archivoCV, setArchivoCV] = useState(null);
-  const [archivoVideo, setArchivoVideo] = useState(null);
-  const [cvEnviado, setCvEnviado] = useState(false);
-  const [videoEnviado, setVideoEnviado] = useState(false);
-  const [etapaActual, setEtapaActual] = useState(2);
-  const [alerta, setAlerta] = useState(null);
-  const [guardando, setGuardando] = useState(false);
+    const navigate = useNavigate();
 
-  const inputCVRef = useRef(null);
-  const inputVideoRef = useRef(null);
+    const inputCVRef = useRef(null);
+    const inputVideoRef = useRef(null);
 
-  // Cargar sesión y datos del aspirante
-  useEffect(() => {
-    try {
-      const sesionGuardada = JSON.parse(
-        localStorage.getItem("sesion")
-      );
+    const [sesion] = useState(() => obtenerSesion());
 
-      setSesion(sesionGuardada);
+    const [aspirante, setAspirante] = useState(
+        () => obtenerPerfilAspirante(sesion)
+    );
 
-      if (!sesionGuardada) return;
+    const [archivoCV, setArchivoCV] = useState(null);
+    const [archivoVideo, setArchivoVideo] = useState(null);
 
-      const usuarios = JSON.parse(
-        localStorage.getItem("usuarios") || "[]"
-      );
+    const [guardandoCV, setGuardandoCV] = useState(false);
+    const [guardandoVideo, setGuardandoVideo] = useState(false);
 
-      const perfil = usuarios.find(
-        (u) =>
-          u.email === sesionGuardada.email ||
-          u.id === sesionGuardada.id
-      );
+    const [alerta, setAlerta] = useState(null);
 
-      if (perfil) {
-        setCvEnviado(Boolean(perfil.cvAdjuntado));
-        setVideoEnviado(Boolean(perfil.videoAdjuntado));
+    const rolesPermitidos = ["usuario", "administrador", "superadministrador"];
 
-        setEtapaActual(
-          perfil.etapaActual ||
-          (perfil.cvAdjuntado && perfil.videoAdjuntado ? 3 : 2)
-        );
-      }
-    } catch (error) {
-      console.error("Error al cargar el portal:", error);
+    const accesoAutorizado = Boolean(
+        sesion &&
+        protegerVista(rolesPermitidos)
+    );
+
+    const nombreUsuario =
+        sesion?.nombreCompleto ||
+        sesion?.nombre ||
+        "Aspirante";
+
+    const progreso = obtenerProgreso(aspirante);
+    const estadoEntrega = obtenerEstadoEntrega(aspirante);
+    const resultadoFinal = obtenerMensajeResultado(aspirante);
+
+    const procesoFinalizado = Boolean(aspirante?.resultadoFinal);
+
+    useEffect(() => {
+        if (!accesoAutorizado) {
+            navigate("/Login", { replace: true });
+        }
+    }, [accesoAutorizado, navigate]);
+
+    useEffect(() => {
+        if (!sesion || sesion.rol !== "usuario") return;
+
+        function actualizarDesdeStorage() {
+            setAspirante(obtenerPerfilAspirante(sesion));
+        }
+
+        window.addEventListener("storage", actualizarDesdeStorage);
+
+        return () => {
+            window.removeEventListener("storage", actualizarDesdeStorage);
+        };
+    }, [sesion]);
+
+    function mostrarAlerta(tipo, mensaje) {
+        setAlerta({ tipo, mensaje });
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
     }
-  }, []);
 
-  // Cerrar sesión
-  const handleCerrarSesion = () => {
-    cerrarSesion();
-    window.location.href = "/login";
-  };
+    function seleccionarArchivo(tipo, archivo) {
+        if (!archivo) return;
 
-  // Mostrar alerta en pantalla
-  const mostrarAlerta = (mensaje, tipo = "success") => {
-    setAlerta({ mensaje, tipo });
+        const validacion = validarArchivo(tipo, archivo);
 
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  };
+        if (!validacion.correcto) {
+            if (tipo === "cv") {
+                setArchivoCV(null);
 
-  // Guardar archivo en IndexedDB
-  const guardarArchivoIndexedDB = (almacen, email, archivo) => {
-    return new Promise((resolve, reject) => {
-      const solicitud = indexedDB.open("ProTalentoDB", 1);
+                if (inputCVRef.current) {
+                    inputCVRef.current.value = "";
+                }
+            } else {
+                setArchivoVideo(null);
 
-      solicitud.onupgradeneeded = (evento) => {
-        const db = evento.target.result;
+                if (inputVideoRef.current) {
+                    inputVideoRef.current.value = "";
+                }
+            }
 
-        if (!db.objectStoreNames.contains("curriculums")) {
-          db.createObjectStore("curriculums", {
-            keyPath: "email",
-          });
+            Swal.fire({
+                icon: "warning",
+                title: "Archivo no válido",
+                text: validacion.mensaje,
+                confirmButtonText: "Aceptar"
+            });
+
+            return;
         }
 
-        if (!db.objectStoreNames.contains("videos")) {
-          db.createObjectStore("videos", {
-            keyPath: "email",
-          });
+        if (tipo === "cv") {
+            setArchivoCV(archivo);
+        } else {
+            setArchivoVideo(archivo);
         }
-      };
 
-      solicitud.onerror = () => {
-        reject(solicitud.error);
-      };
+        mostrarAlerta(
+            "info",
+            `Archivo seleccionado: ${archivo.name}. Recuerda presionar Enviar para guardarlo.`
+        );
+    }
 
-      solicitud.onsuccess = () => {
-        const db = solicitud.result;
+    function manejarCambioCV(event) {
+        seleccionarArchivo("cv", event.target.files?.[0]);
+    }
 
-        if (!db.objectStoreNames.contains(almacen)) {
-          db.close();
-          reject(new Error(`No existe el almacén ${almacen}.`));
-          return;
+    function manejarCambioVideo(event) {
+        seleccionarArchivo("video", event.target.files?.[0]);
+    }
+
+    function cancelarSeleccion(tipo) {
+        if (tipo === "cv") {
+            setArchivoCV(null);
+
+            if (inputCVRef.current) {
+                inputCVRef.current.value = "";
+            }
+        } else {
+            setArchivoVideo(null);
+
+            if (inputVideoRef.current) {
+                inputVideoRef.current.value = "";
+            }
         }
+
+        setAlerta(null);
+    }
+
+    async function enviarArchivo(tipo) {
+        if (!aspirante?.email) {
+            mostrarAlerta(
+                "danger",
+                "No se pudo identificar tu expediente. Cierra sesión e ingresa nuevamente."
+            );
+            return;
+        }
+
+        const archivo = tipo === "cv" ? archivoCV : archivoVideo;
+
+        if (!archivo) {
+            mostrarAlerta(
+                "warning",
+                tipo === "cv"
+                    ? "Debes seleccionar tu currículum antes de enviarlo."
+                    : "Debes seleccionar tu vídeo antes de enviarlo."
+            );
+            return;
+        }
+
+        if (tipo === "cv") {
+            setGuardandoCV(true);
+        } else {
+            setGuardandoVideo(true);
+        }
+
+        setAlerta(null);
 
         try {
-          const transaccion = db.transaction(
-            almacen,
-            "readwrite"
-          );
+            const resultado = await guardarEntregaEtapa2(
+                aspirante.email,
+                tipo,
+                archivo
+            );
 
-          const store = transaccion.objectStore(almacen);
+            if (!resultado.correcto) {
+                mostrarAlerta("danger", resultado.mensaje);
+                return;
+            }
 
-          store.put({
-            email,
-            nombreArchivo: archivo.name,
-            tipoArchivo: archivo.type,
-            tamano: archivo.size,
-            fecha: new Date().toISOString(),
-            archivo,
-          });
+            setAspirante(resultado.aspirante);
 
-          transaccion.oncomplete = () => {
-            db.close();
-            resolve();
-          };
+            if (tipo === "cv") {
+                setArchivoCV(null);
 
-          transaccion.onerror = () => {
-            db.close();
-            reject(transaccion.error);
-          };
+                if (inputCVRef.current) {
+                    inputCVRef.current.value = "";
+                }
+            } else {
+                setArchivoVideo(null);
 
-          transaccion.onabort = () => {
-            db.close();
-            reject(transaccion.error);
-          };
+                if (inputVideoRef.current) {
+                    inputVideoRef.current.value = "";
+                }
+            }
+
+            await Swal.fire({
+                icon: "success",
+                title: "Entrega registrada",
+                text: resultado.mensaje,
+                confirmButtonText: "Aceptar"
+            });
+
+            if (
+                resultado.aspirante.cvAdjuntado &&
+                resultado.aspirante.videoAdjuntado
+            ) {
+                mostrarAlerta(
+                    "success",
+                    "¡Excelente! Has completado el envío de tu CV y vídeo. Tu expediente avanzó a la etapa de Validación."
+                );
+            } else {
+                mostrarAlerta(
+                    "success",
+                    `${resultado.mensaje} Recuerda completar también el otro archivo para avanzar a la siguiente etapa.`
+                );
+            }
         } catch (error) {
-          db.close();
-          reject(error);
+            console.error("Error al enviar archivo:", error);
+
+            mostrarAlerta(
+                "danger",
+                error.message || "Ocurrió un error al enviar el archivo."
+            );
+        } finally {
+            if (tipo === "cv") {
+                setGuardandoCV(false);
+            } else {
+                setGuardandoVideo(false);
+            }
         }
-      };
-    });
-  };
-
-  // Seleccionar y validar CV
-  const handleSeleccionCV = (evento) => {
-    const archivo = evento.target.files[0];
-
-    if (!archivo) {
-      setArchivoCV(null);
-      return;
     }
 
-    if (
-      archivo.type !== "application/pdf" &&
-      !archivo.name.toLowerCase().endsWith(".pdf")
-    ) {
-      mostrarAlerta(
-        "El currículum debe estar en formato PDF.",
-        "danger"
-      );
-
-      evento.target.value = "";
-      setArchivoCV(null);
-      return;
+    function cerrarSesionUsuario() {
+        cerrarSesion();
+        navigate("/Login", { replace: true });
     }
 
-    if (archivo.size > 5 * 1024 * 1024) {
-      mostrarAlerta(
-        "El currículum no puede superar los 5 MB.",
-        "danger"
-      );
+    function obtenerClaseEtapa(numeroEtapa) {
+        if (numeroEtapa < progreso) {
+            return "bg-primary text-white";
+        }
 
-      evento.target.value = "";
-      setArchivoCV(null);
-      return;
+        if (numeroEtapa === progreso) {
+            return "bg-white border border-primary text-primary";
+        }
+
+        return "bg-secondary-subtle text-secondary";
     }
 
-    setArchivoCV(archivo);
+    function obtenerEtiquetaEtapa(numeroEtapa) {
+        if (numeroEtapa <= progreso) {
+            return "badge bg-primary mt-2 rounded-pill px-3 py-1";
+        }
 
-    mostrarAlerta(
-      `PDF seleccionado correctamente: ${archivo.name}`,
-      "info"
-    );
-  };
-
-  // Seleccionar y validar video
-  const handleSeleccionVideo = (evento) => {
-    const archivo = evento.target.files[0];
-
-    if (!archivo) {
-      setArchivoVideo(null);
-      return;
+        return "badge bg-secondary-subtle text-secondary mt-2 rounded-pill px-3 py-1";
     }
 
-    const nombre = archivo.name.toLowerCase();
+    function nombreArchivo(tipo) {
+        if (tipo === "cv") {
+            return archivoCV?.name ||
+                aspirante?.cvNombreArchivo ||
+                (aspirante?.cvAdjuntado ? "CV enviado" : "Ningún archivo seleccionado");
+        }
 
-    if (!nombre.endsWith(".mp4") && !nombre.endsWith(".mov")) {
-      mostrarAlerta(
-        "El vídeo debe estar en formato MP4 o MOV.",
-        "danger"
-      );
-
-      evento.target.value = "";
-      setArchivoVideo(null);
-      return;
+        return archivoVideo?.name ||
+            aspirante?.videoNombreArchivo ||
+            (aspirante?.videoAdjuntado ? "Vídeo enviado" : "Ningún archivo seleccionado");
     }
 
-    if (archivo.size > 50 * 1024 * 1024) {
-      mostrarAlerta(
-        "El vídeo no puede superar los 50 MB.",
-        "danger"
-      );
-
-      evento.target.value = "";
-      setArchivoVideo(null);
-      return;
+    if (!accesoAutorizado) {
+        return null;
     }
 
-    setArchivoVideo(archivo);
-
-    mostrarAlerta(
-      `Vídeo seleccionado correctamente: ${archivo.name}`,
-      "info"
-    );
-  };
-
-  // Actualizar información del usuario en localStorage
-  const actualizarUsuario = (tipo) => {
-    const usuarios = JSON.parse(
-      localStorage.getItem("usuarios") || "[]"
-    );
-
-    const indice = usuarios.findIndex(
-      (u) =>
-        u.email === sesion.email ||
-        u.id === sesion.id
-    );
-
-    if (indice === -1) {
-      throw new Error("No se encontró el perfil del aspirante.");
+    if (!aspirante) {
+        return (
+            <main className="container py-5">
+                <div className="alert alert-warning text-center">
+                    <h4>No se encontró tu expediente</h4>
+                    <p>
+                        La sesión está activa, pero no se encontró un registro
+                        de aspirante asociado a tu cuenta.
+                    </p>
+                    <button
+                        type="button"
+                        className="btn btn-primary"
+                        onClick={cerrarSesionUsuario}
+                    >
+                        Cerrar sesión
+                    </button>
+                </div>
+            </main>
+        );
     }
-
-    if (tipo === "cv") {
-      usuarios[indice].cvAdjuntado = true;
-    }
-
-    if (tipo === "video") {
-      usuarios[indice].videoAdjuntado = true;
-    }
-
-    const ambosAdjuntos =
-      usuarios[indice].cvAdjuntado &&
-      usuarios[indice].videoAdjuntado;
-
-    if (ambosAdjuntos) {
-      usuarios[indice].etapaActual = 3;
-      usuarios[indice].estado = "En revisión";
-
-      setEtapaActual(3);
-    }
-
-    localStorage.setItem(
-      "usuarios",
-      JSON.stringify(usuarios)
-    );
-
-    return ambosAdjuntos;
-  };
-
-  // Enviar CV
-  const handleEnviarCV = async () => {
-    if (!sesion) {
-      mostrarAlerta(
-        "No se encontró una sesión activa.",
-        "danger"
-      );
-      return;
-    }
-
-    if (!archivoCV) {
-      mostrarAlerta(
-        "Primero debes seleccionar tu currículum PDF.",
-        "warning"
-      );
-      return;
-    }
-
-    setGuardando(true);
-
-    try {
-      await guardarArchivoIndexedDB(
-        "curriculums",
-        sesion.email,
-        archivoCV
-      );
-
-      const ambosAdjuntos = actualizarUsuario("cv");
-
-      setCvEnviado(true);
-
-      mostrarAlerta(
-        ambosAdjuntos
-          ? "¡CV enviado correctamente! Ya entregaste ambos documentos. Tu expediente pasó a revisión."
-          : "¡CV enviado con éxito! Tu expediente ha sido actualizado.",
-        "success"
-      );
-    } catch (error) {
-      console.error("Error al guardar CV:", error);
-
-      mostrarAlerta(
-        "No se pudo guardar el currículum. Inténtalo nuevamente.",
-        "danger"
-      );
-    } finally {
-      setGuardando(false);
-    }
-  };
-
-  // Enviar video
-  const handleEnviarVideo = async () => {
-    if (!sesion) {
-      mostrarAlerta(
-        "No se encontró una sesión activa.",
-        "danger"
-      );
-      return;
-    }
-
-    if (!archivoVideo) {
-      mostrarAlerta(
-        "Primero debes seleccionar un vídeo.",
-        "warning"
-      );
-      return;
-    }
-
-    setGuardando(true);
-
-    try {
-      await guardarArchivoIndexedDB(
-        "videos",
-        sesion.email,
-        archivoVideo
-      );
-
-      const ambosAdjuntos = actualizarUsuario("video");
-
-      setVideoEnviado(true);
-
-      mostrarAlerta(
-        ambosAdjuntos
-          ? "¡Vídeo enviado correctamente! Ya entregaste ambos documentos. Tu expediente pasó a revisión."
-          : "¡Vídeo enviado con éxito! Tu expediente ha sido actualizado.",
-        "success"
-      );
-    } catch (error) {
-      console.error("Error al guardar vídeo:", error);
-
-      mostrarAlerta(
-        "No se pudo guardar el vídeo. Inténtalo nuevamente.",
-        "danger"
-      );
-    } finally {
-      setGuardando(false);
-    }
-  };
-
-  // Cancelar selección CV
-  const handleCancelarCV = () => {
-    setArchivoCV(null);
-
-    if (inputCVRef.current) {
-      inputCVRef.current.value = "";
-    }
-
-    setAlerta(null);
-  };
-
-  // Cancelar selección video
-  const handleCancelarVideo = () => {
-    setArchivoVideo(null);
-
-    if (inputVideoRef.current) {
-      inputVideoRef.current.value = "";
-    }
-
-    setAlerta(null);
-  };
 
     return (
         <div className="d-flex flex-column min-vh-100">
@@ -391,340 +324,388 @@ function PortalAspirante() {
                 <div className="container-fluid">
                     <div className="d-flex align-items-center gap-2">
                         <img
-                            src="./recursos/logo_AIDEL.png"
+                            src="/recursos/logo_AIDEL.png"
                             alt="Logo ProTalento"
                             className="logo_portalAspirante"
                         />
 
-            <span className="fs-4 fw-bold text-dark mb-0">
-              ProTalento
-            </span>
-          </div>
-
-          {/* Usuario autenticado + botón salir */}
-          <div className="d-flex align-items-center gap-3">
-            <span
-              id="lbl-usuario"
-              className="fw-semibold text-secondary small"
-            >
-              Bienvenido, {sesion?.nombre || "Aspirante"}
-            </span>
-
-            <div className="topbar-user">
-              <span id="lbl-admin-topbar"></span>
-              <i className="bi bi-person-circle"></i>
-            </div>
-
-            <button
-              type="button"
-              onClick={handleCerrarSesion}
-              className="btn btn-outline-danger btn-sm font-weight-bold"
-            >
-              Cerrar sesión
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* CONTENIDO PRINCIPAL */}
-      <main className="container my-5 flex-grow-1">
-
-        {/* Mensaje de motivación */}
-        <div className="text-center mb-5">
-          <p className="text-muted fs-5 max-w-75 mx-auto">
-            ¡No te detengas ahora! Estás cada vez más cerca de tu meta.
-            Completa tu proceso de selección y demuestra tu potencial.
-          </p>
-        </div>
-
-        {/* Línea de tiempo */}
-        <div className="mb-5 overflow-auto pb-3">
-          <div className="d-flex justify-content-between align-items-center position-relative min-w-750px px-3">
-
-            {/* Línea de fondo */}
-            <div
-              className="position-absolute w-100 bg-secondary-subtle"
-              style={{
-                height: "4px",
-                top: "18px",
-                zIndex: 0,
-                left: "0",
-              }}
-            ></div>
-
-            {/* Línea de progreso */}
-            <div
-              id="linea-progreso"
-              className="position-absolute bg-primary"
-              style={{
-                height: "4px",
-                top: "18px",
-                zIndex: 0,
-                left: "0",
-                width: etapaActual >= 3 ? "20%" : "0%",
-              }}
-            ></div>
-
-            {/* Paso 1 */}
-            <div className="text-center z-1">
-              <div className="step-badge bg-primary text-white mx-auto shadow-sm">
-                ✓
-              </div>
-
-              <span className="badge bg-primary mt-2 rounded-pill px-3 py-1">
-                Registro
-              </span>
-            </div>
-
-            {/* Paso 2 */}
-            <div className="text-center z-1">
-              <div
-                className={`step-badge ${
-                  etapaActual >= 3
-                    ? "bg-primary text-white"
-                    : "bg-white border border-primary text-primary"
-                } mx-auto shadow-sm`}
-              >
-                {etapaActual >= 3 ? "✓" : "2"}
-              </div>
-
-              <span className="badge bg-primary mt-2 rounded-pill px-3 py-1">
-                Envío de CV y Vídeo
-              </span>
-            </div>
-
-            {/* Paso 3 */}
-            <div className="text-center z-1">
-              <div
-                className={`step-badge ${
-                  etapaActual >= 3
-                    ? "bg-primary text-white"
-                    : "bg-secondary-subtle text-secondary"
-                } mx-auto`}
-              >
-                {etapaActual >= 3 ? "✓" : "3"}
-              </div>
-
-              <span
-                className={`badge mt-2 rounded-pill px-3 py-1 ${
-                  etapaActual >= 3
-                    ? "bg-primary text-white"
-                    : "bg-secondary-subtle text-secondary"
-                }`}
-              >
-                Validación
-              </span>
-            </div>
-
-            {/* Paso 4 */}
-            <div className="text-center z-1">
-              <div className="step-badge bg-secondary-subtle text-secondary mx-auto">
-                4
-              </div>
-
-              <span className="badge bg-secondary-subtle text-secondary mt-2 rounded-pill px-3 py-1">
-                Entrevista virtual
-              </span>
-            </div>
-
-            {/* Paso 5 */}
-            <div className="text-center z-1">
-              <div className="step-badge bg-secondary-subtle text-secondary mx-auto">
-                5
-              </div>
-
-              <span className="badge bg-secondary-subtle text-secondary mt-2 rounded-pill px-3 py-1">
-                Pruebas Psicométricas
-              </span>
-            </div>
-
-            {/* Paso 6 */}
-            <div className="text-center z-1">
-              <div className="step-badge bg-secondary-subtle text-secondary mx-auto">
-                6
-              </div>
-
-              <span className="badge bg-secondary-subtle text-secondary mt-2 rounded-pill px-3 py-1">
-                Prueba Técnica
-              </span>
-            </div>
-
-          </div>
-        </div>
-
-        {/* Alerta dinámica */}
-        {alerta && (
-          <div
-            className={`alert alert-${alerta.tipo} text-center rounded-3 mb-4`}
-            role="alert"
-          >
-            {alerta.mensaje}
-          </div>
-        )}
-
-        {/* CARDS DE CARGA */}
-        <div className="row g-4">
-
-          {/* CARD CV */}
-          <div className="col-md-6">
-            <div className="card bg-custom-card border-info-subtle rounded-4 h-100 p-4 d-flex flex-column justify-content-between shadow-sm">
-              <div>
-                <h2 className="h5 fw-bold text-dark mb-1">
-                  Adjuntar Currículum Vitae (PDF)
-                </h2>
-
-                <p className="text-muted small">
-                  Por favor adjunta tu currículum en formato PDF.
-                  Asegúrate de que el archivo no supere los 5 MB.
-                </p>
-
-                <div className="border border-2 border-dashed border-info rounded-4 p-4 text-center bg-white bg-opacity-50 mt-4">
-                  <div className="fs-1 text-primary mb-2">
-                    ☁️
-                  </div>
-
-                  <p className="fw-bold text-dark small mb-0">
-                    Arrastra tu archivo aquí o explora
-                  </p>
-
-                  <p className="text-muted text-xs mb-3">
-                    Formato: .pdf &amp; Tamaño máx.: 5 MB
-                  </p>
-
-                  <label className="btn btn-naranja btn-sm px-4 rounded-3 shadow-sm cursor-pointer">
-                    Buscar Archivo
-
-                    <input
-                      type="file"
-                      id="inputCV"
-                      accept=".pdf,application/pdf"
-                      className="d-none"
-                      ref={inputCVRef}
-                      onChange={handleSeleccionCV}
-                    />
-                  </label>
-
-                  {archivoCV && (
-                    <div className="mt-3 text-success small fw-semibold">
-                      📄 {archivoCV.name}
+                        <span className="fs-4 fw-bold text-dark mb-0">
+                            ProTalento
+                        </span>
                     </div>
-                  )}
 
-                  {cvEnviado && !archivoCV && (
-                    <div className="mt-3 text-success small fw-semibold">
-                      ✓ CV enviado anteriormente
+                    <div className="d-flex align-items-center gap-3">
+                        <span className="fw-semibold text-secondary small">
+                            Bienvenido, {nombreUsuario}
+                        </span>
+
+                        <div className="topbar-user">
+                            <i className="bi bi-person-circle fs-4"></i>
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={cerrarSesionUsuario}
+                            className="btn btn-outline-danger btn-sm fw-bold"
+                        >
+                            Cerrar sesión
+                        </button>
                     </div>
-                  )}
                 </div>
-              </div>
+            </header>
 
-              <div className="row g-2 mt-4">
-                <div className="col-6">
-                  <button
-                    type="button"
-                    onClick={handleCancelarCV}
-                    className="btn btn-light border w-100 rounded-3 text-secondary fw-bold btn-sm"
-                  >
-                    Cancelar
-                  </button>
+            {/* CONTENIDO PRINCIPAL */}
+            <main className="container my-5 flex-grow-1">
+
+                {/* MENSAJE DE MOTIVACIÓN */}
+                <div className="text-center mb-5">
+                    <p className="text-muted fs-5 mx-auto" style={{ maxWidth: "850px" }}>
+                        ¡No te detengas ahora! Estás cada vez más cerca de tu meta.
+                        Completa tu proceso de selección y demuestra tu potencial.
+                    </p>
                 </div>
 
-                <div className="col-6">
-                  <button
-                    type="button"
-                    onClick={handleEnviarCV}
-                    disabled={guardando}
-                    className="btn btn-primary w-100 rounded-3 fw-bold btn-sm shadow-sm"
-                  >
-                    {guardando ? "Guardando..." : "Enviar"}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+                {/* PROGRESO DEL PROCESO */}
+                <section className="mb-5 overflow-auto pb-3">
+                    <div
+                        className="d-flex justify-content-between align-items-start position-relative px-3"
+                        style={{ minWidth: "750px" }}
+                    >
+                        <div
+                            className="position-absolute bg-secondary-subtle"
+                            style={{
+                                height: "4px",
+                                top: "18px",
+                                left: "0",
+                                width: "100%",
+                                zIndex: 0
+                            }}
+                        />
 
-          {/* CARD VIDEO */}
-          <div className="col-md-6">
-            <div className="card bg-custom-card border-info-subtle rounded-4 h-100 p-4 d-flex flex-column justify-content-between shadow-sm">
-              <div>
-                <h2 className="h5 fw-bold text-dark mb-1">
-                  Vídeo de Presentación
-                </h2>
+                        <div
+                            className="position-absolute bg-primary"
+                            style={{
+                                height: "4px",
+                                top: "18px",
+                                left: "0",
+                                width: `${((progreso - 1) / 5) * 100}%`,
+                                zIndex: 0,
+                                transition: "width 0.3s ease"
+                            }}
+                        />
 
-                <p className="text-muted small">
-                  Explica brevemente por qué deseas participar en el curso
-                  de formación técnica de AIDEL.
-                </p>
+                        {ETAPAS.map((etapa, index) => {
+                            const numero = index + 1;
 
-                <div className="border border-2 border-dashed border-info rounded-4 p-4 text-center bg-white bg-opacity-50 mt-4">
-                  <div className="fs-1 text-primary mb-2">
-                    ☁️
-                  </div>
+                            return (
+                                <div
+                                    key={etapa}
+                                    className="text-center position-relative"
+                                    style={{ zIndex: 1, width: "16.66%" }}
+                                >
+                                    <div
+                                        className={`step-badge mx-auto shadow-sm ${obtenerClaseEtapa(numero)}`}
+                                    >
+                                        {numero < progreso ? "✓" : numero}
+                                    </div>
 
-                  <p className="fw-bold text-dark small mb-0">
-                    Arrastra tu archivo de vídeo aquí o explora
-                  </p>
-
-                  <p className="text-muted text-xs mb-3">
-                    Formatos: .mp4, .mov &amp; Tamaño máx.: 50 MB
-                  </p>
-
-                  <label className="btn btn-naranja btn-sm px-4 rounded-3 shadow-sm cursor-pointer">
-                    Buscar Vídeo
-
-                    <input
-                      type="file"
-                      id="inputVideo"
-                      accept=".mp4,.mov,video/mp4,video/quicktime"
-                      className="d-none"
-                      ref={inputVideoRef}
-                      onChange={handleSeleccionVideo}
-                    />
-                  </label>
-
-                  {archivoVideo && (
-                    <div className="mt-3 text-success small fw-semibold">
-                      🎥 {archivoVideo.name}
+                                    <span className={obtenerEtiquetaEtapa(numero)}>
+                                        {etapa}
+                                    </span>
+                                </div>
+                            );
+                        })}
                     </div>
-                  )}
+                </section>
 
-                  {videoEnviado && !archivoVideo && (
-                    <div className="mt-3 text-success small fw-semibold">
-                      ✓ Vídeo enviado anteriormente
+                {/* INDICADOR DE ETAPA */}
+                <div className="text-center mb-4">
+                    <span className="badge bg-primary fs-6 px-3 py-2">
+                        Etapa {progreso} de 6
+                    </span>
+                </div>
+
+                {/* ALERTAS */}
+                {alerta && (
+                    <div
+                        className={`alert alert-${alerta.tipo} text-center rounded-3 mb-4`}
+                        role="alert"
+                    >
+                        {alerta.mensaje}
+
+                        <button
+                            type="button"
+                            className="btn-close float-end"
+                            aria-label="Cerrar"
+                            onClick={() => setAlerta(null)}
+                        />
                     </div>
-                  )}
-                </div>
-              </div>
+                )}
 
-              <div className="row g-2 mt-4">
-                <div className="col-6">
-                  <button
-                    type="button"
-                    onClick={handleCancelarVideo}
-                    className="btn btn-light border w-100 rounded-3 text-secondary fw-bold btn-sm"
-                  >
-                    Cancelar
-                  </button>
-                </div>
+                {resultadoFinal && (
+                    <div
+                        className={`alert alert-${resultadoFinal.tipo} text-center rounded-3 mb-4`}
+                        role="alert"
+                    >
+                        <strong>{resultadoFinal.mensaje}</strong>
+                    </div>
+                )}
 
-                <div className="col-6">
-                  <button
-                    type="button"
-                    onClick={handleEnviarVideo}
-                    disabled={guardando}
-                    className="btn btn-primary w-100 rounded-3 fw-bold btn-sm shadow-sm"
-                  >
-                    {guardando ? "Guardando..." : "Enviar"}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+                {/* RESUMEN DEL EXPEDIENTE */}
+                <section className="card border-0 shadow-sm rounded-4 mb-4">
+                    <div className="card-body p-4">
+                        <div className="row g-3 align-items-center">
+                            <div className="col-md-8">
+                                <h2 className="h5 fw-bold mb-2">
+                                    Mi expediente
+                                </h2>
 
+                                <p className="text-muted mb-1">
+                                    <strong>Nombre:</strong>{" "}
+                                    {aspirante.nombreCompleto || nombreUsuario}
+                                </p>
+
+                                <p className="text-muted mb-1">
+                                    <strong>Curso:</strong>{" "}
+                                    {aspirante.curso || "No especificado"}
+                                </p>
+
+                                <p className="text-muted mb-0">
+                                    <strong>Estado:</strong>{" "}
+                                    {aspirante.estado || "En proceso"}
+                                </p>
+                            </div>
+
+                            <div className="col-md-4">
+                                <div className="d-flex flex-column gap-2">
+                                    <span className={`badge ${estadoEntrega.cvAdjuntado ? "bg-success" : "bg-secondary"}`}>
+                                        {estadoEntrega.cvAdjuntado ? "✓ CV enviado" : "CV pendiente"}
+                                    </span>
+
+                                    <span className={`badge ${estadoEntrega.videoAdjuntado ? "bg-success" : "bg-secondary"}`}>
+                                        {estadoEntrega.videoAdjuntado ? "✓ Vídeo enviado" : "Vídeo pendiente"}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* CARGA DE ARCHIVOS */}
+                {!procesoFinalizado && (
+                    <>
+                        <div className="text-center mb-4">
+                            <h2 className="h4 fw-bold">
+                                Envío de CV y vídeo de presentación
+                            </h2>
+
+                            <p className="text-muted">
+                                Completa ambos documentos para que tu expediente
+                                avance a la etapa de validación.
+                            </p>
+                        </div>
+
+                        <div className="row g-4">
+
+                            {/* CARD CV */}
+                            <div className="col-md-6">
+                                <div className="card bg-custom-card border-info-subtle rounded-4 h-100 p-4 shadow-sm">
+                                    <div>
+                                        <h3 className="h5 fw-bold text-dark mb-1">
+                                            Adjuntar Currículum Vitae (PDF)
+                                        </h3>
+
+                                        <p className="text-muted small">
+                                            Adjunta tu currículum en formato PDF.
+                                            El archivo no debe superar los 5 MB.
+                                        </p>
+
+                                        <div className="border border-2 border-dashed border-info rounded-4 p-4 text-center bg-white bg-opacity-50 mt-4">
+                                            <div className="fs-1 text-primary mb-2">
+                                                <i className="bi bi-cloud-arrow-up"></i>
+                                            </div>
+
+                                            <p className="fw-bold text-dark small mb-0">
+                                                Selecciona tu currículum
+                                            </p>
+
+                                            <p className="text-muted small mb-3">
+                                                Formato PDF · Máximo 5 MB
+                                            </p>
+
+                                            <label className="btn btn-naranja btn-sm px-4 rounded-3 shadow-sm">
+                                                Buscar archivo
+
+                                                <input
+                                                    ref={inputCVRef}
+                                                    type="file"
+                                                    accept=".pdf,application/pdf"
+                                                    className="d-none"
+                                                    onChange={manejarCambioCV}
+                                                    disabled={guardandoCV || procesoFinalizado}
+                                                />
+                                            </label>
+                                        </div>
+
+                                        <div className="mt-3 small text-break">
+                                            <strong>Archivo:</strong> {nombreArchivo("cv")}
+                                        </div>
+
+                                        {aspirante.cvAdjuntado && (
+                                            <p className="text-success small mt-2 mb-0">
+                                                <i className="bi bi-check-circle-fill"></i>{" "}
+                                                Tu CV ya fue enviado.
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <div className="row g-2 mt-4">
+                                        <div className="col-6">
+                                            <button
+                                                type="button"
+                                                className="btn btn-light border w-100 rounded-3 text-secondary fw-bold btn-sm"
+                                                onClick={() => cancelarSeleccion("cv")}
+                                                disabled={guardandoCV || !archivoCV}
+                                            >
+                                                Cancelar
+                                            </button>
+                                        </div>
+
+                                        <div className="col-6">
+                                            <button
+                                                type="button"
+                                                onClick={() => enviarArchivo("cv")}
+                                                className="btn btn-primary w-100 rounded-3 fw-bold btn-sm shadow-sm"
+                                                disabled={guardandoCV || !archivoCV}
+                                            >
+                                                {guardandoCV ? "Enviando..." : "Enviar CV"}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* CARD VIDEO */}
+                            <div className="col-md-6">
+                                <div className="card bg-custom-card border-info-subtle rounded-4 h-100 p-4 shadow-sm">
+                                    <div>
+                                        <h3 className="h5 fw-bold text-dark mb-1">
+                                            Vídeo de presentación
+                                        </h3>
+
+                                        <p className="text-muted small">
+                                            Explica brevemente por qué deseas
+                                            participar en el curso de formación
+                                            técnica de AIDEL.
+                                        </p>
+
+                                        <div className="border border-2 border-dashed border-info rounded-4 p-4 text-center bg-white bg-opacity-50 mt-4">
+                                            <div className="fs-1 text-primary mb-2">
+                                                <i className="bi bi-camera-video"></i>
+                                            </div>
+
+                                            <p className="fw-bold text-dark small mb-0">
+                                                Selecciona tu vídeo
+                                            </p>
+
+                                            <p className="text-muted small mb-3">
+                                                Formatos MP4 o MOV · Máximo 50 MB
+                                            </p>
+
+                                            <label className="btn btn-naranja btn-sm px-4 rounded-3 shadow-sm">
+                                                Buscar vídeo
+
+                                                <input
+                                                    ref={inputVideoRef}
+                                                    type="file"
+                                                    accept=".mp4,.mov,video/mp4,video/quicktime"
+                                                    className="d-none"
+                                                    onChange={manejarCambioVideo}
+                                                    disabled={guardandoVideo || procesoFinalizado}
+                                                />
+                                            </label>
+                                        </div>
+
+                                        <div className="mt-3 small text-break">
+                                            <strong>Archivo:</strong> {nombreArchivo("video")}
+                                        </div>
+
+                                        {aspirante.videoAdjuntado && (
+                                            <p className="text-success small mt-2 mb-0">
+                                                <i className="bi bi-check-circle-fill"></i>{" "}
+                                                Tu vídeo ya fue enviado.
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <div className="row g-2 mt-4">
+                                        <div className="col-6">
+                                            <button
+                                                type="button"
+                                                className="btn btn-light border w-100 rounded-3 text-secondary fw-bold btn-sm"
+                                                onClick={() => cancelarSeleccion("video")}
+                                                disabled={guardandoVideo || !archivoVideo}
+                                            >
+                                                Cancelar
+                                            </button>
+                                        </div>
+
+                                        <div className="col-6">
+                                            <button
+                                                type="button"
+                                                onClick={() => enviarArchivo("video")}
+                                                className="btn btn-primary w-100 rounded-3 fw-bold btn-sm shadow-sm"
+                                                disabled={guardandoVideo || !archivoVideo}
+                                            >
+                                                {guardandoVideo ? "Enviando..." : "Enviar vídeo"}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </>
+                )}
+
+                {/* MENSAJE DE ENTREGA COMPLETA */}
+                {estadoEntrega.completo && !procesoFinalizado && (
+                    <div className="alert alert-success text-center mt-4 rounded-3">
+                        <h4 className="h5 fw-bold">
+                            <i className="bi bi-check-circle-fill"></i>{" "}
+                            ¡Has completado el envío de documentos!
+                        </h4>
+
+                        <p className="mb-0">
+                            Tu CV y vídeo fueron recibidos. Tu expediente se
+                            encuentra en la etapa de validación.
+                        </p>
+                    </div>
+                )}
+
+                {/* PROCESO FINALIZADO */}
+                {procesoFinalizado && (
+                    <div className="card border-0 shadow-sm rounded-4 mt-4">
+                        <div className="card-body text-center p-5">
+                            <i className="bi bi-flag-fill fs-1 text-primary"></i>
+
+                            <h2 className="h4 fw-bold mt-3">
+                                Proceso de selección finalizado
+                            </h2>
+
+                            <p className="text-muted mb-0">
+                                {resultadoFinal?.mensaje}
+                            </p>
+                        </div>
+                    </div>
+                )}
+            </main>
+
+            {/* PIE DE PÁGINA */}
+            <footer className="text-center text-muted small py-4 border-top mt-auto">
+                ProTalento - AIDEL
+            </footer>
         </div>
-      </main>
-    </>
-  );
+    );
 }
 
 export default PortalAspirante;

@@ -17,7 +17,7 @@ import { Line, Doughnut } from "react-chartjs-2";
 
 import {
   obtenerIndicadores,
-  obtenerPostulacionesPorMes,
+  obtenerPostulacionesPorMesYAnio,
 } from "../../servicios_js/panel-control.js";
 
 ChartJS.register(
@@ -47,7 +47,7 @@ function Graficas({ aspirantes = [], onFiltrarEstado }) {
   );
 
   const flujo = useMemo(
-    () => obtenerPostulacionesPorMes(aspirantes),
+    () => obtenerPostulacionesPorMesYAnio(aspirantes),
     [aspirantes]
   );
 
