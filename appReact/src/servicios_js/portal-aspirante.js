@@ -27,17 +27,8 @@ function leerUsuarios() {
     }
 }
 
-function guardarUsuarios(usuarios) {
-    try {
-        localStorage.setItem("usuarios", JSON.stringify(usuarios));
-        return true;
-    } catch (error) {
-        console.error("Error al guardar usuarios:", error);
-        return false;
-    }
-}
-
-function abrirBaseDatos() {
+// Guardar PDF en IndexedDB
+export function guardarPDF(email, archivo) {
     return new Promise((resolve, reject) => {
         if (!("indexedDB" in window)) {
             reject(new Error("Este navegador no permite utilizar IndexedDB."));
@@ -115,16 +106,8 @@ export function validarArchivo(tipo, archivo) {
     if (tipo === "video") {
         const nombre = archivo.name.toLowerCase();
 
-        const extensionValida =
-            nombre.endsWith(".mp4") ||
-            nombre.endsWith(".mov");
-
-        if (!extensionValida) {
-            return {
-                correcto: false,
-                mensaje: "El vídeo debe estar en formato MP4 o MOV."
-            };
-        }
+export function guardarVideo(email, archivo) {
+    return new Promise((resolve, reject) => {
 
         if (archivo.size > LIMITES.video) {
             return {

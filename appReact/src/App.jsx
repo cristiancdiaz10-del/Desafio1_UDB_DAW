@@ -1,5 +1,4 @@
-
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
 import Index from './paginas/Index';
 import Login from './paginas/Login';
@@ -10,52 +9,46 @@ import RegistroAspirantes from './paginas/RegistroAspirantes';
 import Aspirantes from './paginas/Aspirantes';
 import PerfilCandidato from './paginas/PerfilCandidato';
 
-import RutaProtegida from './componentes/RutaProtegida';
+import { protegerVista } from './servicios_js/autenticaciones';
 
-const ROLES_ADMINISTRATIVOS = [
-  'administrador',
-  'superadministrador',
-];
+// Componente para proteger rutas
+function RutaProtegida({ rolesPermitidos, children }) {
+  const accesoPermitido = protegerVista(rolesPermitidos);
 
-const ROLES_GESTION = [
-  'administrador',
-  'superadministrador'
-];
+  if (!accesoPermitido) {
+    return <Navigate to="/Login" replace />;
+  }
+
+  return children;
+}
 
 function App() {
   return (
-    <Routes>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/Index" element={<Index />} />
 
-      {/* RUTAS PÚBLICAS */}
-      <Route path="/" element={<Index />} />
-      <Route path="/Index" element={<Index />} />
-      <Route path="/RegistroAspirantes" element={<RegistroAspirantes />} />
-      <Route path="/Login" element={<Login />} />
+        <Route path="/RegistroAspirantes" element={<RegistroAspirantes />} />
+        <Route path="/Login" element={<Login />} />
 
-      {/* RUTA EXCLUSIVA PARA ASPIRANTES */}
-      <Route element={<RutaProtegida rolesPermitidos={['usuario']} />}>
+        <Route path="/PanelControl" element={<PanelControl />} />
+
+        {/* Portal protegido: solamente aspirantes autenticados */}
         <Route
           path="/PortalAspirante"
-          element={<PortalAspirante />}
+          element={
+            <RutaProtegida rolesPermitidos={['usuario']}>
+              <PortalAspirante />
+            </RutaProtegida>
+          }
         />
-      </Route>
 
-      {/* RUTAS PARA ADMINISTRADORES Y EVALUADORES */}
-      <Route element={<RutaProtegida rolesPermitidos={ROLES_ADMINISTRATIVOS} />}>
-        <Route path="/PanelControl" element={<PanelControl />} />
+        <Route path="/Convocatorias" element={<Convocatorias />} />
         <Route path="/Aspirantes" element={<Aspirantes />} />
         <Route path="/PerfilCandidato" element={<PerfilCandidato />} />
-      </Route>
-
-      {/* RUTAS EXCLUSIVAS PARA ADMINISTRADORES */}
-      <Route element={<RutaProtegida rolesPermitidos={ROLES_GESTION} />}>
-        <Route path="/Convocatorias" element={<Convocatorias />} />
-      </Route>
-
-      {/* RUTA PARA DIRECCIONES NO EXISTENTES */}
-      <Route path="*" element={<Navigate to="/Index" replace />} />
-
-    </Routes>
+      </Routes>
+    </BrowserRouter>
   );
 }
 
