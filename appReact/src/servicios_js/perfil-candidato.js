@@ -75,14 +75,20 @@ export function guardarEvaluacion(evaluacion) {
 
     const evaluaciones = leerLista(CLAVE_EVALUACIONES);
 
+    const nuevaEvaluacion = {...evaluacion, estadoEtapa:
+        evaluacion.estadoEtapa || evaluacion.estado
+    };
+
+    delete nuevaEvaluacion.estado;
+
     const indice = evaluaciones.findIndex(
         item => item.aspiranteEmail === evaluacion.aspiranteEmail
     );
 
     if (indice >= 0) {
-        evaluaciones[indice] = evaluacion;
+        evaluaciones[indice] = nuevaEvaluacion;
     } else {
-        evaluaciones.push(evaluacion);
+        evaluaciones.push(nuevaEvaluacion);
     }
 
     if (!guardarLista(CLAVE_EVALUACIONES, evaluaciones)) {
@@ -194,11 +200,10 @@ export function obtenerEtapaActual(aspirante) {
 }
 
 export function procesoFinalizado(aspirante) {
-    const estado = aspirante?.resultadoFinal || aspirante?.estado;
+    //const estado = aspirante?.resultadoFinal || aspirante?.estado;
 
     return [
         "Seleccionado/a",
         "No seleccionado/a",
-        "Rechazado"
-    ].includes(estado);
+    ].includes(aspirante?.resultadoFinal);
 }

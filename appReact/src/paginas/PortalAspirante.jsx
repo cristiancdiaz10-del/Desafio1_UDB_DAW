@@ -324,7 +324,7 @@ function PortalAspirante() {
                 <div className="container-fluid">
                     <div className="d-flex align-items-center gap-2">
                         <img
-                            src="/recursos/logo_AIDEL.png"
+                            src="./recursos/logo_AIDEL.png"
                             alt="Logo ProTalento"
                             className="logo_portalAspirante"
                         />

@@ -299,7 +299,7 @@ function Aspirantes() {
 
         <div>
           <img
-            src="/recursos/logo_AIDEL.png"
+            src="./recursos/logo_AIDEL.png"
             alt="Logo AIDEL"
             className="logo_convocatorias"
           />

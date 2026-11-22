@@ -1,3 +1,62 @@
+Domingo 22 de noviembre 2026
+# Entrega Final Proyecto Web Completo
+## PROTALENTO - PLATAFORMA PARA LA EVALUACIÓN Y SELECCIÓN DE ASPIRANTES A FORMACIÓN TÉCNICA DE LA AGENCIA INTERNACIONAL DE DESARROLLO LOCAL
+**Integrantes del Equipo A**
+- CRISTIAN ALEXANDER CAMPOS DÍAZ CD261570
+- LUIS ALBERTO CHÁVEZ MENDOZA CM250419
+- MANUEL DE JESÚS MEJÍA RIVERA MR260122
+- CÉSAR ELISEO RAMÍREZ ROMERO RR261314
+- CRYSTEL DANIELA TINO ANAYA TA261223
+
+La aplicación React final se encuentra en [appReact](./appReact/).
+
+## Mockups de creación de ProTalento
+
+**Pantalla de inicio**
+
+<p>
+<img src="./mockups/Vista 1 - Index.png" width="500">
+</p>
+
+**Formulario de registro de aspirantes**
+
+<p>
+<img src="./mockups/Vista 2 - Registro de aspirantes.png" width="500">
+</p>
+
+**Portal del aspirante**
+
+<p>
+<img src="./mockups/Vista 3 - Portal del aspirante.png" width="500">
+</p>
+
+**Pantalla de login**
+
+<p>
+<img src="./mockups/Vista 4 - Login.png" width="500">
+</p>
+
+**Panel de control**
+
+<p>
+<img src="./mockups/Vista 5 - Portal del evaluador.png" width="500">
+</p>
+
+**Perfil del aspirante**
+
+<p>
+<img src="./mockups/Vista 6 - Evaluación de candidatos.png" width="500">
+</p>
+
+
+## Licencia Creative Commons
+
+Este proyecto está bajo la licencia
+Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
+
+Consulta el archivo [LICENSE](./LICENSE) para más información.
+
+==========================================================================================================================
 Domingo 8 de noviembre 2026
 # Avance 2 Foro de discusión 2: Migración de ProTalento a React
 ## PROTALENTO - PLATAFORMA PARA LA EVALUACIÓN Y SELECCIÓN DE ASPIRANTES A FORMACIÓN TÉCNICA DE LA AGENCIA INTERNACIONAL DE DESARROLLO LOCAL

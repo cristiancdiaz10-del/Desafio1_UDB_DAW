@@ -304,6 +304,7 @@ export function registrarAspirante(nuevoUsuario) {
         email: emailNormalizado,
         DUI: nuevoUsuario.DUI?.trim() || "",
         NIT: nuevoUsuario.NIT?.trim() || "",
+        fechaRegistro: nuevoUsuario.fechaRegistro || obtenerFechaActual(),
         rol: "usuario"
     };
 

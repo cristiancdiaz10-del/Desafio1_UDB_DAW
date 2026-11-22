@@ -33,9 +33,6 @@ ChartJS.register(
 );
 
 const estados = [
-  "Postulado",
-  "En revisión",
-  "Entrevistados",
   "Seleccionados",
   "No seleccionados",
 ];
@@ -71,18 +68,12 @@ function Graficas({ aspirantes = [], onFiltrarEstado }) {
     datasets: [
       {
         data: [
-          indicadores.postulados,
-          indicadores.revision,
-          indicadores.entrevistados,
           indicadores.seleccionados,
           indicadores.rechazados,
         ],
         backgroundColor: [
-          "#8b5cf6",
-          "#6b7280",
-          "#f59e0b",
-          "#3b82f6",
           "#10b981",
+          "#f59e0b",
         ],
         borderWidth: 2,
       },

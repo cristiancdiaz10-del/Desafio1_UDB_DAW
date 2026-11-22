@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Swal from "sweetalert2";
+import { obtenerArchivo } from "../servicios_js/portal-aspirante";
 
 import {
     obtenerAspirantesPerfil,
@@ -53,6 +54,8 @@ function PerfilCandidato() {
 
     const etapaActual = obtenerEtapaActual(aspiranteSeleccionado);
     const finalizado = procesoFinalizado(aspiranteSeleccionado);
+    const evaluacionActual = obtenerEvaluacion(emailSeleccionado);
+    const revisionAprobada = evaluacionActual?.estadoEtapa === "Aprobado" || evaluacionActual?.estado === "Aprobado";
 
     // Protección de la vista y carga inicial.
     useEffect(() => {
@@ -232,7 +235,7 @@ function PerfilCandidato() {
             perfilAcademico: Number(perfilAcademico),
             promedio: Number(promedio.toFixed(2)),
             observaciones: comentarios,
-            estado
+            estadoEtapa: estado
         });
 
         if (!resultado.correcto) {
@@ -255,6 +258,15 @@ function PerfilCandidato() {
                 "warning",
                 "Aspirante no seleccionado",
                 "Selecciona un aspirante antes de continuar."
+            );
+            return;
+        }
+
+        if (etapa === 4 && !revisionAprobada) {
+            await mostrarAlerta(
+                "warning",
+                "Revisión pendiente",
+                "El aspirante debe aprobar la evaluación del CV y vídeo antes de avanzar a la entrevista virtual."
             );
             return;
         }
@@ -331,38 +343,89 @@ function PerfilCandidato() {
         navigate("/Login", { replace: true });
     }
 
-    function mostrarArchivo(tipo) {
-        if (!aspiranteSeleccionado) {
-            mostrarAlerta(
-                "warning",
-                "Aspirante no seleccionado",
-                "Selecciona un aspirante primero."
-            );
+    async function mostrarArchivo(tipo) {
+        const email = aspiranteSeleccionado?.email;
+        if (!email) {
+            mostrarAlerta("warning", "Aspirante no seleccionado", "Selecciona un aspirante primero.");
             return;
         }
 
         const esCV = tipo === "CV";
+        const nombre = esCV ? "CV" : "video";
 
-        // El registro actual solo almacena indicadores de adjunto,
-        // no una ruta o URL que permita abrir el documento.
-        const adjuntado = esCV
-            ? aspiranteSeleccionado.cvAdjuntado
-            : aspiranteSeleccionado.videoAdjuntado;
+        const consulta = Swal.fire({
+            title: esCV ? "Cargando CV…" : "Cargando video…",
+            showConfirmButton: false,
+            willOpen: () => Swal.showLoading()
+        });
+        const ventanaConsulta = Swal.getPopup();
 
-        if (!adjuntado) {
-            mostrarAlerta(
-                "info",
-                `${tipo} no disponible`,
-                `El aspirante no tiene un ${esCV ? "CV" : "vídeo"} marcado como adjunto.`
-            );
-            return;
+        function consultaActiva() {
+            return ventanaConsulta && Swal.getPopup() === ventanaConsulta;
         }
 
-        mostrarAlerta(
-            "info",
-            `${tipo} registrado`,
-            `El registro indica que existe un ${esCV ? "CV" : "vídeo"} adjunto, pero todavía no almacena la ruta del archivo para abrirlo.`
-        );
+        try {
+            const registro = await obtenerArchivo(email, esCV ? "cv" : "video");
+            if (!consultaActiva()) return;
+
+            const archivo = registro?.archivo;
+            if (!archivo) {
+                mostrarAlerta(
+                    "info",
+                    `${esCV ? "CV" : "Video"} no disponible`,
+                    `No se encontró el ${nombre} de este aspirante en este navegador.`
+                );
+                return;
+            }
+
+            if (!(archivo instanceof Blob) || archivo.size === 0) {
+                throw new Error("El archivo está vacío o tiene un formato inválido.");
+            }
+
+            const vista = document.createElement("div");
+            const visor = document.createElement(esCV ? "iframe" : "video");
+            const mensaje = document.createElement("p");
+
+            visor.style.width = "100%";
+            visor.style.height = esCV ? "60vh" : "auto";
+            mensaje.hidden = true;
+            mensaje.textContent = `El navegador no pudo abrir el ${nombre}.`;
+
+            visor.addEventListener("error", () => {
+                visor.hidden = true;
+                mensaje.hidden = false;
+            });
+
+            if (esCV) {
+                visor.title = "CV del aspirante";
+            } else {
+                visor.controls = true;
+            }
+
+            vista.append(visor, mensaje);
+
+            const contenido = esCV ? archivo.slice(0, archivo.size, "application/pdf") : archivo;
+            const url = URL.createObjectURL(contenido);
+            visor.src = url;
+
+            try {
+                await Swal.fire({
+                    title: esCV ? "CV del aspirante" : "Video de presentación",
+                    html: vista,
+                    width: "min(900px, 95vw)",
+                    confirmButtonText: "Cerrar"
+                });
+            } finally {
+                URL.revokeObjectURL(url);
+            }
+        } catch (error) {
+            if (consultaActiva()) {
+                mostrarAlerta("error", `No se pudo abrir el ${nombre}`, error.message);
+            }
+        } finally {
+            if (consultaActiva()) Swal.close();
+            await consulta;
+        }
     }
 
     function mostrarEstrellas(valor, cambiarValor) {
@@ -398,7 +461,7 @@ function PerfilCandidato() {
                         <div className="col-8 d-flex align-items-center gap-3">
                             <div>
                                 <img
-                                    src="/recursos/logo_AIDEL.png"
+                                    src="./recursos/logo_AIDEL.png"
                                     alt="Logo ProTalento"
                                     className="logo_evaluaciones"
                                 />
@@ -501,7 +564,7 @@ function PerfilCandidato() {
                                     "Validación completada",
                                     "El aspirante ha avanzado a Entrevista Virtual (Etapa 4)."
                                 )}
-                               disabled={!aspiranteSeleccionado || finalizado || etapaActual > 3}
+                               disabled={!aspiranteSeleccionado || finalizado || etapaActual > 3 || !revisionAprobada}
                             >
                                 Validación completada → Pasar Entrevista Virtual
                             </button>
@@ -570,6 +633,11 @@ function PerfilCandidato() {
                                     <p>
                                         <strong>Número de DUI: </strong>
                                         {aspiranteSeleccionado?.DUI || "--"}
+                                    </p>
+
+                                    <p>
+                                        <strong>Número de NIT: </strong>
+                                        {aspiranteSeleccionado?.NIT || "--"}
                                     </p>
 
                                     <p>

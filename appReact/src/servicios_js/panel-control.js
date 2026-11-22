@@ -183,7 +183,7 @@ export function obtenerIndicadores(aspirantes) {
     ).length,
 
     entrevistados: aspirantes.filter((a) =>
-      coincideEstado(a, "Entrevistados")
+      Number(a.etapaActual) >= 5
     ).length,
 
     seleccionados: aspirantes.filter((a) =>

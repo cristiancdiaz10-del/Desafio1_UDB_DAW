@@ -209,15 +209,13 @@ export function eliminarCurso(cursos, id) {
 // 6. EXPORTACIÓN DE CONVOCATORIAS
 // ==========================================
 
-function obtenerConvocatoriasActivas(convocatorias) {
-  return convocatorias
-    .filter((conv) => conv.estado === "Activa")
-    .map((conv) => ({
-      Curso: conv.curso,
-      Fechas: `Del ${conv.fechaInicio} al ${conv.fechaCierre}`,
-      Plazas: `${conv.plazas} plazas`,
-      Estado: conv.estado
-    }));
+function obtenerDatosConvocatorias(convocatorias) {
+  return convocatorias.map((conv) => ({
+    Curso: conv.curso,
+    Fechas: `Del ${conv.fechaInicio} al ${conv.fechaCierre}`,
+    Plazas: `${conv.plazas} plazas`,
+    Estado: conv.estado
+  }));
 }
 
 // ==========================================
@@ -243,7 +241,7 @@ function descargarArchivo(blob, nombre) {
 // ==========================================
 
 export function exportarConvocatoriasCSV(convocatorias) {
-  const datos = obtenerConvocatoriasActivas(convocatorias);
+  const datos = obtenerDatosConvocatorias(convocatorias);
 
   if (datos.length === 0) {
     return false;
@@ -265,7 +263,7 @@ export function exportarConvocatoriasCSV(convocatorias) {
     type: "text/csv;charset=utf-8;"
   });
 
-  descargarArchivo(blob, "convocatorias_activas.csv");
+  descargarArchivo(blob, "convocatorias_ProTalento.csv");
 
   return true;
 }
@@ -275,7 +273,7 @@ export function exportarConvocatoriasCSV(convocatorias) {
 // ==========================================
 
 export function exportarConvocatoriasExcel(convocatorias) {
-  const datos = obtenerConvocatoriasActivas(convocatorias);
+  const datos = obtenerDatosConvocatorias(convocatorias);
 
   if (datos.length === 0) {
     return false;
@@ -287,10 +285,10 @@ export function exportarConvocatoriasExcel(convocatorias) {
   XLSX.utils.book_append_sheet(
     libro,
     hoja,
-    "Convocatorias activas"
+    "Convocatorias"
   );
 
-  XLSX.writeFile(libro, "convocatorias_activas.xlsx");
+  XLSX.writeFile(libro, "convocatorias_ProTalento.xlsx");
 
   return true;
 }
