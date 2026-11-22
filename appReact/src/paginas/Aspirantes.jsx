@@ -45,6 +45,8 @@ function Aspirantes() {
   const [accesoAutorizado, setAccesoAutorizado] =
     useState(false);
 
+  const [menuAbierto, setMenuAbierto] = useState(false);
+
   // ==========================================
   // 2. VERIFICAR SESIÓN Y PERMISOS
   // ==========================================
@@ -291,11 +293,20 @@ function Aspirantes() {
   return (
     <div className="portal">
 
+        {menuAbierto && (
+    <button
+      type="button"
+      className="panel-menu-overlay"
+      aria-label="Cerrar menú lateral"
+      onClick={() => setMenuAbierto(false)}
+    />
+       )}
+
       {/* ======================================
           MENÚ LATERAL
       ====================================== */}
 
-      <aside className="sidebar">
+      <aside className={`sidebar ${menuAbierto ? "sidebar-abierta" : ""}`} id="panel-menu-lateral">
 
         <div>
           <img
@@ -383,6 +394,17 @@ function Aspirantes() {
           <h1 className="topbar-title">
             Portal del evaluador
           </h1>
+
+          <button
+              type="button"
+              className="btn-menu-movil"
+              aria-label="Abrir menú lateral"
+              aria-expanded={menuAbierto}
+              aria-controls="panel-menu-lateral"
+              onClick={() => setMenuAbierto((abierto) => !abierto)}
+            >
+              <i className="bi bi-list"></i>
+            </button>
 
           <div className="topbar-user d-flex align-items-center gap-3 ms-auto">
 

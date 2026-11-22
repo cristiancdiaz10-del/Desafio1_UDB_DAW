@@ -10,6 +10,16 @@ Domingo 22 de noviembre 2026
 
 La aplicación React final se encuentra en [appReact](./appReact/).
 
+Los archivos PDF de casos de prueba de la aplicación final se encuentran en [CasosdePrueba-FaseFinal](./Documentacion_React/CasosdePrueba-FaseFinal/)
+
+## Objetivo de la aplicación
+ProTalento es una aplicación web que permite gestionar el registro, seguimiento, evaluación y selección de aspirantes a programas de formación técnica brindados por la Agencia Internacional de Desarrollo Local (AIDEL) en El Salvador. También facilita la administración de cursos, convocatorias y la consulta de indicadores del proceso de evaluación y selección de aspirantes.
+
+A través de la aplicación se busca ofrecer una solución tecnológica que permita a la AIDEL resolver sus necesidades de centralización de la información de los jóvenes brindando un almacenamiento organizado, una contabilidad automática, rendición de cuentas actualizada y una interfaz más sencilla que permita la ejecución de procesos complejos con un par de clics en lugar de dedicar mucho tiempo copiando y pegando datos de manera manual, ocultando columnas de las hojas de cálculo o arrastrando largas formulas.
+
+## Aplicación desplegada:
+Enlace de acceso: [ProTalento-AIDEL](https://cristiancdiaz10-del.github.io/Desafio1_UDB_DAW/)
+
 ## Mockups de creación de ProTalento
 
 **Pantalla de inicio**
@@ -48,6 +58,140 @@ La aplicación React final se encuentra en [appReact](./appReact/).
 <img src="./mockups/Vista 6 - Evaluación de candidatos.png" width="500">
 </p>
 
+## Tecnologías utilizadas en ProTalento
+<ul>
+<li><b>React 19:</b> desarrollo de interfaces mediante componentes.</li>
+<li><b>Vite:</b> entorno de desarrollo y compilación.</li>
+<li><b>React Router:</b> navegación y protección de rutas.</li>
+<li><b>JavaScript, HTML5 y CSS3:</b> lógica y estructura de la aplicación.</li>
+<li><b>Bootstrap 5 y Bootstrap Icons:</b> diseño e iconografía.</li>
+<li><b>Chart.js y React Chart.js 2:</b> generación de gráficas estadísticas.</li>
+<li><b>SweetAlert2:</b> alertas y confirmaciones.</li>
+<li><b>jsPDF:</b> generación de documentos PDF.</li>
+<li><b>SheetJS (XLSX):</b> exportación de información a Excel.</li>
+<li><b>localStorage:</b> almacenamiento de usuarios, sesiones y datos del sistema en el navegador.</li>
+<li><b>IndexedDB:</b> almacenamiento de archivos PDF y videos de los aspirantes.</li>
+</ul>
+
+## Módulos principales
+
+  **Inicio:**                             Presentación y acceso a la
+                                      plataforma.
+
+  **Registro de aspirantes:**             Captura y validación de información
+                                      personal y territorial.
+
+  **Inicio de sesión:**                   Autenticación y control de acceso
+                                      según el rol.
+
+  **Portal del aspirante:**               Consulta del expediente,
+                                      seguimiento del proceso y entrega
+                                      de documentos.
+
+  **Panel de control:**                   Indicadores, filtros, gráficas y
+                                      consulta de aspirantes.
+
+  **Gestión de aspirantes:**              Búsqueda, consulta, evaluación y
+                                      exportación de información.
+
+  **Perfil del candidato:**               Seguimiento de etapas y registro de
+                                      evaluaciones.
+
+  **Convocatorias y cursos:**             Administración de cursos y
+                                      convocatorias disponibles.
+
+## API externa utilizada
+El formulario de registro consume una fuente externa de datos
+geográficos de El Salvador para cargar departamentos, municipios y
+distritos:
+
+[Departamentos, distritos y municipios de El Salvador ---
+JSON](https://juanmedina100.github.io/departamentos-distritos-municipios-el-salvador/departamentos-distritos-municipios-sv.json)
+
+Esta información permite realizar selecciones territoriales relacionadas
+durante el registro de los aspirantes.
+
+## Instalación y ejecución local
+
+**Requisitos:** Node.js y npm.
+
+1.  Clonar el repositorio:
+
+    ``` bash
+    git clone https://github.com/cristiancdiaz10-del/Desafio1_UDB_DAW.git
+    ```
+
+2.  Ingresar a la carpeta de React:
+
+    ``` bash
+    cd Desafio1_UDB_DAW/appReact
+    ```
+
+3.  Instalar las dependencias:
+
+    ``` bash
+    npm install
+    ```
+
+4.  Iniciar el entorno de desarrollo:
+
+    ``` bash
+    npm run dev
+    ```
+
+5.  Abrir en el navegador la dirección local que proporciona Vite.
+
+Para generar la versión de producción:
+
+``` bash
+npm run build
+```
+
+Para ejecutar una vista previa de la compilación:
+
+``` bash
+npm run preview
+```
+
+## Estructura del proyecto
+
+``` text
+Desafio1_UDB_DAW/
+│
+├── appReact/
+│   ├── public/
+│   │   └── recursos/
+│   ├── src/
+│   │   ├── componentes/
+│   │   │   └── panel/
+│   │   ├── paginas/
+│   │   ├── servicios_js/
+│   │   ├── utilidades_js/
+│   │   ├── App.jsx
+│   │   ├── main.jsx
+│   │   ├── index.css
+│   │   └── responsive.css
+│   ├── package.json
+│   └── vite.config.js
+│
+├── mockups/
+├── Documentacion_React/
+├── .github/
+│   └── workflows/
+├── LICENSE
+└── README.md
+```
+# Consideraciones técnicas
+
+-   La aplicación utiliza almacenamiento del navegador (`localStorage` e
+    `IndexedDB`); no cuenta con una base de datos centralizada en
+    servidor.
+-   Los datos almacenados son locales al navegador y al origen desde el
+    que se accede a la aplicación.
+-   El registro depende de la disponibilidad de la fuente externa de
+    información geográfica.
+-   Para conservar los datos de los aspirantes y sus documentos, se
+    recomienda utilizar el mismo navegador y origen de la aplicación.
 
 ## Licencia Creative Commons
 
@@ -55,6 +199,10 @@ Este proyecto está bajo la licencia
 Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
 
 Consulta el archivo [LICENSE](./LICENSE) para más información.
+
+**Universidad Don Bosco --- Desarrollo de Aplicaciones Web con Software Interpretados en el Cliente**\
+**Equipo A --- Proyecto de cátedra ProTalento**\
+**Ciclo II - 2026**
 
 ==========================================================================================================================
 Domingo 8 de noviembre 2026

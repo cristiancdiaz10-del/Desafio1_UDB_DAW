@@ -54,6 +54,8 @@ const [cursos, setCursos] = useState(
 
   const navigate = useNavigate();
 
+  const [menuAbierto, setMenuAbierto] = useState(false);
+
   // ==========================================
   // 2. PERSISTENCIA EN LOCALSTORAGE
   // ==========================================
@@ -318,8 +320,17 @@ const eliminarCursoUI = async (id) => {
     <>
       <div className="portal">
 
+        {menuAbierto && (
+          <button
+            type="button"
+            className="panel-menu-overlay"
+            aria-label="Cerrar menú lateral"
+            onClick={() => setMenuAbierto(false)}
+          />
+          )}
+
         {/* MENÚ LATERAL */}
-        <aside className="sidebar sidebar-convocatorias">
+        <aside id="panel-menu-lateral" className={`sidebar sidebar-convocatorias ${menuAbierto ? "sidebar-abierta" : ""}`}>
 
           <div>
             <img
@@ -390,6 +401,17 @@ const eliminarCursoUI = async (id) => {
             <h1 className="topbar-title">
               Portal del Evaluador
             </h1>
+
+            <button
+                type="button"
+                className="btn-menu-movil"
+                aria-label="Abrir menú lateral"
+                aria-expanded={menuAbierto}
+                aria-controls="panel-menu-lateral"
+                onClick={() => setMenuAbierto((abierto) => !abierto)}
+              >
+                <i className="bi bi-list"></i>
+            </button>
 
             <div className="topbar-user d-flex align-items-center gap-3 ms-auto">
 

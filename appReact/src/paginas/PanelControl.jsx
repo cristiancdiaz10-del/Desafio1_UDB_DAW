@@ -255,15 +255,6 @@ function PanelControl() {
         id="panel-menu-lateral"
       >
 
-        <button
-          type="button"
-          className="panel-menu-cerrar"
-          aria-label="Cerrar menú"
-          onClick={() => setMenuAbierto(false)}
-        >
-          <i className="bi bi-x-lg" aria-hidden="true"></i>
-        </button>
-
         <div>
           <img
             src="./recursos/logo_AIDEL.png"
